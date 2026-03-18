@@ -791,7 +791,7 @@ describe('list-todos command', () => {
     const pendingDir = path.join(tmpDir, '.planning', 'todos', 'pending');
     fs.mkdirSync(pendingDir, { recursive: true });
 
-    fs.writeFileSync(path.join(pendingDir, 'add-tests.md'), 'title: Add unit tests\narea: testing\ncreated: 2026-01-15\n');
+    fs.writeFileSync(path.join(pendingDir, 'refresh-runbook.md'), 'title: Refresh runbook\narea: operations\ncreated: 2026-01-15\n');
     fs.writeFileSync(path.join(pendingDir, 'fix-bug.md'), 'title: Fix login bug\narea: auth\ncreated: 2026-01-20\n');
 
     const result = runGsdTools('list-todos', tmpDir);
@@ -801,10 +801,10 @@ describe('list-todos command', () => {
     assert.strictEqual(output.count, 2, 'should have 2 todos');
     assert.strictEqual(output.todos.length, 2, 'todos array should have 2 entries');
 
-    const testTodo = output.todos.find(t => t.file === 'add-tests.md');
-    assert.ok(testTodo, 'add-tests.md should be in results');
-    assert.strictEqual(testTodo.title, 'Add unit tests');
-    assert.strictEqual(testTodo.area, 'testing');
+    const testTodo = output.todos.find(t => t.file === 'refresh-runbook.md');
+    assert.ok(testTodo, 'refresh-runbook.md should be in results');
+    assert.strictEqual(testTodo.title, 'Refresh runbook');
+    assert.strictEqual(testTodo.area, 'operations');
     assert.strictEqual(testTodo.created, '2026-01-15');
   });
 

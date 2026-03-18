@@ -311,8 +311,13 @@ describe('config-get command', () => {
 
   beforeEach(() => {
     tmpDir = createTempProject();
-    // Create config with known values
-    runGsdTools('config-ensure-section', tmpDir);
+    // Create config with fixed values so user-level ~/.gsd defaults do not affect assertions.
+    writeConfig(tmpDir, {
+      model_profile: 'balanced',
+      workflow: {
+        research: true,
+      },
+    });
   });
 
   afterEach(() => {

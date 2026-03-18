@@ -1,15 +1,10 @@
 ---
 name: gsd:help
-description: Show available GSD commands and usage guide
+description: Show the operations command reference
 ---
-<objective>
-Display the complete GSD command reference.
 
-Output ONLY the reference content below. Do NOT add:
-- Project-specific analysis
-- Git status or file context
-- Next-step suggestions
-- Any commentary beyond the reference
+<objective>
+Display the concise command reference for this operations-focused edition.
 </objective>
 
 <execution_context>
@@ -17,6 +12,5 @@ Output ONLY the reference content below. Do NOT add:
 </execution_context>
 
 <process>
-Output the complete GSD command reference from @~/.claude/get-shit-done/workflows/help.md.
-Display the reference content directly — no additions or modifications.
+Output the workflow content directly.
 </process>

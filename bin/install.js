@@ -28,6 +28,7 @@ const CODEX_AGENT_SANDBOX = {
   'gsd-research-synthesizer': 'workspace-write',
   'gsd-verifier': 'workspace-write',
   'gsd-codebase-mapper': 'workspace-write',
+  'gsd-ops-researcher': 'workspace-write',
   'gsd-roadmapper': 'workspace-write',
   'gsd-debugger': 'workspace-write',
   'gsd-plan-checker': 'read-only',
@@ -256,8 +257,8 @@ const banner = '\n' +
   '   ╚═════╝ ╚══════╝╚═════╝' + reset + '\n' +
   '\n' +
   '  Get Shit Done ' + dim + 'v' + pkg.version + reset + '\n' +
-  '  A meta-prompting, context engineering and spec-driven\n' +
-  '  development system for Claude Code, OpenCode, Gemini, Codex, Copilot, and Antigravity by TÂCHES.\n';
+  '  An operations-focused planning, execution, and runbook system\n' +
+  '  for Claude Code, OpenCode, Gemini, Codex, Copilot, and Antigravity.\n';
 
 // Parse --config-dir argument
 function parseConfigDirArg() {
@@ -2822,7 +2823,6 @@ function finishInstall(settingsPath, settings, statuslineCommand, shouldInstallS
   console.log(`
   ${green}Done!${reset} Open a blank directory in ${program} and run ${cyan}${command}${reset}.
 
-  ${cyan}Join the community:${reset} https://discord.gg/gsd
 `);
 }
 

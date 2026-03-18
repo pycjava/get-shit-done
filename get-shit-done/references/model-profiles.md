@@ -14,6 +14,7 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
 | gsd-research-synthesizer | sonnet | sonnet | haiku | inherit |
 | gsd-debugger | opus | sonnet | sonnet | inherit |
 | gsd-codebase-mapper | sonnet | haiku | haiku | inherit |
+| gsd-ops-researcher | opus | sonnet | haiku | inherit |
 | gsd-verifier | sonnet | sonnet | haiku | inherit |
 | gsd-plan-checker | sonnet | sonnet | haiku | inherit |
 | gsd-integration-checker | sonnet | sonnet | haiku | inherit |

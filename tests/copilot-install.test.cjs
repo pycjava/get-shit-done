@@ -610,6 +610,9 @@ Check ~/.claude/settings and run gsd:health.`;
 
 describe('copyCommandsAsCopilotSkills', () => {
   const srcDir = path.join(__dirname, '..', 'commands', 'gsd');
+  const expectedSkillCount = fs.readdirSync(srcDir)
+    .filter(f => f.endsWith('.md'))
+    .length;
 
   test('creates skill folders from source commands', () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-copilot-skills-'));
@@ -625,7 +628,11 @@ describe('copyCommandsAsCopilotSkills', () => {
       // Count gsd-* directories — should be 31
       const dirs = fs.readdirSync(tempDir, { withFileTypes: true })
         .filter(e => e.isDirectory() && e.name.startsWith('gsd-'));
-      assert.strictEqual(dirs.length, 39, `expected 39 skill folders, got ${dirs.length}`);
+      assert.strictEqual(
+        dirs.length,
+        expectedSkillCount,
+        `expected ${expectedSkillCount} skill folders, got ${dirs.length}`
+      );
     } finally {
       fs.rmSync(tempDir, { recursive: true });
     }
@@ -639,7 +646,7 @@ describe('copyCommandsAsCopilotSkills', () => {
       const skillContent = fs.readFileSync(path.join(tempDir, 'gsd-health', 'SKILL.md'), 'utf8');
       // Frontmatter format checks
       assert.ok(skillContent.startsWith('---\nname: gsd-health\n'), 'starts with name: gsd-health');
-      assert.ok(skillContent.includes('allowed-tools: Read, Bash, Write, AskUserQuestion'),
+      assert.ok(skillContent.includes('allowed-tools: Read, Bash, Write'),
         'allowed-tools is comma-separated');
       assert.ok(!skillContent.includes('allowed-tools:\n  -'), 'NOT YAML multiline format');
       // CONV-06/07 applied
@@ -746,10 +753,10 @@ describe('Copilot agent conversion - real files', () => {
     assert.ok(toolsLine.includes("'read'"), 'Read mapped');
   });
 
-  test('all 16 agents convert without error', () => {
+  test('all agent files convert without error', () => {
     const agents = fs.readdirSync(agentsSrc)
       .filter(f => f.startsWith('gsd-') && f.endsWith('.md'));
-    assert.strictEqual(agents.length, 16, `expected 16 agents, got ${agents.length}`);
+    assert.strictEqual(agents.length, EXPECTED_AGENTS, `expected ${EXPECTED_AGENTS} agents, got ${agents.length}`);
 
     for (const agentFile of agents) {
       const content = fs.readFileSync(path.join(agentsSrc, agentFile), 'utf8');
@@ -1119,8 +1126,8 @@ const { execFileSync } = require('child_process');
 const crypto = require('crypto');
 
 const INSTALL_PATH = path.join(__dirname, '..', 'bin', 'install.js');
-const EXPECTED_SKILLS = 39;
-const EXPECTED_AGENTS = 16;
+const EXPECTED_SKILLS = 36;
+const EXPECTED_AGENTS = 13;
 
 function runCopilotInstall(cwd) {
   const env = { ...process.env };
@@ -1193,16 +1200,13 @@ describe('E2E: Copilot full install verification', () => {
       'gsd-executor.agent.md',
       'gsd-integration-checker.agent.md',
       'gsd-nyquist-auditor.agent.md',
+      'gsd-ops-researcher.agent.md',
       'gsd-phase-researcher.agent.md',
       'gsd-plan-checker.agent.md',
       'gsd-planner.agent.md',
       'gsd-project-researcher.agent.md',
       'gsd-research-synthesizer.agent.md',
       'gsd-roadmapper.agent.md',
-      'gsd-ui-auditor.agent.md',
-      'gsd-ui-checker.agent.md',
-      'gsd-ui-researcher.agent.md',
-      'gsd-user-profiler.agent.md',
       'gsd-verifier.agent.md',
     ].sort();
     assert.deepStrictEqual(gsdAgents, expected);

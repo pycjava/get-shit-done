@@ -1,15 +1,15 @@
 ---
 name: gsd:health
-description: Diagnose planning directory health and optionally repair issues
-argument-hint: [--repair]
+description: Diagnose planning directory health
+argument-hint: "[--repair]"
 allowed-tools:
   - Read
   - Bash
   - Write
-  - AskUserQuestion
 ---
+
 <objective>
-Validate `.planning/` directory integrity and report actionable issues. Checks for missing files, invalid configurations, inconsistent state, and orphaned plans.
+Validate `.planning/` structure and offer repair guidance when needed.
 </objective>
 
 <execution_context>
@@ -17,6 +17,5 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </execution_context>
 
 <process>
-Execute the health workflow from @~/.claude/get-shit-done/workflows/health.md end-to-end.
-Parse --repair flag from arguments and pass to workflow.
+Execute the health workflow end-to-end.
 </process>

@@ -585,6 +585,125 @@ function cmdInitMilestoneOp(cwd, raw) {
   output(result, raw);
 }
 
+function cmdInitOpsAudit(cwd, raw) {
+  const config = loadConfig(cwd);
+
+  // Parse project_name and project_stage from PROJECT.md
+  let project_name = null;
+  let project_stage = null;
+  try {
+    const projectContent = fs.readFileSync(path.join(cwd, '.planning', 'PROJECT.md'), 'utf-8');
+    const nameMatch = projectContent.match(/^#\s+(.+)$/m);
+    if (nameMatch) project_name = nameMatch[1].trim();
+    const stageMatch = projectContent.match(/\*\*Stage\*\*:\s*([^\n]+)/i) ||
+                       projectContent.match(/\*\*Status\*\*:\s*([^\n]+)/i);
+    if (stageMatch) project_stage = stageMatch[1].trim();
+  } catch {}
+
+  // Read existing ops docs with modification times for staleness detection
+  const opsDir = path.join(cwd, '.planning', 'operations');
+  let existingDocs = [];
+  try {
+    existingDocs = fs.readdirSync(opsDir)
+      .filter(f => f.endsWith('.md'))
+      .map(f => {
+        try {
+          const stat = fs.statSync(path.join(opsDir, f));
+          return { name: f, mtime: stat.mtime.toISOString() };
+        } catch {
+          return { name: f, mtime: null };
+        }
+      });
+  } catch {}
+
+  // Read ops_weights override from config.json if present
+  let ops_weights = null;
+  try {
+    const rawConfig = JSON.parse(fs.readFileSync(path.join(cwd, '.planning', 'config.json'), 'utf-8'));
+    if (rawConfig.ops_weights && typeof rawConfig.ops_weights === 'object') {
+      ops_weights = rawConfig.ops_weights;
+    }
+  } catch {}
+
+  const result = {
+    // Project context
+    project_name,
+    project_stage,
+
+    // Config
+    commit_docs: config.commit_docs,
+    ops_weights,
+    planning_exists: pathExistsInternal(cwd, '.planning'),
+    ops_dir: '.planning/operations',
+    existing_docs: existingDocs,
+    has_operations: existingDocs.length > 0,
+
+    // File paths
+    state_path: '.planning/STATE.md',
+    project_path: '.planning/PROJECT.md',
+    roadmap_path: '.planning/ROADMAP.md',
+    config_path: '.planning/config.json',
+  };
+
+  output(result, raw);
+}
+
+function cmdInitOpsRunbook(cwd, raw) {
+  const config = loadConfig(cwd);
+
+  // Parse project_name and project_stage from PROJECT.md
+  let project_name = null;
+  let project_stage = null;
+  try {
+    const projectContent = fs.readFileSync(path.join(cwd, '.planning', 'PROJECT.md'), 'utf-8');
+    const nameMatch = projectContent.match(/^#\s+(.+)$/m);
+    if (nameMatch) project_name = nameMatch[1].trim();
+    const stageMatch = projectContent.match(/\*\*Stage\*\*:\s*([^\n]+)/i) ||
+                       projectContent.match(/\*\*Status\*\*:\s*([^\n]+)/i);
+    if (stageMatch) project_stage = stageMatch[1].trim();
+  } catch {}
+
+  // Check for existing operations docs with modification times
+  const opsDir = path.join(cwd, '.planning', 'operations');
+  let existingDocs = [];
+  try {
+    existingDocs = fs.readdirSync(opsDir)
+      .filter(f => f.endsWith('.md'))
+      .map(f => {
+        try {
+          const stat = fs.statSync(path.join(opsDir, f));
+          return { name: f, mtime: stat.mtime.toISOString() };
+        } catch {
+          return { name: f, mtime: null };
+        }
+      });
+  } catch {}
+
+  const result = {
+    // Models
+    ops_research_model: resolveModelInternal(cwd, 'gsd-ops-researcher'),
+
+    // Project context
+    project_name,
+    project_stage,
+
+    // Config
+    commit_docs: config.commit_docs,
+    planning_exists: pathExistsInternal(cwd, '.planning'),
+    ops_dir: '.planning/operations',
+    existing_docs: existingDocs,
+    has_operations: existingDocs.length > 0,
+
+    // File paths
+    state_path: '.planning/STATE.md',
+    project_path: '.planning/PROJECT.md',
+    roadmap_path: '.planning/ROADMAP.md',
+    config_path: '.planning/config.json',
+  };
+
+  output(result, raw);
+}
+
 function cmdInitMapCodebase(cwd, raw) {
   const config = loadConfig(cwd);
 
@@ -779,4 +898,6 @@ module.exports = {
   cmdInitMilestoneOp,
   cmdInitMapCodebase,
   cmdInitProgress,
+  cmdInitOpsRunbook,
+  cmdInitOpsAudit,
 };

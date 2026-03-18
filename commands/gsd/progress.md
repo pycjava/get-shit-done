@@ -1,17 +1,13 @@
 ---
 name: gsd:progress
-description: Check project progress, show context, and route to next action (execute or plan)
+description: Show current project and phase status
 allowed-tools:
   - Read
   - Bash
-  - Grep
-  - Glob
-  - SlashCommand
 ---
-<objective>
-Check project progress, summarize recent work and what's ahead, then intelligently route to the next action - either executing an existing plan or creating the next one.
 
-Provides situational awareness before continuing work.
+<objective>
+Show where the project is in the operations workflow and what is next.
 </objective>
 
 <execution_context>
@@ -19,6 +15,5 @@ Provides situational awareness before continuing work.
 </execution_context>
 
 <process>
-Execute the progress workflow from @~/.claude/get-shit-done/workflows/progress.md end-to-end.
-Preserve all routing logic (Routes A through F) and edge case handling.
+Execute the progress workflow end-to-end.
 </process>

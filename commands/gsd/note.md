@@ -21,7 +21,7 @@ Runs inline — no Task, no AskUserQuestion, no Bash.
 
 <execution_context>
 @~/.claude/get-shit-done/workflows/note.md
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.claude/get-shit-done/references/ops-output.md
 </execution_context>
 
 <context>

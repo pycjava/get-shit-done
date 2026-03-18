@@ -169,16 +169,16 @@ tools: Read, Grep, Glob
 // ─── CODEX_AGENT_SANDBOX mapping ────────────────────────────────────────────────
 
 describe('CODEX_AGENT_SANDBOX', () => {
-  test('has all 11 agents mapped', () => {
+  test('has all 12 agents mapped', () => {
     const agentNames = Object.keys(CODEX_AGENT_SANDBOX);
-    assert.strictEqual(agentNames.length, 11, 'has 11 agents');
+    assert.strictEqual(agentNames.length, 12, 'has 12 agents');
   });
 
   test('workspace-write agents have write tools', () => {
     const writeAgents = [
       'gsd-executor', 'gsd-planner', 'gsd-phase-researcher',
       'gsd-project-researcher', 'gsd-research-synthesizer', 'gsd-verifier',
-      'gsd-codebase-mapper', 'gsd-roadmapper', 'gsd-debugger',
+      'gsd-codebase-mapper', 'gsd-ops-researcher', 'gsd-roadmapper', 'gsd-debugger',
     ];
     for (const name of writeAgents) {
       assert.strictEqual(CODEX_AGENT_SANDBOX[name], 'workspace-write', `${name} is workspace-write`);
@@ -469,7 +469,7 @@ describe('installCodexConfig (integration)', () => {
     const { installCodexConfig } = require('../bin/install.js');
     const count = installCodexConfig(tmpTarget, agentsSrc);
 
-    assert.ok(count >= 11, `installed ${count} agents (expected >= 11)`);
+    assert.ok(count >= 12, `installed ${count} agents (expected >= 12)`);
 
     // Verify config.toml
     const configPath = path.join(tmpTarget, 'config.toml');

@@ -20,7 +20,9 @@ if (files.length === 0) {
 }
 
 try {
-  execFileSync(process.execPath, ['--test', ...files], {
+  // Run test files serially. Several suites touch shared real-user state under ~/.gsd
+  // or spawn many child Node processes, which is flaky under parallel Windows runs.
+  execFileSync(process.execPath, ['--test', '--test-concurrency=1', ...files], {
     stdio: 'inherit',
     env: { ...process.env },
   });

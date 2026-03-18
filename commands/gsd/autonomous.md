@@ -26,7 +26,7 @@ Uses ROADMAP.md phase discovery and Skill() flat invocations for each phase comm
 
 <execution_context>
 @~/.claude/get-shit-done/workflows/autonomous.md
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.claude/get-shit-done/references/ops-output.md
 </execution_context>
 
 <context>
