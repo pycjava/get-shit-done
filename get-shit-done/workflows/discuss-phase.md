@@ -10,6 +10,7 @@ Capture the phase decisions that planners and executors must not guess.
 - rollout path
 - rollback conditions
 - alert thresholds
+- capacity limits and scale triggers
 - backup and restore behavior
 - ownership and escalation
 - dependency readiness

@@ -15,8 +15,8 @@
 
 | Command | Purpose | Produces |
 |---|---|---|
-| `/gsd:ops-runbook` | Generate or refresh operational documentation | `.planning/operations/*.md` |
-| `/gsd:ops-audit` | Audit operational documentation and coverage | Ops audit report |
+| `/gsd:ops-runbook` | Generate or refresh operational documentation | `.planning/operations/*.md` including `CAPACITY.md` when scaling planning applies |
+| `/gsd:ops-audit` | Audit operational documentation and capacity coverage | Ops audit report |
 
 ## Milestones
 

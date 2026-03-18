@@ -85,6 +85,20 @@ Application
 
 ---
 
+## Capacity Signals
+
+### Headroom and Saturation
+
+| Signal | Why It Matters | Warning | Critical |
+|--------|----------------|---------|----------|
+| CPU Headroom | Shows remaining compute buffer at peak | [threshold] | [threshold] |
+| Memory Headroom | Catches leak or saturation risk before failure | [threshold] | [threshold] |
+| Queue Depth | Detects when background demand exceeds throughput | [threshold] | [threshold] |
+| Database Connections | Surfaces approaching pool or instance limits | [threshold] | [threshold] |
+| Storage Growth | Tracks when retention or backup growth needs action | [threshold] | [threshold] |
+
+---
+
 ## Alerting Rules
 
 ### Critical Alerts (Page Immediately)
@@ -273,6 +287,8 @@ Application
 ---
 
 ## Related Documents
+
+- [CAPACITY.md](./CAPACITY.md) - Capacity baselines and scaling plan
 
 - [OPERATIONS.md](./OPERATIONS.md) — Operations overview
 - [RUNBOOK.md](./RUNBOOK.md) — Incident response

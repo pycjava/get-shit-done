@@ -48,6 +48,12 @@ Template for `.planning/operations/RUNBOOK.md` — incident response and trouble
 | Database | `/db-health` | [Link] |
 | Cache | `/cache-health` | [Link] |
 
+### Capacity Escalation Reference
+
+- Check current utilization against `CAPACITY.md` thresholds before improvising manual scaling.
+- Prefer documented scale actions before increasing limits or changing instance classes.
+- Record emergency scaling decisions in the capacity decision log after the incident.
+
 ---
 
 ## Incident Response
@@ -395,6 +401,8 @@ Post-mortem: [Date/Time]
 ---
 
 ## Related Documents
+
+- [CAPACITY.md](./CAPACITY.md) - Capacity baselines and scaling plan
 
 - [OPERATIONS.md](./OPERATIONS.md) — Operations overview
 - [MONITORING.md](./MONITORING.md) — Monitoring configuration

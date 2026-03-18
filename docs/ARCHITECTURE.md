@@ -34,7 +34,7 @@ Typical flow:
 - `ROADMAP.md`
 - `STATE.md`
 - `phases/*`
-- `operations/*`
+- `operations/*` including deployment, monitoring, capacity, runbook, backup, and security docs
 
 ## Design Principles
 

@@ -21,5 +21,5 @@ Create a phase context that removes guesswork for operational planning.
 </execution_context>
 
 <process>
-Focus discussion on rollout, alerting, backup, recovery, ownership, dependencies, and change safety.
+Focus discussion on rollout, alerting, capacity triggers, backup, recovery, ownership, dependencies, and change safety.
 </process>

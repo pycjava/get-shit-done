@@ -11,9 +11,9 @@
 
 - Service and environment initialization through `PROJECT.md`
 - Requirements and roadmap artifacts oriented around operational readiness
-- Phase discussion focused on rollout, alerting, recovery, ownership, security, and dependencies
-- Runbook generation for deployment, monitoring, backup, incident response, and security ops
-- Operations auditing for stale or missing documents
+- Phase discussion focused on rollout, alerting, capacity, recovery, ownership, security, and dependencies
+- Runbook generation for deployment, monitoring, capacity, backup, incident response, and security ops
+- Operations auditing for stale or missing documents, including capacity planning coverage
 
 ## Brownfield Support
 

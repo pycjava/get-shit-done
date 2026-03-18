@@ -8,7 +8,7 @@ This repository keeps the original GSD backbone:
 - Working style: file-based state, thin orchestrators, specialized agents, explicit validation
 - Working flow: discover -> discuss -> plan -> execute -> verify -> audit -> archive
 
-What changed is the product focus. This edition is for operations work: service readiness, deployment, monitoring, incident response, backup, security operations, and operational acceptance.
+What changed is the product focus. This edition is for operations work: service readiness, deployment, monitoring, capacity planning, incident response, backup, security operations, and operational acceptance.
 
 ## Install
 
@@ -29,9 +29,9 @@ For a new or existing system:
 1. `/gsd:map-codebase`
    Use this when you need a brownfield view of the current service, stack, and integration surface.
 2. `/gsd:new-project`
-   Capture the service boundary, environments, dependencies, operational constraints, and success criteria.
+   Capture the service boundary, environments, dependencies, capacity constraints, operational limits, and success criteria.
 3. `/gsd:discuss-phase 1`
-   Lock decisions for the current operations phase: rollout, alerting, recovery, ownership, change windows.
+   Lock decisions for the current operations phase: rollout, alerting, capacity triggers, recovery, ownership, and change windows.
 4. `/gsd:plan-phase 1`
    Produce executable phase plans and validation criteria.
 5. `/gsd:execute-phase 1`
@@ -74,7 +74,7 @@ The framework still writes into `.planning/`, but the content is now centered on
 - `ROADMAP.md`: phased ops rollout plan
 - `STATE.md`: current position, decisions, blockers
 - `phases/*`: context, research, plans, summaries, validation, verification, UAT
-- `operations/*`: deployment, monitoring, runbook, backup, security ops
+- `operations/*`: deployment, monitoring, capacity, runbook, backup, security ops
 
 ## Repo Scope
 

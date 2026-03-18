@@ -27,5 +27,5 @@ Create:
 
 <process>
 Run the workflow end-to-end.
-Favor operational context: environments, dependencies, deployment model, monitoring, backup, security, incident ownership.
+Favor operational context: environments, dependencies, deployment model, monitoring, capacity limits, backup, security, and incident ownership.
 </process>

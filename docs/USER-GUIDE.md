@@ -13,6 +13,7 @@ Run `/gsd:new-project` and capture:
 - service purpose
 - environment layout
 - critical dependencies
+- capacity assumptions and limits
 - ownership boundaries
 - operational constraints
 
@@ -21,6 +22,7 @@ Run `/gsd:new-project` and capture:
 Run `/gsd:discuss-phase N` to lock decisions such as:
 
 - deployment path
+- capacity thresholds and scale triggers
 - rollback approach
 - monitoring and alerting
 - backup and recovery
@@ -52,7 +54,7 @@ Run:
 
 - Phase plans for specific operational work packages
 - Summaries and verification reports after execution
-- Runbooks covering deployment, monitoring, backup, security ops, and incident response
+- Runbooks covering deployment, monitoring, capacity, backup, security ops, and incident response
 
 ## Recovery Utilities
 

@@ -33,6 +33,7 @@ Template for `.planning/operations/OPERATIONS.md` — the operations strategy ov
 
 | Objective | Target | Current | Status |
 |-----------|--------|---------|--------|
+| Capacity Headroom | [e.g., >30% at peak] | [current] | [On Track / Risk / Blocked] |
 | Availability | [e.g., 99.9%] | [current %] | [✓/⚠/✗] |
 | Response Time (P95) | [e.g., <200ms] | [current] | [✓/⚠/✗] |
 | Deployment Frequency | [e.g., daily] | [current] | [✓/⚠/✗] |
@@ -123,6 +124,8 @@ Level 4: VP Engineering (Response: 1hr)
 ---
 
 ## Related Documents
+
+- [CAPACITY.md](./CAPACITY.md) - Capacity baselines and scaling plan
 
 - [DEPLOYMENT.md](./DEPLOYMENT.md) — Deployment procedures
 - [MONITORING.md](./MONITORING.md) — Monitoring and alerting

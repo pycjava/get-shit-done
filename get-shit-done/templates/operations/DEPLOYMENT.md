@@ -62,6 +62,7 @@ Template for `.planning/operations/DEPLOYMENT.md` — deployment procedures and 
 - [ ] Environment variables verified
 - [ ] Secrets rotated (if scheduled)
 - [ ] Feature flags configured
+- [ ] Capacity headroom verified for expected rollout traffic
 - [ ] Database migrations tested
 
 ### Communication
@@ -111,6 +112,7 @@ Template for `.planning/operations/DEPLOYMENT.md` — deployment procedures and 
 | Health Check | 200 OK | Auto-rollback |
 | Error Rate | <1% | Alert, manual review |
 | Response Time | P95 <500ms | Alert, manual review |
+| Capacity Headroom | >20% remaining at expected peak | Scale first or hold deploy |
 | Memory Usage | <80% | Alert, scale up |
 
 ---
@@ -252,6 +254,7 @@ LOG_LEVEL=warn
 - [ ] All smoke tests passing
 - [ ] Error rate within normal bounds
 - [ ] Response times within SLA
+- [ ] Capacity headroom acceptable after deploy
 - [ ] No user-reported issues
 - [ ] Monitoring dashboards green
 
@@ -266,6 +269,8 @@ LOG_LEVEL=warn
 ---
 
 ## Related Documents
+
+- [CAPACITY.md](./CAPACITY.md) - Capacity baselines and scaling plan
 
 - [OPERATIONS.md](./OPERATIONS.md) — Operations overview
 - [RUNBOOK.md](./RUNBOOK.md) — Incident response

@@ -4,6 +4,8 @@
 
 <process>
 
+Collect capacity assumptions, growth ceilings, and scaling constraints together with the standard operations context.
+
 1. 运行初始化：
 
 ```bash

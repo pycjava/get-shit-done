@@ -160,6 +160,17 @@ Template for `.planning/operations/BACKUP.md` — backup strategies and disaster
 
 ---
 
+## Capacity Considerations
+
+| Area | Signal | Threshold | Action |
+|------|--------|-----------|--------|
+| Backup Storage | Total backup footprint growth | [threshold] | Expand storage or tune retention |
+| Backup Window | Backup duration vs maintenance window | [threshold] | Reschedule or parallelize backups |
+| Restore Window | Restore time vs RTO target | [threshold] | Pre-stage recovery capacity |
+| Cross-Region Replication | Replication lag | [threshold] | Increase bandwidth or reduce payload |
+
+---
+
 ## Recovery Procedures
 
 ### Database Recovery
@@ -403,6 +414,8 @@ When legal hold is required:
 ---
 
 ## Related Documents
+
+- [CAPACITY.md](./CAPACITY.md) - Capacity baselines and storage growth plan
 
 - [OPERATIONS.md](./OPERATIONS.md) — Operations overview
 - [RUNBOOK.md](./RUNBOOK.md) — Incident response
