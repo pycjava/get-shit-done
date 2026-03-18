@@ -6,6 +6,7 @@
 |---|---|---|
 | `/gsd:new-project` | Initialize an operations planning workspace | `PROJECT.md`, `REQUIREMENTS.md`, `ROADMAP.md`, `STATE.md` |
 | `/gsd:map-codebase` | Map an existing service or codebase before planning | `.planning/codebase/*.md` |
+| `/gsd:autonomous` | Build one master plan across remaining phases, show it, then execute it | Unified cross-phase execution flow |
 | `/gsd:discuss-phase [N]` | Capture operational decisions for a phase | `{phase}-CONTEXT.md` |
 | `/gsd:plan-phase [N]` | Research and plan the phase | `{phase}-RESEARCH.md`, `PLAN.md`, `VALIDATION.md` |
 | `/gsd:execute-phase <N>` | Execute all plans in the phase | `SUMMARY.md`, `VERIFICATION.md` |
@@ -60,4 +61,3 @@ These remain because they support the framework, but they are secondary to the m
 - `/gsd:validate-phase`
 - `/gsd:cleanup`
 - `/gsd:reapply-patches`
-- `/gsd:autonomous`

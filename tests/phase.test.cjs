@@ -349,6 +349,34 @@ objective: Manual review needed
     assert.strictEqual(output.plans[0].autonomous, false, 'plan marked non-autonomous');
   });
 
+  test('extracts TDD metadata for TDD plans', () => {
+    const phaseDir = path.join(tmpDir, '.planning', 'phases', '03-api');
+    fs.mkdirSync(phaseDir, { recursive: true });
+
+    fs.writeFileSync(
+      path.join(phaseDir, '03-01-PLAN.md'),
+      `---
+type: tdd
+wave: 1
+autonomous: true
+objective: Authentication flow
+---
+
+## Task 1: Write failing tests
+## Task 2: Implement auth flow
+`
+    );
+
+    const result = runGsdTools('phase-plan-index 03', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.tdd_plans, 1, 'should count one TDD plan');
+    assert.strictEqual(output.plans[0].type, 'tdd', 'type extracted');
+    assert.strictEqual(output.plans[0].execution_pattern, 'RED -> GREEN -> REFACTOR', 'TDD execution pattern surfaced');
+    assert.deepStrictEqual(output.plans[0].tdd_cycle, ['red', 'green', 'refactor'], 'TDD cycle surfaced');
+  });
+
   test('phase not found returns error', () => {
     const result = runGsdTools('phase-plan-index 99', tmpDir);
     assert.ok(result.success, `Command should succeed: ${result.error}`);

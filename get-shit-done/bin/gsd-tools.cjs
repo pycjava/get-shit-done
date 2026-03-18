@@ -41,6 +41,7 @@
  * Roadmap Operations:
  *   roadmap get-phase <phase>          Extract phase section from ROADMAP.md
  *   roadmap analyze                    Full roadmap parse with disk status
+ *   roadmap execution-plan [--from N]  Build unified remaining-phase master plan
  *   roadmap update-plan-progress <N>   Update progress table row from disk (PLAN vs SUMMARY counts)
  *
  * Requirements Operations:
@@ -426,10 +427,13 @@ async function main() {
         roadmap.cmdRoadmapGetPhase(cwd, args[2], raw);
       } else if (subcommand === 'analyze') {
         roadmap.cmdRoadmapAnalyze(cwd, raw);
+      } else if (subcommand === 'execution-plan') {
+        const fromIdx = args.indexOf('--from');
+        roadmap.cmdRoadmapExecutionPlan(cwd, fromIdx !== -1 ? args[fromIdx + 1] : null, raw);
       } else if (subcommand === 'update-plan-progress') {
         roadmap.cmdRoadmapUpdatePlanProgress(cwd, args[2], raw);
       } else {
-        error('Unknown roadmap subcommand. Available: get-phase, analyze, update-plan-progress');
+        error('Unknown roadmap subcommand. Available: get-phase, analyze, execution-plan, update-plan-progress');
       }
       break;
     }

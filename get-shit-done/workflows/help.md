@@ -9,12 +9,13 @@
 
 1. `/gsd:map-codebase`
 2. `/gsd:new-project`
-3. `/gsd:discuss-phase <阶段>`
-4. `/gsd:plan-phase <阶段>`
-5. `/gsd:execute-phase <阶段>`
-6. `/gsd:verify-work [阶段]`
-7. `/gsd:ops-runbook`
-8. `/gsd:ops-audit`
+3. `/gsd:autonomous`
+4. `/gsd:discuss-phase <阶段>`
+5. `/gsd:plan-phase <阶段>`
+6. `/gsd:execute-phase <阶段>`
+7. `/gsd:verify-work [阶段]`
+8. `/gsd:ops-runbook`
+9. `/gsd:ops-audit`
 
 ## 里程碑
 
@@ -49,5 +50,4 @@
 - `/gsd:validate-phase`
 - `/gsd:cleanup`
 - `/gsd:reapply-patches`
-- `/gsd:autonomous`
 </reference>

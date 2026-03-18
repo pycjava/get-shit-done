@@ -198,32 +198,25 @@ function extractObjective(content) {
   return m ? m[1].trim() : null;
 }
 
-function cmdPhasePlanIndex(cwd, phase, raw) {
-  if (!phase) {
-    error('phase required for phase-plan-index');
-  }
-
+function getPhasePlanIndexInternal(cwd, phase) {
   const phasesDir = path.join(cwd, '.planning', 'phases');
   const normalized = normalizePhaseName(phase);
 
   // Find phase directory
   let phaseDir = null;
-  let phaseDirName = null;
   try {
     const entries = fs.readdirSync(phasesDir, { withFileTypes: true });
     const dirs = entries.filter(e => e.isDirectory()).map(e => e.name).sort((a, b) => comparePhaseNum(a, b));
     const match = dirs.find(d => d.startsWith(normalized));
     if (match) {
       phaseDir = path.join(phasesDir, match);
-      phaseDirName = match;
     }
   } catch {
     // phases dir doesn't exist
   }
 
   if (!phaseDir) {
-    output({ phase: normalized, error: 'Phase not found', plans: [], waves: {}, incomplete: [], has_checkpoints: false }, raw);
-    return;
+    return { phase: normalized, error: 'Phase not found', plans: [], waves: {}, incomplete: [], has_checkpoints: false };
   }
 
   // Get all files in phase directory
@@ -240,6 +233,7 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
   const waves = {};
   const incomplete = [];
   let hasCheckpoints = false;
+  let tddPlans = 0;
 
   for (const planFile of planFiles) {
     const planId = planFile.replace('-PLAN.md', '').replace('PLAN.md', '');
@@ -254,6 +248,7 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
 
     // Parse wave as integer
     const wave = parseInt(fm.wave, 10) || 1;
+    const type = typeof fm.type === 'string' ? fm.type : 'execute';
 
     // Parse autonomous (default true if not specified)
     let autonomous = true;
@@ -263,6 +258,9 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
 
     if (!autonomous) {
       hasCheckpoints = true;
+    }
+    if (type === 'tdd') {
+      tddPlans++;
     }
 
     // Parse files_modified (underscore is canonical; also accept hyphenated for compat)
@@ -279,12 +277,15 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
 
     const plan = {
       id: planId,
+      type,
       wave,
       autonomous,
       objective: extractObjective(content) || fm.objective || null,
       files_modified: filesModified,
       task_count: taskCount,
       has_summary: hasSummary,
+      execution_pattern: type === 'tdd' ? 'RED -> GREEN -> REFACTOR' : 'STANDARD',
+      tdd_cycle: type === 'tdd' ? ['red', 'green', 'refactor'] : [],
     };
 
     plans.push(plan);
@@ -303,9 +304,18 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
     waves,
     incomplete,
     has_checkpoints: hasCheckpoints,
+    tdd_plans: tddPlans,
   };
 
-  output(result, raw);
+  return result;
+}
+
+function cmdPhasePlanIndex(cwd, phase, raw) {
+  if (!phase) {
+    error('phase required for phase-plan-index');
+  }
+
+  output(getPhasePlanIndexInternal(cwd, phase), raw);
 }
 
 function cmdPhaseAdd(cwd, description, raw) {
@@ -900,6 +910,7 @@ function cmdPhaseComplete(cwd, phaseNum, raw) {
 }
 
 module.exports = {
+  getPhasePlanIndexInternal,
   cmdPhasesList,
   cmdPhaseNextDecimal,
   cmdFindPhase,

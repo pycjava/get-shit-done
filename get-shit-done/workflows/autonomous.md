@@ -1,4 +1,6 @@
 <purpose>
+PRIMARY MODE:
+Build one unified master plan across all remaining phases before execution. Treat that master plan as the user-facing source of truth. If any older instruction in this workflow conflicts with the master-plan-first behavior, prefer the master-plan-first behavior.
 
 Drive all remaining milestone phases autonomously. For each incomplete phase: discuss → plan → execute using Skill() flat invocations. Pauses only for explicit user decisions (grey area acceptance, blockers, validation requests). Re-reads ROADMAP.md after each phase to catch dynamically inserted phases.
 
@@ -55,6 +57,40 @@ If `FROM_PHASE` is set, display: `Starting from phase ${FROM_PHASE}`
 
 ## 2. Discover Phases
 
+MASTER PLAN OVERRIDE:
+Use `roadmap execution-plan` as the authoritative discovery source. It already merges remaining phases into one execution plan and surfaces TDD plans explicitly.
+
+```bash
+MASTER_PLAN_CMD=(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap execution-plan)
+if [[ -n "$FROM_PHASE" ]]; then
+  MASTER_PLAN_CMD+=(--from "$FROM_PHASE")
+fi
+MASTER_PLAN=$("${MASTER_PLAN_CMD[@]}")
+```
+
+Parse JSON for: `phases`, `master_steps`, `totals`, `next_step`.
+
+Display the unified plan before doing any execution work:
+
+```markdown
+## Master Plan
+
+| Step | Phase | Kind | Mode | Status | Summary |
+|------|-------|------|------|--------|---------|
+| 1 | 05 | context | standard | complete | Use existing CONTEXT.md decisions |
+| 2 | 05 | plan | standard | complete | 2 executable plans already exist |
+| 3 | 05 | plan-execution | tdd | pending | Login flow (RED -> GREEN -> REFACTOR) |
+| 4 | 05 | verify | standard | blocked | Verification unlocks after execution |
+```
+
+Rules for this table:
+- Include entries from `master_steps` in order
+- When `mode` is `tdd`, explicitly show `RED -> GREEN -> REFACTOR` in the Summary column
+- Keep `phase` grouping visible so the user sees one cross-phase plan, not isolated per-phase prompts
+- If `next_step` exists, call it out after the table as the first actionable step
+
+Use `phases` from this command as the phase list to execute. Do not do a separate detail fetch unless you need extra context not already present in `MASTER_PLAN`.
+
 Run phase discovery:
 
 ```bash
@@ -107,6 +143,15 @@ Extract `phase_name`, `goal`, `success_criteria` from each. Store for use in exe
 <step name="execute_phase">
 
 ## 3. Execute Phase
+
+Before each phase starts, look up that phase's entry from the previously generated `MASTER_PLAN`.
+
+When presenting the current phase:
+- Mention the phase goal from the master plan
+- Mention how many execution steps remain inside this phase
+- If the phase contains any `mode: tdd` plan-execution steps, explicitly say that this phase includes TDD work and name the `RED -> GREEN -> REFACTOR` loop
+
+If these instructions conflict with the older generic banner text below, prefer these phase-summary requirements.
 
 For the current phase, display the progress banner:
 
@@ -542,6 +587,26 @@ Decisions captured: {count} across {area_count} areas
 
 ## 4. Iterate
 
+MASTER PLAN REFRESH:
+After each phase completes, rebuild the unified plan instead of relying on raw `roadmap analyze` alone.
+
+```bash
+MASTER_PLAN_CMD=(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap execution-plan)
+if [[ -n "$FROM_PHASE" ]]; then
+  MASTER_PLAN_CMD+=(--from "$FROM_PHASE")
+fi
+MASTER_PLAN=$("${MASTER_PLAN_CMD[@]}")
+```
+
+Parse refreshed `phases`, `master_steps`, `totals`, `next_step`.
+
+If phases remain:
+- Use the refreshed `phases` list as the new loop input
+- Briefly show the remaining top-level plan summary again
+- Continue with the next remaining phase in that refreshed master plan order
+
+If no phases remain, continue to lifecycle.
+
 After each phase completes, re-read ROADMAP.md to catch phases inserted mid-execution (decimal phases like 5.1):
 
 ```bash
@@ -740,4 +805,8 @@ When any phase operation fails or a blocker is detected, present 3 options via A
 - [ ] Final completion banner displayed after lifecycle
 - [ ] Progress bar uses phase number / total milestone phases (not position among incomplete)
 - [ ] Smart discuss documents relationship to discuss-phase with CTRL-03 note
+- [ ] A unified master plan is displayed before execution starts
+- [ ] The master plan comes from `gsd-tools.cjs roadmap execution-plan`
+- [ ] TDD plans are shown explicitly as `RED -> GREEN -> REFACTOR` in the master plan
+- [ ] The master plan is refreshed after each phase before deciding what to run next
 </success_criteria>

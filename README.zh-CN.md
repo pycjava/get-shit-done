@@ -16,6 +16,19 @@
 npx get-shit-done-cc@latest
 ```
 
+### 本地构建安装
+
+```bash
+# 构建 hooks
+npm run build:hooks
+
+# 打包成 .tgz
+npm pack
+
+# 全局安装
+npm install -g ./get-shit-done-cc-<version>.tgz
+```
+
 安装后：
 
 - Claude Code / Gemini / Copilot / Antigravity：`/gsd:help`

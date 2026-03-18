@@ -28,7 +28,18 @@ Run `/gsd:discuss-phase N` to lock decisions such as:
 - backup and recovery
 - incident workflow
 
-### 4. Planning and execution
+### 4. One-command execution
+
+Run `/gsd:autonomous` when you want the system to:
+
+- build one unified master plan across all remaining phases
+- show that plan before execution starts
+- execute phase-by-phase automatically
+- surface any TDD plans as `RED -> GREEN -> REFACTOR`
+
+Use `--from N` if you want to start from a later phase.
+
+### 5. Manual planning and execution
 
 Run:
 
@@ -36,14 +47,14 @@ Run:
 2. `/gsd:execute-phase N`
 3. `/gsd:verify-work N`
 
-### 5. Operations documentation
+### 6. Operations documentation
 
 Run:
 
 1. `/gsd:ops-runbook`
 2. `/gsd:ops-audit`
 
-### 6. Milestone closeout
+### 7. Milestone closeout
 
 Run:
 

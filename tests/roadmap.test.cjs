@@ -357,6 +357,117 @@ describe('roadmap analyze command', () => {
 // roadmap analyze disk status variants
 // ─────────────────────────────────────────────────────────────────────────────
 
+describe('roadmap execution-plan command', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('builds a unified master plan with TDD execution metadata', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'ROADMAP.md'),
+      `# Roadmap
+
+### Phase 1: Auth
+**Goal:** Ship authentication
+
+### Phase 2: Dashboard
+**Goal:** Build dashboard
+`
+    );
+
+    const p1 = path.join(tmpDir, '.planning', 'phases', '01-auth');
+    fs.mkdirSync(p1, { recursive: true });
+    fs.writeFileSync(path.join(p1, '01-CONTEXT.md'), '# Context');
+    fs.writeFileSync(
+      path.join(p1, '01-01-PLAN.md'),
+      `---
+type: tdd
+wave: 1
+autonomous: true
+objective: Login flow
+---
+
+## Task 1: RED
+## Task 2: GREEN
+`
+    );
+    fs.writeFileSync(
+      path.join(p1, '01-02-PLAN.md'),
+      `---
+type: execute
+wave: 2
+autonomous: false
+objective: Session review
+---
+
+## Task 1: Validate
+`
+    );
+
+    const result = runGsdTools(['roadmap', 'execution-plan'], tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.phase_count, 2, 'two remaining phases should be included');
+    assert.strictEqual(output.totals.tdd_plans, 1, 'TDD plans counted in totals');
+
+    const phase1 = output.phases[0];
+    assert.strictEqual(phase1.number, '1', 'phase 1 should be first');
+    assert.strictEqual(phase1.lifecycle.context, 'complete', 'existing CONTEXT.md should mark context complete');
+    assert.strictEqual(phase1.plan_summary.tdd, 1, 'phase summary should count TDD plans');
+
+    const tddStep = phase1.steps.find(step => step.plan_id === '01-01');
+    assert.ok(tddStep, 'TDD plan execution step should exist');
+    assert.strictEqual(tddStep.mode, 'tdd', 'TDD step mode should be surfaced');
+    assert.strictEqual(tddStep.execution_pattern, 'RED -> GREEN -> REFACTOR', 'TDD execution pattern should be shown');
+    assert.deepStrictEqual(tddStep.tdd_cycle, ['red', 'green', 'refactor'], 'TDD cycle should be shown');
+
+    const phase2 = output.phases[1];
+    assert.strictEqual(phase2.number, '2', 'phase 2 should be second');
+    assert.strictEqual(phase2.lifecycle.context, 'pending', 'new phase should need context');
+    assert.strictEqual(phase2.lifecycle.execution, 'blocked', 'execution should be blocked before planning');
+    assert.strictEqual(output.next_step.plan_id, '01-01', 'next actionable step should be the first incomplete plan execution');
+  });
+
+  test('filters to remaining phases from a starting phase', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'ROADMAP.md'),
+      `# Roadmap
+
+- [x] **Phase 1: Foundation** - complete
+
+### Phase 1: Foundation
+**Goal:** Done
+
+### Phase 2: Auth
+**Goal:** Build auth
+
+### Phase 3: Dashboard
+**Goal:** Build dashboard
+`
+    );
+
+    const p1 = path.join(tmpDir, '.planning', 'phases', '01-foundation');
+    fs.mkdirSync(p1, { recursive: true });
+    fs.writeFileSync(path.join(p1, '01-01-PLAN.md'), '# Plan');
+    fs.writeFileSync(path.join(p1, '01-01-SUMMARY.md'), '# Summary');
+
+    const result = runGsdTools(['roadmap', 'execution-plan', '--from', '3'], tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.phase_count, 1, 'only phase 3 should remain after filtering');
+    assert.strictEqual(output.phases[0].number, '3', 'phase 3 should be the only remaining phase');
+    assert.strictEqual(output.start_from, '03', 'start_from should be normalized');
+  });
+});
+
 describe('roadmap analyze disk status variants', () => {
   let tmpDir;
 

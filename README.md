@@ -16,6 +16,19 @@ What changed is the product focus. This edition is for operations work: service 
 npx get-shit-done-cc@latest
 ```
 
+### Build & Install from Source
+
+```bash
+# Build hooks
+npm run build:hooks
+
+# Pack into .tgz
+npm pack
+
+# Install globally from local tarball
+npm install -g ./get-shit-done-cc-<version>.tgz
+```
+
 After install:
 
 - Claude Code / Gemini / Copilot / Antigravity: `/gsd:help`
@@ -30,17 +43,20 @@ For a new or existing system:
    Use this when you need a brownfield view of the current service, stack, and integration surface.
 2. `/gsd:new-project`
    Capture the service boundary, environments, dependencies, capacity constraints, operational limits, and success criteria.
-3. `/gsd:discuss-phase 1`
+3. `/gsd:autonomous`
+   Build one unified master plan across all remaining phases, display it up front, then execute phase-by-phase automatically. TDD plans are surfaced explicitly as `RED -> GREEN -> REFACTOR`.
+4. Manual phase control when you want to steer a specific phase yourself:
+   `/gsd:discuss-phase 1`
    Lock decisions for the current operations phase: rollout, alerting, capacity triggers, recovery, ownership, and change windows.
-4. `/gsd:plan-phase 1`
+5. `/gsd:plan-phase 1`
    Produce executable phase plans and validation criteria.
-5. `/gsd:execute-phase 1`
+6. `/gsd:execute-phase 1`
    Execute the phase through the normal GSD wave-based model.
-6. `/gsd:verify-work 1`
+7. `/gsd:verify-work 1`
    Validate the operational outcome through drills, checks, and acceptance prompts.
-7. `/gsd:ops-runbook`
+8. `/gsd:ops-runbook`
    Generate or refresh operations documentation.
-8. `/gsd:ops-audit`
+9. `/gsd:ops-audit`
    Audit runbooks and operational coverage.
 
 At milestone boundaries:
@@ -55,6 +71,7 @@ At milestone boundaries:
 |---|---|
 | `/gsd:new-project` | Initialize an operations-focused planning workspace |
 | `/gsd:map-codebase` | Map an existing codebase or service surface before planning |
+| `/gsd:autonomous` | Show one cross-phase master plan, then execute it automatically |
 | `/gsd:discuss-phase` | Capture phase-specific operational decisions |
 | `/gsd:plan-phase` | Create verified phase plans |
 | `/gsd:execute-phase` | Execute a phase in dependency waves |
