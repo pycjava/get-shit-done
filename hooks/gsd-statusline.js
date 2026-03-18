@@ -6,6 +6,36 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
+// i18n support
+let i18nT = null;
+function getI18n(cwd) {
+  if (i18nT) return i18nT;
+  try {
+    const i18next = require('i18next');
+    const en = require('../locales/en.json');
+    const zhCN = require('../locales/zh-CN.json');
+    let language = 'en';
+    try {
+      const configPath = path.join(cwd, '.planning', 'config.json');
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        if (config.language) language = config.language;
+      }
+    } catch (e) {}
+    i18next.init({
+      lng: language,
+      resources: {
+        en: { translation: en },
+        'zh-CN': { translation: zhCN }
+      }
+    });
+    i18nT = i18next.t.bind(i18next);
+  } catch (e) {
+    i18nT = (key) => key;
+  }
+  return i18nT;
+}
+
 // Read JSON from stdin
 let input = '';
 // Timeout guard: if stdin doesn't close within 3s (e.g. pipe issues on
@@ -97,7 +127,8 @@ process.stdin.on('end', () => {
       try {
         const cache = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
         if (cache.update_available) {
-          gsdUpdate = '\x1b[33m⬆ /gsd:update\x1b[0m │ ';
+          const i18n = getI18n(dir);
+          gsdUpdate = `\x1b[33m${i18n('statusline.update_available')}\x1b[0m │ `;
         }
       } catch (e) {}
     }

@@ -1,0 +1,43 @@
+{
+  "app_name": "Get Shit Done",
+  "errors": {
+    "no_project": "No planning structure found.",
+    "run_new_project": "Run /gsd:new-project to start a new project.",
+    "phase_not_found": "Phase directory not found.",
+    "no_plans_found": "No plans found in phase.",
+    "state_missing_reconstruct": "State missing. Offer reconstruct or continue."
+  },
+  "status": {
+    "context_critical": "CONTEXT CRITICAL: Usage at {{usedPct}}%. Remaining: {{remaining}}%.",
+    "context_exhausted": "Context is nearly exhausted.",
+    "context_warning": "CONTEXT WARNING: Usage at {{usedPct}}%. Remaining: {{remaining}}%.",
+    "context_limited": "Context is getting limited."
+  },
+  "statusline": {
+    "update_available": "\u2191 /gsd:update"
+  },
+  "workflows": {
+    "progress": {
+      "no_planning_structure": "No planning structure found.\n\nRun /gsd:new-project to start a new project.",
+      "milestone_complete": "Milestone Complete",
+      "phase_complete": "Phase {{phase}} Complete",
+      "next_up": "Next Up",
+      "route_a_unexecuted": "Unexecuted plan exists",
+      "route_b_needs_planning": "Phase needs planning",
+      "route_c_more_phases": "Phase complete, more phases remain",
+      "route_d_milestone_complete": "Milestone complete",
+      "route_e_uat_gaps": "UAT gaps need fix plans",
+      "route_f_between_milestones": "Between milestones"
+    },
+    "help": {
+      "core_flow": "Core Flow",
+      "milestones": "Milestones",
+      "phase_utilities": "Phase Utilities",
+      "runtime_utilities": "Runtime Utilities",
+      "support_commands": "Support Commands"
+    }
+  },
+  "init": {
+    "progress_init": "Progress context initialization"
+  }
+}

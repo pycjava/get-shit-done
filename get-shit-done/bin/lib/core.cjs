@@ -7,6 +7,57 @@ const path = require('path');
 const { execSync, spawnSync } = require('child_process');
 const { MODEL_PROFILES } = require('./model-profiles.cjs');
 
+// ─── i18n initialization ─────────────────────────────────────────────────────
+
+let i18next = null;
+let i18nT = null;
+
+function initI18n(cwd) {
+  if (i18nT) return i18nT;
+
+  try {
+    i18next = require('i18next');
+    const en = require('../../../locales/en.json');
+    const zhCN = require('../../../locales/zh-CN.json');
+
+    // Load language preference from config
+    let language = 'en';
+    try {
+      const configPath = path.join(cwd, '.planning', 'config.json');
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        if (config.language) {
+          language = config.language;
+        }
+      }
+    } catch (e) {
+      // Use default 'en'
+    }
+
+    i18next.init({
+      lng: language,
+      resources: {
+        en: { translation: en },
+        'zh-CN': { translation: zhCN }
+      }
+    });
+
+    i18nT = i18next.t.bind(i18next);
+  } catch (e) {
+    // i18n not available, return identity function
+    i18nT = (key) => key;
+  }
+
+  return i18nT;
+}
+
+function t(key, opts, cwd) {
+  if (!i18nT) {
+    initI18n(cwd || process.cwd());
+  }
+  return i18nT(key, opts);
+}
+
 // ─── Path helpers ────────────────────────────────────────────────────────────
 
 /** Normalize a relative path to always use forward slashes (cross-platform). */
@@ -64,6 +115,7 @@ function loadConfig(cwd) {
     nyquist_validation: true,
     parallelization: true,
     brave_search: false,
+    language: 'en',
   };
 
   try {
@@ -106,6 +158,7 @@ function loadConfig(cwd) {
       nyquist_validation: get('nyquist_validation', { section: 'workflow', field: 'nyquist_validation' }) ?? defaults.nyquist_validation,
       parallelization,
       brave_search: get('brave_search') ?? defaults.brave_search,
+      language: get('language') ?? defaults.language,
       model_overrides: parsed.model_overrides || null,
     };
   } catch {
@@ -579,6 +632,8 @@ function getMilestonePhaseFilter(cwd) {
 module.exports = {
   output,
   error,
+  t,
+  initI18n,
   safeReadFile,
   loadConfig,
   isGitIgnored,

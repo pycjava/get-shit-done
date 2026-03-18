@@ -1,5 +1,5 @@
 <purpose>
-Generate operations runbook for the project. Creates OPERATIONS.md, DEPLOYMENT.md, MONITORING.md, RUNBOOK.md, BACKUP.md, and SECURITY-OPS.md based on project context.
+Generate operations runbook for the project. Creates OPERATIONS.md, DEPLOYMENT.md, MONITORING.md, CAPACITY.md, RUNBOOK.md, BACKUP.md, and SECURITY-OPS.md based on project context.
 </purpose>
 
 <required_reading>
@@ -13,6 +13,7 @@ Generate operations runbook for the project. Creates OPERATIONS.md, DEPLOYMENT.m
 7. `get-shit-done/templates/operations/RUNBOOK.md` — Runbook template
 8. `get-shit-done/templates/operations/BACKUP.md` — Backup template
 9. `get-shit-done/templates/operations/SECURITY-OPS.md` — Security template
+10. `get-shit-done/templates/operations/CAPACITY.md` — Capacity planning template
 
 </required_reading>
 
@@ -51,6 +52,7 @@ Based on project context, determine which operations documents are needed:
 | OPERATIONS.md | Always — core operations overview |
 | DEPLOYMENT.md | If deploying to production |
 | MONITORING.md | If production system |
+| CAPACITY.md | If growth, peak load, cost ceilings, or scale planning matter |
 | RUNBOOK.md | If production system |
 | BACKUP.md | If persistent data storage |
 | SECURITY-OPS.md | If handling user data or sensitive information |
@@ -62,6 +64,7 @@ Operations documents to generate:
 [ ] OPERATIONS.md — Core operations overview (required)
 [ ] DEPLOYMENT.md — Deployment procedures
 [ ] MONITORING.md — Monitoring and alerting
+[ ] CAPACITY.md — Capacity baselines and scaling plan
 [ ] RUNBOOK.md — Incident response
 [ ] BACKUP.md — Backup and recovery
 [ ] SECURITY-OPS.md — Security operations
@@ -104,8 +107,9 @@ Based on the project, identify:
 1. **Deployment**: What deployment platform (Vercel, AWS, etc.)? What CI/CD? What environments?
 2. **Infrastructure**: What cloud provider? What databases? What external services?
 3. **Monitoring**: What metrics matter? What alerts needed?
-4. **Security**: What data is sensitive? What compliance needed?
-5. **Team**: Who is responsible for operations? What is on-call rotation?
+4. **Capacity**: What baseline, peak load, bottlenecks, and scaling path should be planned?
+5. **Security**: What data is sensitive? What compliance needed?
+6. **Team**: Who is responsible for operations? What is on-call rotation?
 </research_questions>
 
 <output>
@@ -125,7 +129,8 @@ Provide structured notes for each operations document needed:
    .github/workflows/, terraform/, k8s/, package.json, requirements.txt
 4. Grep package.json/requirements.txt for monitoring deps
    (sentry, datadog, newrelic, prometheus, grafana)
-5. Compile research notes inline and proceed to document generation
+5. Estimate capacity inputs: peak traffic, queue depth, storage growth, vendor quotas
+6. Compile research notes inline and proceed to document generation
 ```
 
 ## 5. Generate Operations Documents
@@ -146,6 +151,11 @@ Provide structured notes for each operations document needed:
 - Read template
 - Fill based on monitoring tools and metrics
 - Create `.planning/operations/MONITORING.md`
+
+### CAPACITY.md
+- Read template
+- Fill based on expected load, bottlenecks, and scaling strategy
+- Create `.planning/operations/CAPACITY.md`
 
 ### RUNBOOK.md
 - Read template
@@ -190,10 +200,12 @@ for each generated doc:
 
 | Source doc | Links to check |
 |---|---|
-| OPERATIONS.md | DEPLOYMENT.md, MONITORING.md, RUNBOOK.md, BACKUP.md, SECURITY-OPS.md |
-| RUNBOOK.md | MONITORING.md, DEPLOYMENT.md |
-| DEPLOYMENT.md | OPERATIONS.md, RUNBOOK.md, BACKUP.md |
-| BACKUP.md | OPERATIONS.md, DEPLOYMENT.md |
+| OPERATIONS.md | DEPLOYMENT.md, MONITORING.md, CAPACITY.md, RUNBOOK.md, BACKUP.md, SECURITY-OPS.md |
+| MONITORING.md | OPERATIONS.md, DEPLOYMENT.md, CAPACITY.md, RUNBOOK.md |
+| CAPACITY.md | OPERATIONS.md, DEPLOYMENT.md, MONITORING.md, RUNBOOK.md, BACKUP.md |
+| RUNBOOK.md | MONITORING.md, DEPLOYMENT.md, CAPACITY.md |
+| DEPLOYMENT.md | OPERATIONS.md, RUNBOOK.md, CAPACITY.md, BACKUP.md |
+| BACKUP.md | OPERATIONS.md, DEPLOYMENT.md, CAPACITY.md |
 | SECURITY-OPS.md | OPERATIONS.md, DEPLOYMENT.md |
 
 ## 7. Commit
@@ -214,6 +226,7 @@ Generated:
 - OPERATIONS.md — Core operations overview
 - DEPLOYMENT.md — Deployment procedures
 - MONITORING.md — Monitoring and alerting
+- CAPACITY.md — Capacity baselines and scaling strategy
 - RUNBOOK.md — Incident response
 - BACKUP.md — Backup and recovery
 - SECURITY-OPS.md — Security operations
@@ -235,6 +248,7 @@ Location: .planning/operations/
 
 **Integrate with development:**
 - Reference operations docs in phase planning
+- Revisit CAPACITY.md after launches and forecast changes
 - Use RUNBOOK.md during incident response
 - Update DEPLOYMENT.md after new deployments
 ```
@@ -246,6 +260,7 @@ Location: .planning/operations/
 - `.planning/operations/OPERATIONS.md` — Operations overview
 - `.planning/operations/DEPLOYMENT.md` — Deployment procedures
 - `.planning/operations/MONITORING.md` — Monitoring configuration
+- `.planning/operations/CAPACITY.md` — Capacity planning and scaling
 - `.planning/operations/RUNBOOK.md` — Incident response
 - `.planning/operations/BACKUP.md` — Backup procedures
 - `.planning/operations/SECURITY-OPS.md` — Security operations
@@ -256,6 +271,7 @@ Location: .planning/operations/
 
 - [ ] Operations directory created at `.planning/operations/`
 - [ ] At least OPERATIONS.md created
+- [ ] CAPACITY.md created when scale or growth planning applies
 - [ ] All selected documents match project context
 - [ ] Placeholders replaced with actual values
 - [ ] Documents committed to version control

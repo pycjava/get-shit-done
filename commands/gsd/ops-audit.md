@@ -11,7 +11,7 @@ allowed-tools:
 ---
 
 <objective>
-Audit existing operations documentation for a project. Identifies missing documents, incomplete sections, outdated information, and provides actionable recommendations.
+Audit existing operations documentation for a project. Identifies missing documents, incomplete sections, outdated information, capacity planning gaps, and provides actionable recommendations.
 </objective>
 
 <execution_context>

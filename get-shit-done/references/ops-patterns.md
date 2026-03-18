@@ -4,14 +4,14 @@ Reference guide for operations documentation and procedures in GSD projects.
 
 ---
 
-## When to Use Operations Documentation
+## When To Use Operations Documentation
 
 | Project Stage | Operations Docs Needed |
-|---------------|----------------------|
+|---------------|------------------------|
 | Greenfield, early MVP | Minimal - DEPLOYMENT.md only |
-| Greenfield, pre-production | All 6 docs recommended |
-| Brownfield, taking over | All 6 docs recommended |
-| Scaling / production | All 6 docs + regular audits |
+| Greenfield, pre-production | All 7 docs recommended |
+| Brownfield, taking over | All 7 docs recommended |
+| Scaling / production | All 7 docs plus regular audits |
 
 ---
 
@@ -19,136 +19,112 @@ Reference guide for operations documentation and procedures in GSD projects.
 
 ### OPERATIONS.md
 
-**Purpose:** Central hub for all operations information
+**Purpose:** Central hub for operations strategy, ownership, and environment posture.
 
-**When to create:** Always - this is the entry point
-
-**Key sections:**
-- Operations strategy and objectives
-- Environment configuration
-- CI/CD pipeline overview
-- Team responsibilities and on-call
+**When to create:** Always.
 
 ### DEPLOYMENT.md
 
-**Purpose:** Step-by-step deployment procedures
+**Purpose:** Step-by-step deployment and rollback procedures.
 
-**When to create:** When deploying to any environment beyond local development
-
-**Key sections:**
-- Deployment strategy
-- Pre-deployment checklist
-- Step-by-step procedure
-- Rollback procedures
-- Post-deployment verification
+**When to create:** Any environment beyond local development.
 
 ### MONITORING.md
 
-**Purpose:** Observability configuration and thresholds
+**Purpose:** Observability stack, alerts, dashboards, and SLOs.
 
-**When to create:** When system goes to production or has user-facing components
+**When to create:** Any production or user-facing system.
 
-**Key sections:**
-- Observability stack
-- Key metrics (RED/USE methods)
-- Alert rules and routing
-- Dashboard definitions
+### CAPACITY.md
+
+**Purpose:** Capacity baselines, forecasts, scaling breakpoints, and headroom targets.
+
+**When to create:** When growth, peak load, or fixed infrastructure limits matter.
 
 ### RUNBOOK.md
 
-**Purpose:** Incident response procedures
+**Purpose:** Incident response procedures and known operational failure modes.
 
-**When to create:** When system is operational
-
-**Key sections:**
-- Severity levels
-- Common issue troubleshooting
-- Communication templates
-- Post-mortem template
+**When to create:** When the system is operational.
 
 ### BACKUP.md
 
-**Purpose:** Backup and disaster recovery
+**Purpose:** Backup, restore, and disaster recovery procedures.
 
-**When to create:** When persistent data storage exists
-
-**Key sections:**
-- Backup strategy and schedule
-- Recovery procedures
-- Disaster recovery scenarios
-- Testing schedule
+**When to create:** When persistent data storage exists.
 
 ### SECURITY-OPS.md
 
-**Purpose:** Security operations and compliance
+**Purpose:** Security operations, secrets handling, access control, and compliance procedures.
 
-**When to create:** When handling user data or sensitive information
+**When to create:** When handling user data, sensitive systems, or regulated workloads.
 
-**Key sections:**
-- Access control
-- Secrets management
-- Vulnerability management
-- Incident response
+---
+
+## Key Sections By Document
+
+| Document | Key Sections |
+|----------|--------------|
+| OPERATIONS.md | Objectives, environments, CI/CD, ownership, escalation |
+| DEPLOYMENT.md | Strategy, checklists, procedure, rollback, verification |
+| MONITORING.md | Stack, metrics, alerts, dashboards, SLOs |
+| CAPACITY.md | Baseline load, peak assumptions, forecasts, bottlenecks, scaling plan |
+| RUNBOOK.md | Severity levels, troubleshooting, communications, postmortems |
+| BACKUP.md | RTO/RPO, schedules, restore procedure, DR testing |
+| SECURITY-OPS.md | Auth, secrets, scanning, incidents, controls |
 
 ---
 
 ## Integration Points
 
-### With /gsd:new-project
+### With `/gsd:new-project`
 
-After initial project setup, offer to create basic operations docs:
+After initial project setup, offer:
 
-```
-After /gsd:new-project, consider running:
+```text
 /gsd:ops-runbook
-
-To generate:
-- OPERATIONS.md (required)
-- DEPLOYMENT.md (recommended)
 ```
 
-### With /gsd:complete-milestone
+Start with:
+- OPERATIONS.md
+- DEPLOYMENT.md
+- CAPACITY.md when the project expects growth or constrained infrastructure
 
-During milestone completion, prompt to review/update operations docs:
+### With `/gsd:complete-milestone`
 
-```
-As part of milestone completion:
-- Review OPERATIONS.md for accuracy
-- Update DEPLOYMENT.md with any new procedures
-- Audit MONITORING.md thresholds
-- Update RUNBOOK.md with any new issues encountered
-```
+Review:
+- OPERATIONS.md for ownership and environment drift
+- DEPLOYMENT.md for rollout changes
+- MONITORING.md for thresholds and dashboards
+- CAPACITY.md for forecast and headroom changes
+- RUNBOOK.md for new incidents
 
-### With /gsd:execute-phase
+### With `/gsd:execute-phase`
 
-Reference operations docs in phase planning:
-
-- Check DEPLOYMENT.md for deployment-related phases
-- Reference MONITORING.md when adding new metrics
-- Use RUNBOOK.md for incident-prone features
+Reference:
+- DEPLOYMENT.md for release-related work
+- MONITORING.md for metrics and alerts
+- CAPACITY.md for scaling changes or load-sensitive work
+- RUNBOOK.md for risky operational changes
 
 ---
 
 ## Document Relationships
 
-```
+```text
 OPERATIONS.md
-    │
-    ├── DEPLOYMENT.md
-    │       └── References: MONITORING.md (post-deploy checks)
-    │
-    ├── MONITORING.md
-    │       └── References: RUNBOOK.md (alert response)
-    │
-    ├── RUNBOOK.md
-    │       └── References: BACKUP.md (disaster scenarios)
-    │                SECURITY-OPS.md (security incidents)
-    │
-    ├── BACKUP.md
-    │       └── References: SECURITY-OPS.md (data protection)
-    │
-    └── SECURITY-OPS.md
-            └── References: MONITORING.md (security logging)
+├── DEPLOYMENT.md
+├── MONITORING.md
+├── CAPACITY.md
+├── RUNBOOK.md
+├── BACKUP.md
+└── SECURITY-OPS.md
+
+CAPACITY.md links back to:
+- DEPLOYMENT.md for scale changes
+- MONITORING.md for trigger signals
+- RUNBOOK.md for saturation incidents
+- BACKUP.md for storage growth impacts
 ```
 
 ---
@@ -156,13 +132,14 @@ OPERATIONS.md
 ## Maintenance Schedule
 
 | Document | Review Frequency | Trigger Events |
-|----------|-----------------|-----------------|
+|----------|------------------|----------------|
 | OPERATIONS.md | Quarterly | Team changes, new environments |
 | DEPLOYMENT.md | Per-release | New deployment procedures |
 | MONITORING.md | Quarterly | New features, scale changes |
-| RUNBOOK.md | After incidents | Any new issue patterns |
+| CAPACITY.md | Monthly or per-release | Launches, growth changes, storage growth, new limits |
+| RUNBOOK.md | After incidents | New issue patterns |
 | BACKUP.md | Quarterly | New data types, compliance changes |
-| SECURITY-OPS.md | Quarterly | Compliance audits, new threats |
+| SECURITY-OPS.md | Quarterly | Audits, incidents, new threats |
 
 ---
 
@@ -174,17 +151,16 @@ OPERATIONS.md
 /gsd:ops-runbook
 ```
 
+### Audit Operations Coverage
+
+```bash
+/gsd:ops-audit
+```
+
 ### Check Operations Status
 
 ```bash
 ls -la .planning/operations/
-```
-
-### Update Specific Document
-
-```bash
-# Edit directly
-nano .planning/operations/DEPLOYMENT.md
 ```
 
 ### Commit Operations Changes
@@ -199,29 +175,31 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "ops: update [docume
 
 ### Minimal Operations (MVP)
 
-```
+```text
 .planning/operations/
-└── DEPLOYMENT.md    # Basic deployment steps only
+└── DEPLOYMENT.md
 ```
 
 ### Standard Operations (Production)
 
-```
+```text
 .planning/operations/
 ├── OPERATIONS.md
 ├── DEPLOYMENT.md
 ├── MONITORING.md
+├── CAPACITY.md
 ├── RUNBOOK.md
 └── BACKUP.md
 ```
 
 ### Full Operations (Enterprise)
 
-```
+```text
 .planning/operations/
 ├── OPERATIONS.md
 ├── DEPLOYMENT.md
 ├── MONITORING.md
+├── CAPACITY.md
 ├── RUNBOOK.md
 ├── BACKUP.md
 └── SECURITY-OPS.md
@@ -232,20 +210,18 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "ops: update [docume
 ## Anti-Patterns
 
 **Don't:**
-- Create all 6 docs for a simple CLI tool
-- Skip operations docs for production systems
-- Copy-paste without customizing to project
-- Leave placeholders unfilled
-- Forget to update after incidents
+- Create all 7 docs for a simple CLI tool with no operational surface
+- Skip CAPACITY.md when traffic, storage, or queue growth is already a concern
+- Copy templates without replacing placeholders
+- Leave thresholds, owners, or review dates empty
 
 **Do:**
-- Match documentation to project complexity
-- Fill in actual values, not placeholders
-- Reference specific commands and tools
-- Review and update regularly
-- Test rollback procedures
+- Match documentation depth to project complexity
+- Keep thresholds and headroom assumptions explicit
+- Cross-link scaling plans with monitoring and deployment docs
+- Review capacity after launches, migrations, and major growth changes
 
 ---
 
-*Last updated: 2025*
+*Last updated: 2026*
 *Part of GSD Operations Suite*

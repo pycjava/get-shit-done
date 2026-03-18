@@ -11,7 +11,8 @@
     "get-shit-done",
     "agents",
     "hooks/dist",
-    "scripts"
+    "scripts",
+    "locales"
   ],
   "keywords": [
     "claude",
@@ -38,6 +39,9 @@
   },
   "engines": {
     "node": ">=16.7.0"
+  },
+  "dependencies": {
+    "i18next": "^23.11.0"
   },
   "devDependencies": {
     "c8": "^11.0.0",

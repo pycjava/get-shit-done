@@ -13,6 +13,7 @@ Audit existing operations documentation and infrastructure for a project. Identi
 7. `.planning/operations/RUNBOOK.md` — Incident response (if exists)
 8. `.planning/operations/BACKUP.md` — Backup procedures (if exists)
 9. `.planning/operations/SECURITY-OPS.md` — Security operations (if exists)
+10. `.planning/operations/CAPACITY.md` — Capacity planning (if exists)
 
 </required_reading>
 
@@ -76,6 +77,7 @@ Document status matrix:
 | OPERATIONS.md | Exists/Missing | [date if exists] |
 | DEPLOYMENT.md | Exists/Missing | [date if exists] |
 | MONITORING.md | Exists/Missing | [date if exists] |
+| CAPACITY.md | Exists/Missing | [date if exists] |
 | RUNBOOK.md | Exists/Missing | [date if exists] |
 | BACKUP.md | Exists/Missing | [date if exists] |
 | SECURITY-OPS.md | Exists/Missing | [date if exists] |
@@ -116,6 +118,16 @@ For each existing document, check completeness:
 - [ ] Dashboard descriptions
 - [ ] SLOs/SLIs defined
 - [ ] On-call procedures
+
+### CAPACITY.md Audit Checklist
+
+- [ ] Baseline load and peak assumptions documented
+- [ ] Bottlenecks and hard limits identified
+- [ ] Headroom or utilization targets defined
+- [ ] Scaling path documented (auto and/or manual)
+- [ ] Forecast horizon defined
+- [ ] Capacity triggers linked to monitoring or deployment actions
+- [ ] Review cadence defined
 
 ### RUNBOOK.md Audit Checklist
 
@@ -159,6 +171,7 @@ Based on project context, identify which documents are:
 | **Critical** | DEPLOYMENT.md | Any production deployment |
 | **Critical** | RUNBOOK.md | Any production system |
 | **High** | MONITORING.md | Production or user-facing |
+| **High** | CAPACITY.md | Growth, peak traffic, or fixed infrastructure limits |
 | **High** | BACKUP.md | Persistent data storage |
 | **High** | SECURITY-OPS.md | User data or compliance |
 | **Medium** | OPERATIONS.md | Team > 1 or multiple environments |
@@ -193,6 +206,7 @@ for each doc in existing_docs:
 | Team members | Names in on-call table → compare against PROJECT.md team section |
 | CI/CD platform | Doc references GitHub Actions → verify `.github/workflows/` exists |
 | Monitoring tools | Doc references Sentry/Datadog → check `package.json` for those deps |
+| Capacity assumptions | Doc references traffic/storage thresholds → compare against dashboards, quotas, and current infra shape |
 
 **Flag as outdated if ANY cross-reference mismatch found**, even if file age < 90 days.
 
@@ -236,6 +250,7 @@ Present findings:
 | OPERATIONS.md | ✓/✗ | [X]% |
 | DEPLOYMENT.md | ✓/✗ | [X]% |
 | MONITORING.md | ✓/✗ | [X]% |
+| CAPACITY.md | ✓/✗ | [X]% |
 | RUNBOOK.md | ✓/✗ | [X]% |
 | BACKUP.md | ✓/✗ | [X]% |
 | SECURITY-OPS.md | ✓/✗ | [X]% |
@@ -266,22 +281,23 @@ Present findings:
 
 | Category | Score | Weight | Config key |
 |---|---|---|---|
-| Deployment | [X]/100 | 25% | `ops_weights.deployment` |
+| Deployment | [X]/100 | 20% | `ops_weights.deployment` |
 | Monitoring | [X]/100 | 20% | `ops_weights.monitoring` |
-| Incident Response | [X]/100 | 20% | `ops_weights.incident_response` |
-| Backup/Recovery | [X]/100 | 15% | `ops_weights.backup_recovery` |
-| Security | [X]/100 | 20% | `ops_weights.security` |
+| Capacity Planning | [X]/100 | 20% | `ops_weights.capacity_planning` |
+| Incident Response | [X]/100 | 15% | `ops_weights.incident_response` |
+| Backup/Recovery | [X]/100 | 10% | `ops_weights.backup_recovery` |
+| Security | [X]/100 | 15% | `ops_weights.security` |
 
 **If `ops_weights` provided by init:** use each key's value as the percentage weight. Warn if weights don't sum to 100. Fall back to defaults for any missing key.
 
 **Recommended presets by project type:**
 
-| Project Type | Deployment | Monitoring | Incident | Backup | Security |
-|---|---|---|---|---|---|
-| Frontend-only SPA | 30% | 15% | 15% | 5% | 35% |
-| API / Backend | 25% | 25% | 20% | 15% | 15% |
-| Data platform | 20% | 20% | 15% | 30% | 15% |
-| Compliance-heavy | 20% | 15% | 15% | 15% | 35% |
+| Project Type | Deployment | Monitoring | Capacity | Incident | Backup | Security |
+|---|---|---|---|---|---|---|
+| Frontend-only SPA | 25% | 15% | 20% | 15% | 5% | 20% |
+| API / Backend | 20% | 20% | 20% | 15% | 10% | 15% |
+| Data platform | 15% | 20% | 25% | 10% | 20% | 10% |
+| Compliance-heavy | 15% | 15% | 15% | 15% | 10% | 30% |
 ```
 
 ## 8. Offer Actions

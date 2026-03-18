@@ -1,0 +1,43 @@
+{
+  "app_name": "Get Shit Done",
+  "errors": {
+    "no_project": "未找到规划结构。",
+    "run_new_project": "运行 /gsd:new-project 开始新项目。",
+    "phase_not_found": "未找到阶段目录。",
+    "no_plans_found": "阶段中未找到计划。",
+    "state_missing_reconstruct": "状态缺失。提供重建或继续选项。"
+  },
+  "status": {
+    "context_critical": "上下文危急：使用率 {{usedPct}}%。剩余：{{remaining}}%。",
+    "context_exhausted": "上下文即将耗尽。",
+    "context_warning": "上下文警告：使用率 {{usedPct}}%。剩余：{{remaining}}%。",
+    "context_limited": "上下文正在变得有限。"
+  },
+  "statusline": {
+    "update_available": "\u2191 /gsd:update"
+  },
+  "workflows": {
+    "progress": {
+      "no_planning_structure": "未找到规划结构。\n\n运行 /gsd:new-project 开始新项目。",
+      "milestone_complete": "里程碑完成",
+      "phase_complete": "阶段 {{phase}} 完成",
+      "next_up": "下一步",
+      "route_a_unexecuted": "存在未执行计划",
+      "route_b_needs_planning": "阶段需要规划",
+      "route_c_more_phases": "阶段完成，还有更多阶段",
+      "route_d_milestone_complete": "里程碑完成",
+      "route_e_uat_gaps": "UAT 缺口需要修复计划",
+      "route_f_between_milestones": "里程碑之间"
+    },
+    "help": {
+      "core_flow": "核心流程",
+      "milestones": "里程碑",
+      "phase_utilities": "阶段工具",
+      "runtime_utilities": "运行时工具",
+      "support_commands": "支持命令"
+    }
+  },
+  "init": {
+    "progress_init": "进度上下文初始化"
+  }
+}

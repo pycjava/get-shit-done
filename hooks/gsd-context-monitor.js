@@ -21,6 +21,46 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+// i18n support
+let i18nT = null;
+function getI18n(cwd) {
+  if (i18nT) return i18nT;
+  try {
+    const i18next = require('i18next');
+    const en = require('../locales/en.json');
+    const zhCN = require('../locales/zh-CN.json');
+    let language = 'en';
+    try {
+      const configPath = path.join(cwd, '.planning', 'config.json');
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        if (config.language) language = config.language;
+      }
+    } catch (e) {}
+    i18next.init({
+      lng: language,
+      resources: {
+        en: { translation: en },
+        'zh-CN': { translation: zhCN }
+      }
+    });
+    i18nT = i18next.t.bind(i18next);
+  } catch (e) {
+    i18nT = (key, opts) => {
+      // Fallback: no interpolation, return key
+      if (opts && Object.keys(opts).length > 0) {
+        let result = key;
+        for (const [k, v] of Object.entries(opts)) {
+          result = result.replace(new RegExp(`{{${k}}}`, 'g'), v);
+        }
+        return result;
+      }
+      return key;
+    };
+  }
+  return i18nT;
+}
+
 const WARNING_THRESHOLD = 35;  // remaining_percentage <= 35%
 const CRITICAL_THRESHOLD = 25; // remaining_percentage <= 25%
 const STALE_SECONDS = 60;      // ignore metrics older than 60s
@@ -117,26 +157,33 @@ process.stdin.on('end', () => {
     // Detect if GSD is active (has .planning/STATE.md in working directory)
     const isGsdActive = fs.existsSync(path.join(cwd, '.planning', 'STATE.md'));
 
+    // Get i18n function
+    const i18n = getI18n(cwd);
+
     // Build advisory warning message (never use imperative commands that
     // override user preferences — see #884)
     let message;
     if (isCritical) {
-      message = isGsdActive
-        ? `CONTEXT CRITICAL: Usage at ${usedPct}%. Remaining: ${remaining}%. ` +
-          'Context is nearly exhausted. Do NOT start new complex work or write handoff files — ' +
+      if (isGsdActive) {
+        message = i18n('status.context_critical', { usedPct, remaining }) + ' ' +
+          i18n('status.context_exhausted') + ' Do NOT start new complex work or write handoff files — ' +
           'GSD state is already tracked in STATE.md. Inform the user so they can run ' +
-          '/gsd:pause-work at the next natural stopping point.'
-        : `CONTEXT CRITICAL: Usage at ${usedPct}%. Remaining: ${remaining}%. ` +
-          'Context is nearly exhausted. Inform the user that context is low and ask how they ' +
+          '/gsd:pause-work at the next natural stopping point.';
+      } else {
+        message = i18n('status.context_critical', { usedPct, remaining }) + ' ' +
+          i18n('status.context_exhausted') + ' Inform the user that context is low and ask how they ' +
           'want to proceed. Do NOT autonomously save state or write handoff files unless the user asks.';
+      }
     } else {
-      message = isGsdActive
-        ? `CONTEXT WARNING: Usage at ${usedPct}%. Remaining: ${remaining}%. ` +
-          'Context is getting limited. Avoid starting new complex work. If not between ' +
-          'defined plan steps, inform the user so they can prepare to pause.'
-        : `CONTEXT WARNING: Usage at ${usedPct}%. Remaining: ${remaining}%. ` +
-          'Be aware that context is getting limited. Avoid unnecessary exploration or ' +
+      if (isGsdActive) {
+        message = i18n('status.context_warning', { usedPct, remaining }) + ' ' +
+          i18n('status.context_limited') + ' Avoid starting new complex work. If not between ' +
+          'defined plan steps, inform the user so they can prepare to pause.';
+      } else {
+        message = i18n('status.context_warning', { usedPct, remaining }) + ' ' +
+          i18n('status.context_limited') + ' Avoid unnecessary exploration or ' +
           'starting new complex work.';
+      }
     }
 
     const output = {

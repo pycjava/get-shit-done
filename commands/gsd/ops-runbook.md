@@ -1,7 +1,7 @@
 ---
 name: gsd:ops-runbook
-description: Generate operations documentation (deployment, monitoring, runbook, backup, security)
-argument-hint: "[optional: specific doc to generate, e.g., 'deployment' or 'all']"
+description: Generate operations documentation (deployment, monitoring, capacity, runbook, backup, security)
+argument-hint: "[optional: specific doc to generate, e.g., 'deployment', 'capacity', or 'all']"
 allowed-tools:
   - Read
   - Bash
@@ -12,7 +12,7 @@ allowed-tools:
 ---
 
 <objective>
-Generate operations documentation for the project including OPERATIONS.md, DEPLOYMENT.md, MONITORING.md, RUNBOOK.md, BACKUP.md, and SECURITY-OPS.md.
+Generate operations documentation for the project including OPERATIONS.md, DEPLOYMENT.md, MONITORING.md, CAPACITY.md, RUNBOOK.md, BACKUP.md, and SECURITY-OPS.md.
 
 Each document is based on project context and research, written directly to `.planning/operations/`.
 </objective>
@@ -61,6 +61,7 @@ Check for .planning/STATE.md - loads context if project already initialized
 <success_criteria>
 - [ ] .planning/operations/ directory created
 - [ ] At least OPERATIONS.md generated
+- [ ] CAPACITY.md generated when scaling or growth planning is needed
 - [ ] Documents match project context
 - [ ] Documents committed
 - [ ] User knows how to update
