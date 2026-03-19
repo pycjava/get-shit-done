@@ -493,7 +493,7 @@ function cmdScaffold(cwd, type, options, raw) {
   switch (type) {
     case 'context': {
       filePath = path.join(phaseDir, `${padded}-CONTEXT.md`);
-      content = `---\nphase: "${padded}"\nname: "${name || phaseInfo?.phase_name || '未命名'}"\ncreated: ${today}\n---\n\n# 阶段 ${phase}: ${name || phaseInfo?.phase_name || '未命名'} - 上下文\n\n## 决策（Decisions）\n\n_将在 /gsd:discuss-phase ${phase} 中记录决策_\n\n## Claude 自主判断（Claude's Discretion）\n\n_执行者可以自行判断的范围_\n\n## 延后想法（Deferred Ideas）\n\n_留到后续再考虑的想法_\n`;
+      content = `---\nphase: "${padded}"\nname: "${name || phaseInfo?.phase_name || '未命名'}"\ncreated: ${today}\n---\n\n# 阶段 ${phase}: ${name || phaseInfo?.phase_name || '未命名'} - 上下文\n\n## 决策（Decisions）\n\n_在该阶段规划与执行过程中记录决策_\n\n## Claude 自主判断（Claude's Discretion）\n\n_执行者可以自行判断的范围_\n\n## 延后想法（Deferred Ideas）\n\n_留到后续再考虑的想法_\n`;
       break;
     }
     case 'uat': {

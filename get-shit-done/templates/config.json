@@ -12,6 +12,7 @@
     "commit_docs": true,
     "search_gitignored": false
   },
+  "language": "zh-CN",
   "parallelization": {
     "enabled": true,
     "plan_level": true,

@@ -5,14 +5,14 @@ last_reviewed: "2026-03"
 template_for: ".planning/operations/RUNBOOK.md"
 ---
 
-# Runbook 模板
+# 事故处理手册模板
 
 用于 `.planning/operations/RUNBOOK.md` 的模板，覆盖事故响应、常见问题排查与维护流程。
 
 <template>
 
 ```markdown
-# Runbook
+# 事故处理手册
 
 **项目：** [项目名称]
 **最后更新：** [YYYY-MM-DD]
@@ -34,8 +34,8 @@ template_for: ".planning/operations/RUNBOOK.md"
 | 角色 | 姓名 | 联系方式 | 可用时段 |
 |------|------|----------|----------|
 | 值班工程师 | [Name] | [Slack/Phone] | 24/7 |
-| Engineering Lead | [Name] | [Slack/Phone] | 工作时间 |
-| Platform/Infra | [Name] | [Slack/Phone] | 24/7 |
+| 工程负责人 | [Name] | [Slack/Phone] | 工作时间 |
+| 平台/基础设施 | [Name] | [Slack/Phone] | 24/7 |
 | 第三方支持 | [Vendor] | [Portal/Phone] | [Hours] |
 
 ### 关键命令
@@ -88,14 +88,14 @@ template_for: ".planning/operations/RUNBOOK.md"
 🚨 事故： [简要描述]
 等级： [SEV1/2/3/4]
 影响： [用户影响]
-状态： Investigating
-Incident Commander： [Name]
+状态： 排查中
+事故指挥人： [Name]
 ```
 
 **状态更新：**
 ```
 📊 更新： [简要描述]
-状态： [Investigating/Identified/Monitoring/Resolved]
+状态： [排查中/已定位/观察中/已恢复]
 进展： [已完成内容]
 下一步： [接下来要做什么]
 ETA： [如果已知]
@@ -107,7 +107,7 @@ ETA： [如果已知]
 持续时间： [总时长]
 根因： [如果已知]
 修复： [采取了什么措施]
-Post-mortem： [日期/时间]
+复盘： [日期/时间]
 ```
 
 ---
@@ -329,10 +329,10 @@ Post-mortem： [日期/时间]
 
 ---
 
-## Post-Mortem 模板
+## 复盘模板
 
 ```markdown
-# Post-Mortem: [事故标题]
+# 复盘：[事故标题]
 
 **日期：** [Date]
 **持续时间：** [Start time] - [End time]（[Total duration]）
@@ -383,9 +383,9 @@ Post-mortem： [日期/时间]
 
 ### 最近事故
 
-| 日期 | 问题 | 解决方式 | Runbook 已更新？ |
+| 日期 | 问题 | 解决方式 | 手册已更新？ |
 |------|------|----------|------------------|
-| [Date] | [简要描述] | [如何解决] | [Yes/No] |
+| [Date] | [简要描述] | [如何解决] | [是/否] |
 
 ### 已知绕过方案
 
@@ -404,7 +404,7 @@ Post-mortem： [日期/时间]
 
 ---
 
-*Runbook 评审： [date]*
+*手册评审： [date]*
 *每次事故后或至少每季度更新一次*
 ```
 
@@ -416,7 +416,7 @@ Post-mortem： [日期/时间]
 - 事故响应流程
 - 常见问题排查
 - 沟通模板
-- Post-mortem 流程
+- 复盘流程
 
 **快速参考：**
 - 把关键信息放在顶部
@@ -441,11 +441,11 @@ Post-mortem： [日期/时间]
 - 为每个阶段准备 checklist
 - 明确沟通要求
 
-**Post-Mortem：**
+**复盘：**
 - 使用统一模板
 - 聚焦学习与改进
 - 跟踪行动项
-- 根据发现更新 runbook
+- 根据发现更新手册
 
 **知识库：**
 - 跟踪近期事故

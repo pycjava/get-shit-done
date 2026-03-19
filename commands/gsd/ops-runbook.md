@@ -29,7 +29,7 @@ allowed-tools:
 
 **这个命令适合在这些时机运行：**
 - `/gsd:new-project` 之后，做初始运维准备
-- `/gsd:complete-milestone` 之前，记录当前运维状态
+- 重大部署、版本发布或基础设施变更前后，记录当前运维状态
 - 基础设施发生变化后，刷新运维文档
 </context>
 

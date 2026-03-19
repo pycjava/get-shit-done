@@ -198,6 +198,41 @@ function extractObjective(content) {
   return m ? m[1].trim() : null;
 }
 
+function createEmptyGoldenSignalCounts() {
+  return {
+    latency: 0,
+    traffic: 0,
+    errors: 0,
+    saturation: 0,
+  };
+}
+
+function normalizeGoldenSignal(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const normalized = value.trim().toLowerCase().replace(/[\s-]+/g, '_');
+  const aliases = {
+    latency: 'latency',
+    duration: 'latency',
+    response_time: 'latency',
+    response_times: 'latency',
+    traffic: 'traffic',
+    rate: 'traffic',
+    rps: 'traffic',
+    qps: 'traffic',
+    errors: 'errors',
+    error: 'errors',
+    error_rate: 'errors',
+    saturation: 'saturation',
+    use: 'saturation',
+    capacity: 'saturation',
+  };
+
+  return aliases[normalized] || null;
+}
+
 function getPhasePlanIndexInternal(cwd, phase) {
   const phasesDir = path.join(cwd, '.planning', 'phases');
   const normalized = normalizePhaseName(phase);
@@ -233,7 +268,9 @@ function getPhasePlanIndexInternal(cwd, phase) {
   const waves = {};
   const incomplete = [];
   let hasCheckpoints = false;
-  let tddPlans = 0;
+  let goldenSignalPlans = 0;
+  let legacyTddPlans = 0;
+  const goldenSignalCounts = createEmptyGoldenSignalCounts();
 
   for (const planFile of planFiles) {
     const planId = planFile.replace('-PLAN.md', '').replace('PLAN.md', '');
@@ -249,6 +286,13 @@ function getPhasePlanIndexInternal(cwd, phase) {
     // Parse wave as integer
     const wave = parseInt(fm.wave, 10) || 1;
     const type = typeof fm.type === 'string' ? fm.type : 'execute';
+    const goldenSignal = normalizeGoldenSignal(
+      fm.golden_signal ||
+      fm['golden-signal'] ||
+      fm.signal_focus ||
+      fm['signal-focus'] ||
+      fm.signal
+    );
 
     // Parse autonomous (default true if not specified)
     let autonomous = true;
@@ -259,8 +303,11 @@ function getPhasePlanIndexInternal(cwd, phase) {
     if (!autonomous) {
       hasCheckpoints = true;
     }
-    if (type === 'tdd') {
-      tddPlans++;
+    if (goldenSignal) {
+      goldenSignalPlans++;
+      goldenSignalCounts[goldenSignal]++;
+    } else if (type === 'tdd') {
+      legacyTddPlans++;
     }
 
     // Parse files_modified (underscore is canonical; also accept hyphenated for compat)
@@ -275,17 +322,24 @@ function getPhasePlanIndexInternal(cwd, phase) {
       incomplete.push(planId);
     }
 
+    const analysisMode = goldenSignal
+      ? 'golden-signal'
+      : type === 'tdd'
+        ? 'legacy-tdd'
+        : 'standard';
+
     const plan = {
       id: planId,
       type,
       wave,
       autonomous,
+      golden_signal: goldenSignal,
+      analysis_mode: analysisMode,
       objective: extractObjective(content) || fm.objective || null,
       files_modified: filesModified,
       task_count: taskCount,
       has_summary: hasSummary,
-      execution_pattern: type === 'tdd' ? 'RED -> GREEN -> REFACTOR' : 'STANDARD',
-      tdd_cycle: type === 'tdd' ? ['red', 'green', 'refactor'] : [],
+      execution_pattern: goldenSignal ? goldenSignal.toUpperCase() : analysisMode === 'legacy-tdd' ? 'LEGACY_TDD' : 'STANDARD',
     };
 
     plans.push(plan);
@@ -304,7 +358,9 @@ function getPhasePlanIndexInternal(cwd, phase) {
     waves,
     incomplete,
     has_checkpoints: hasCheckpoints,
-    tdd_plans: tddPlans,
+    golden_signal_plans: goldenSignalPlans,
+    golden_signal_counts: goldenSignalCounts,
+    legacy_tdd_plans: legacyTddPlans,
   };
 
   return result;
@@ -351,7 +407,7 @@ function cmdPhaseAdd(cwd, description, raw) {
   fs.writeFileSync(path.join(dirPath, '.gitkeep'), '');
 
   // Build phase entry
-  const phaseEntry = `\n### Phase ${newPhaseNum}: ${description}\n\n**Goal:** [To be planned]\n**Requirements**: TBD\n**Depends on:** Phase ${maxPhase}\n**Plans:** 0 plans\n\nPlans:\n- [ ] TBD (run /gsd:plan-phase ${newPhaseNum} to break down)\n`;
+  const phaseEntry = `\n### Phase ${newPhaseNum}: ${description}\n\n**Goal:** [待规划]\n**Requirements**: TBD\n**Depends on:** Phase ${maxPhase}\n**Plans:** 0 plans\n\nPlans:\n- [ ] 待拆解（运行 /gsd:plan-phase ${newPhaseNum} 生成计划）\n`;
 
   // Find insertion point: before last "---" or at end
   let updatedContent;
@@ -423,7 +479,7 @@ function cmdPhaseInsert(cwd, afterPhase, description, raw) {
   fs.writeFileSync(path.join(dirPath, '.gitkeep'), '');
 
   // Build phase entry
-  const phaseEntry = `\n### Phase ${decimalPhase}: ${description} (INSERTED)\n\n**Goal:** [Urgent work - to be planned]\n**Requirements**: TBD\n**Depends on:** Phase ${afterPhase}\n**Plans:** 0 plans\n\nPlans:\n- [ ] TBD (run /gsd:plan-phase ${decimalPhase} to break down)\n`;
+  const phaseEntry = `\n### Phase ${decimalPhase}: ${description} (INSERTED)\n\n**Goal:** [紧急工作，待规划]\n**Requirements**: TBD\n**Depends on:** Phase ${afterPhase}\n**Plans:** 0 plans\n\nPlans:\n- [ ] 待拆解（运行 /gsd:plan-phase ${decimalPhase} 生成计划）\n`;
 
   // Insert after the target phase section
   const headerPattern = new RegExp(`(#{2,4}\\s*Phase\\s+0*${afterPhaseEscaped}:[^\\n]*\\n)`, 'i');

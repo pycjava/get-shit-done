@@ -92,7 +92,8 @@
  *     [--plan M] [--name "..."]
  *     [--fields '{json}']
  *   template fill plan --phase N       Create pre-filled PLAN.md
- *     [--plan M] [--type execute|tdd]
+ *     [--plan M] [--type execute]
+ *     [--fields '{"golden_signal":"latency"}']
  *     [--wave N] [--fields '{json}']
  *   template fill verification         Create pre-filled VERIFICATION.md
  *     --phase N [--fields '{json}']
@@ -117,14 +118,10 @@
  *   init execute-phase <phase>         All context for execute-phase workflow
  *   init plan-phase <phase>            All context for plan-phase workflow
  *   init new-project                   All context for new-project workflow
- *   init new-milestone                 All context for new-milestone workflow
- *   init quick <description>           All context for quick workflow
- *   init resume                        All context for resume-project workflow
  *   init verify-work <phase>           All context for verify-work workflow
- *   init phase-op <phase>              Generic phase operation context
- *   init todos [area]                  All context for todo workflows
- *   init milestone-op                  All context for milestone operations
  *   init map-codebase                  All context for map-codebase workflow
+ *   init ops-runbook                   All context for ops-runbook workflow
+ *   init ops-audit                     All context for ops-audit workflow
  *   init progress                      All context for progress workflow
  */
 
@@ -582,7 +579,7 @@ async function main() {
           init.cmdInitOpsAudit(cwd, raw);
           break;
         default:
-          error(`Unknown init workflow: ${workflow}\nAvailable: execute-phase, plan-phase, new-project, new-milestone, quick, resume, verify-work, phase-op, todos, milestone-op, map-codebase, progress, ops-runbook, ops-audit`);
+          error(`Unknown init workflow: ${workflow}\nAvailable: execute-phase, plan-phase, new-project, verify-work, map-codebase, ops-runbook, ops-audit`);
       }
       break;
     }

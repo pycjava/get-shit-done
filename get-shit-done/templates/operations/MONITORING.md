@@ -5,7 +5,7 @@ last_reviewed: "2026-03"
 template_for: ".planning/operations/MONITORING.md"
 ---
 
-# Monitoring 模板
+# 监控模板
 
 用于生成 `.planning/operations/MONITORING.md`，覆盖监控、告警与可观测性配置。
 
@@ -14,8 +14,8 @@ template_for: ".planning/operations/MONITORING.md"
 ```markdown
 # 监控与告警
 
-**Project:** [Project Name]
-**Last Updated:** [YYYY-MM-DD]
+**项目：** [项目名称]
+**最后更新：** [YYYY-MM-DD]
 
 ---
 
@@ -23,13 +23,13 @@ template_for: ".planning/operations/MONITORING.md"
 
 ### 工具总览
 
-| Layer | Tool | Purpose | Retention |
-|-------|------|---------|-----------|
-| Metrics | [如 Prometheus, Datadog] | Time-series data | [如 30 days] |
-| Logs | [如 CloudWatch, ELK] | Log aggregation | [如 14 days] |
-| Traces | [如 Jaeger, X-Ray] | Distributed tracing | [如 7 days] |
-| Dashboards | [如 Grafana, Datadog] | Visualization | N/A |
-| Alerts | [如 PagerDuty, Opsgenie] | Alert routing | N/A |
+| 层级 | 工具 | 用途 | 保留期 |
+|------|------|------|--------|
+| 指标 | [如 Prometheus, Datadog] | 时序指标数据 | [如 30 days] |
+| 日志 | [如 CloudWatch, ELK] | 日志聚合 | [如 14 days] |
+| 链路追踪 | [如 Jaeger, X-Ray] | 分布式追踪 | [如 7 days] |
+| 仪表盘 | [如 Grafana, Datadog] | 可视化展示 | N/A |
+| 告警 | [如 PagerDuty, Opsgenie] | 告警路由 | N/A |
 
 ### 架构
 
@@ -46,18 +46,19 @@ Application
 
 ## 关键指标
 
-### Golden Signals（RED Method）
+### 四大黄金信号（Google SRE）
 
-| Metric | Description | Warning | Critical |
-|--------|-------------|---------|----------|
-| **Rate** | Requests per second | [threshold] | [threshold] |
-| **Errors** | Error rate (%) | [threshold] | [threshold] |
-| **Duration** | Response time (P95) | [threshold] | [threshold] |
+| 信号 | 说明 | 警告阈值 | 严重阈值 |
+|------|------|----------|----------|
+| **Latency** | 响应时间、队列等待、关键链路耗时（建议记录 P50 / P95 / P99） | [threshold] | [threshold] |
+| **Traffic** | 请求量、吞吐量、任务量、峰值流量模式 | [threshold] | [threshold] |
+| **Errors** | 错误率、失败请求、业务失败、重试风暴 | [threshold] | [threshold] |
+| **Saturation** | CPU / 内存 / 队列 / 连接池 / 磁盘等逼近上限情况 | [threshold] | [threshold] |
 
-### USE Method（资源侧）
+### USE 方法（资源侧）
 
-| Resource | Utilization | Saturation | Errors |
-|----------|-------------|------------|--------|
+| 资源 | 利用率 | 饱和度 | 错误 |
+|------|--------|--------|------|
 | CPU | [threshold] | [threshold] | N/A |
 | Memory | [threshold] | [threshold] | N/A |
 | Disk I/O | [threshold] | [threshold] | [threshold] |
@@ -65,100 +66,109 @@ Application
 
 ### 应用指标
 
-| Metric | Type | Description | Alert Threshold |
-|--------|------|-------------|-----------------|
+| 指标 | 类型 | 说明 | 告警阈值 |
+|------|------|------|----------|
 | `[metric_name]` | Counter/Gauge/Histogram | [description] | [threshold] |
 | `[metric_name]` | Counter/Gauge/Histogram | [description] | [threshold] |
 
 ### 业务指标
 
-| Metric | Description | Target | Current |
-|--------|-------------|--------|---------|
-| Active Users | DAU | [target] | [current] |
-| Conversion Rate | Sign-ups / visits | [target] | [current] |
-| Revenue | Daily revenue | [target] | [current] |
+| 指标 | 说明 | 目标值 | 当前值 |
+|------|------|--------|--------|
+| 活跃用户 | DAU | [target] | [current] |
+| 转化率 | 注册数 / 访问数 | [target] | [current] |
+| 收入 | 日收入 | [target] | [current] |
+
+### 业务告警关注点
+
+| 业务点 | 异常信号 | 关联黄金信号 | 告警触发条件 | 处理提示 |
+|--------|----------|--------------|--------------|----------|
+| [例如：登录成功率] | [例如：成功率骤降] | Errors | [threshold] | [先看认证服务 / 第三方依赖] |
+| [例如：支付确认链路] | [例如：确认耗时飙升] | Latency | [threshold] | [先看支付回调 / 队列积压] |
+| [例如：活动峰值流量] | [例如：流量超预测] | Traffic | [threshold] | [先看限流 / 扩容 / 缓存命中] |
+| [例如：库存写入链路] | [例如：队列深度持续上升] | Saturation | [threshold] | [先看消费者吞吐 / DB 连接池] |
 
 ---
 
 ## 容量信号
 
-### Headroom 与饱和度
+### 容量余量与饱和度
 
-| Signal | Why It Matters | Warning | Critical |
-|--------|----------------|---------|----------|
-| CPU Headroom | 反映峰值时剩余算力缓冲 | [threshold] | [threshold] |
-| Memory Headroom | 提前发现泄漏或内存打满风险 | [threshold] | [threshold] |
-| Queue Depth | 发现后台需求已经超过吞吐能力 | [threshold] | [threshold] |
-| Database Connections | 暴露连接池或实例上限逼近情况 | [threshold] | [threshold] |
-| Storage Growth | 追踪保留策略或备份增长是否需调整 | [threshold] | [threshold] |
+| 信号 | 关注原因 | 警告阈值 | 严重阈值 |
+|------|----------|----------|----------|
+| CPU 余量 | 反映峰值时剩余算力缓冲 | [threshold] | [threshold] |
+| 内存余量 | 提前发现泄漏或内存打满风险 | [threshold] | [threshold] |
+| 队列深度 | 发现后台需求已经超过吞吐能力 | [threshold] | [threshold] |
+| 数据库连接数 | 暴露连接池或实例上限逼近情况 | [threshold] | [threshold] |
+| 存储增长 | 追踪保留策略或备份增长是否需调整 | [threshold] | [threshold] |
 
 ---
 
 ## 告警规则
 
-### Critical Alerts（立即呼叫）
+### 严重告警（立即呼叫）
 
-| Alert | Condition | Response Time | Runbook |
-|-------|-----------|---------------|---------|
-| Service Down | Health check fails > 2min | 5min | [Link] |
-| Error Rate High | Error rate > 5% for 5min | 5min | [Link] |
-| Response Time Critical | P95 > 2s for 5min | 10min | [Link] |
-| Database Connection Failed | DB unreachable | 5min | [Link] |
+| 告警 | 条件 | 响应时限 | 处理手册 |
+|------|------|----------|----------|
+| 服务不可用 | 健康检查失败持续 > 2min | 5min | [Link] |
+| 错误率过高 | 错误率 > 5% 持续 5min | 5min | [Link] |
+| 响应时间严重恶化 | P95 > 2s 持续 5min | 10min | [Link] |
+| 数据库连接失败 | DB 不可达 | 5min | [Link] |
 
-### Warning Alerts（通知但不立即呼叫）
+### 警告告警（通知但不立即呼叫）
 
-| Alert | Condition | Response Time | Runbook |
-|-------|-----------|---------------|---------|
-| Error Rate Elevated | Error rate > 1% for 10min | 30min | [Link] |
-| Response Time Degraded | P95 > 500ms for 10min | 30min | [Link] |
-| Memory Usage High | Memory > 80% for 15min | 1hr | [Link] |
-| Disk Space Low | Disk > 85% used | 4hr | [Link] |
+| 告警 | 条件 | 响应时限 | 处理手册 |
+|------|------|----------|----------|
+| 错误率升高 | 错误率 > 1% 持续 10min | 30min | [Link] |
+| 响应时间变差 | P95 > 500ms 持续 10min | 30min | [Link] |
+| 内存使用率过高 | 内存 > 80% 持续 15min | 1hr | [Link] |
+| 磁盘空间不足 | 磁盘使用率 > 85% | 4hr | [Link] |
 
 ### 告警路由
 
-| Severity | Channel | Recipients |
-|----------|---------|------------|
-| Critical | PagerDuty + Slack | On-call + Team channel |
-| Warning | Slack | Team channel |
-| Info | Email | Team mailing list |
+| 严重级别 | 通知渠道 | 接收人 |
+|----------|----------|--------|
+| 严重 | PagerDuty + Slack | On-call + Team channel |
+| 警告 | Slack | Team channel |
+| 信息 | Email | Team mailing list |
 
 ---
 
-## Dashboards
+## 仪表盘
 
 ### 主仪表盘
 
-**Purpose:** 提供系统健康的高层视图
+**目的：** 提供系统健康的高层视图
 
-| Panel | Metric | Visualization |
-|-------|--------|---------------|
-| Request Rate | Requests/sec | Line graph |
-| Error Rate | Errors/sec, % | Line graph + Stat |
-| Response Time | P50, P95, P99 | Line graph |
-| Active Users | Current users | Stat |
-| System Health | Up/Down status | Status panel |
+| 面板 | 指标 | 可视化方式 |
+|------|------|------------|
+| 请求速率 | Requests/sec | 折线图 |
+| 错误率 | Errors/sec, % | 折线图 + 统计卡 |
+| 响应时间 | P50, P95, P99 | 折线图 |
+| 活跃用户 | 当前用户数 | 统计卡 |
+| 系统健康 | Up/Down status | 状态面板 |
 
 ### 应用仪表盘
 
-**Purpose:** 展示更细的应用层指标
+**目的：** 展示更细的应用层指标
 
-| Panel | Metric | Visualization |
-|-------|--------|---------------|
-| Endpoint Performance | Latency by endpoint | Heatmap |
-| Database Queries | Query time distribution | Histogram |
-| Cache Hit Rate | Hit/Miss ratio | Pie chart |
-| Background Jobs | Queue depth, processing time | Line graph |
+| 面板 | 指标 | 可视化方式 |
+|------|------|------------|
+| 接口性能 | 按端点统计延迟 | 热力图 |
+| 数据库查询 | 查询耗时分布 | 直方图 |
+| 缓存命中率 | Hit/Miss ratio | 饼图 |
+| 后台任务 | 队列深度、处理时长 | 折线图 |
 
 ### 基础设施仪表盘
 
-**Purpose:** 展示资源利用率
+**目的：** 展示资源利用率
 
-| Panel | Metric | Visualization |
-|-------|--------|---------------|
-| CPU Usage | By service | Line graph |
-| Memory Usage | By service | Line graph |
-| Disk I/O | Read/Write | Line graph |
-| Network Traffic | In/Out | Line graph |
+| 面板 | 指标 | 可视化方式 |
+|------|------|------------|
+| CPU 使用率 | 按服务拆分 | 折线图 |
+| 内存使用率 | 按服务拆分 | 折线图 |
+| 磁盘 I/O | Read/Write | 折线图 |
+| 网络流量 | In/Out | 折线图 |
 
 ---
 
@@ -166,8 +176,8 @@ Application
 
 ### 日志级别
 
-| Level | Usage | Examples |
-|-------|-------|----------|
+| 级别 | 用途 | 示例 |
+|------|------|------|
 | ERROR | 需要关注的失败 | Unhandled exceptions, service failures |
 | WARN | 潜在问题 | Deprecated API use, retry attempts |
 | INFO | 重要事件 | Request start/end, state changes |
@@ -190,56 +200,56 @@ Application
 
 ### 日志保留
 
-| Environment | Retention | Reason |
-|-------------|-----------|--------|
-| Development | 7 days | Debugging |
-| Staging | 14 days | Testing, debugging |
-| Production | 30 days | Compliance, debugging |
+| 环境 | 保留期 | 原因 |
+|------|--------|------|
+| 开发环境 | 7 days | Debugging |
+| 预发环境 | 14 days | Testing, debugging |
+| 生产环境 | 30 days | Compliance, debugging |
 
 ---
 
-## Distributed Tracing
+## 分布式追踪
 
 ### Trace 配置
 
-| Setting | Value |
-|---------|-------|
-| Sampling Rate | [如 10% of requests] |
-| Max Spans per Trace | [如 1000] |
-| Propagation Format | [如 W3C Trace Context] |
+| 设置项 | 值 |
+|--------|----|
+| 采样率 | [如 10% of requests] |
+| 每条 Trace 最大 Span 数 | [如 1000] |
+| 传播格式 | [如 W3C Trace Context] |
 
 ### 关键 Span
 
-| Span Name | Service | Purpose |
-|-----------|---------|---------|
-| `http.request` | API Gateway | Incoming requests |
-| `db.query` | Database | Database operations |
-| `cache.get/set` | Cache | Cache operations |
-| `external.api` | External | Third-party calls |
+| Span 名称 | 服务 | 用途 |
+|-----------|------|------|
+| `http.request` | API Gateway | 进入请求 |
+| `db.query` | Database | 数据库操作 |
+| `cache.get/set` | Cache | 缓存操作 |
+| `external.api` | External | 第三方调用 |
 
 ---
 
 ## SLO / SLI 定义
 
-### Service Level Objectives
+### 服务级目标
 
-| SLO | Target | Measurement Window | Current |
-|-----|--------|-------------------|---------|
+| SLO | 目标值 | 观测窗口 | 当前值 |
+|-----|--------|----------|--------|
 | Availability | 99.9% | Monthly | [current] |
 | Latency (P95) | < 200ms | Monthly | [current] |
 | Error Rate | < 0.1% | Monthly | [current] |
 
-### Error Budget
+### 错误预算
 
-| Metric | Value |
-|--------|-------|
+| 指标 | 值 |
+|------|----|
 | Monthly Budget | [如 43.2 min downtime] |
 | Remaining | [current remaining] |
 | Last Reset | [date] |
 
 ---
 
-## On-Call 流程
+## 值班响应流程
 
 ### 告警响应
 
@@ -266,17 +276,17 @@ Application
 
 ### 常规任务
 
-| Task | Frequency | Owner |
-|------|-----------|-------|
-| Review alert thresholds | Monthly | On-call lead |
-| Update dashboards | As needed | Team |
-| Audit log retention | Quarterly | Ops team |
-| Test alert routing | Monthly | On-call |
+| 任务 | 频率 | 负责人 |
+|------|------|--------|
+| 复核告警阈值 | Monthly | 值班负责人 |
+| 更新仪表盘 | As needed | 团队 |
+| 审计日志保留策略 | Quarterly | 运维团队 |
+| 测试告警路由 | Monthly | 值班人员 |
 
 ### 告警调优
 
-| Metric | Last Tuned | Reason |
-|--------|------------|--------|
+| 指标/告警 | 最近调优时间 | 原因 |
+|-----------|--------------|------|
 | [Alert name] | [Date] | [Reason for change] |
 
 ---
@@ -284,13 +294,13 @@ Application
 ## 相关文档
 
 - [CAPACITY.md](./CAPACITY.md) - 容量基线与扩缩容计划
-- [OPERATIONS.md](./OPERATIONS.md) - Operations 总览
+- [OPERATIONS.md](./OPERATIONS.md) - 运维总览
 - [RUNBOOK.md](./RUNBOOK.md) - 故障响应
 - [DEPLOYMENT.md](./DEPLOYMENT.md) - 部署流程
 
 ---
 
-*Monitoring audit: [date]*  
+*监控审计：[date]*  
 *监控要求变化时及时更新*
 ```
 
@@ -310,9 +320,10 @@ Application
 - 尽量附带架构图
 
 **关键指标：**
-- 服务侧优先用 RED method（Rate、Errors、Duration）
-- 资源侧优先用 USE method（Utilization、Saturation、Errors）
+- 优先从四大黄金信号组织：Latency / Traffic / Errors / Saturation
+- 资源余量仍然要看，但要放进 Saturation 视角
 - 业务指标也应纳入上下文
+- 业务告警关注点要明确写出对应信号与处理入口
 
 **告警规则：**
 - 区分 critical 与 warning

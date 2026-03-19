@@ -5,18 +5,18 @@ last_reviewed: "2026-03"
 template_for: ".planning/operations/OPERATIONS.md"
 ---
 
-# Operations 总览模板
+# 运维总览模板
 
 用于生成 `.planning/operations/OPERATIONS.md`，即运维策略总览文档。
 
 <template>
 
 ```markdown
-# Operations 总览
+# 运维总览
 
-**Project:** [Project Name]
-**Last Updated:** [YYYY-MM-DD]
-**Owner:** [负责团队 / 负责人]
+**项目：** [项目名称]
+**最后更新：** [YYYY-MM-DD]
+**负责人：** [负责团队 / 负责人]
 
 ---
 
@@ -31,14 +31,14 @@ template_for: ".planning/operations/OPERATIONS.md"
 
 ### 核心目标
 
-| Objective | Target | Current | Status |
-|-----------|--------|---------|--------|
-| Capacity Headroom | [如 >30% at peak] | [current] | [On Track / Risk / Blocked] |
-| Availability | [如 99.9%] | [current %] | [✅ / ⚠️ / ❌] |
-| Response Time (P95) | [如 <200ms] | [current] | [✅ / ⚠️ / ❌] |
-| Deployment Frequency | [如 daily] | [current] | [✅ / ⚠️ / ❌] |
-| Mean Time to Recovery | [如 <1hr] | [current] | [✅ / ⚠️ / ❌] |
-| Change Failure Rate | [如 <5%] | [current] | [✅ / ⚠️ / ❌] |
+| 目标项 | 目标值 | 当前值 | 状态 |
+|--------|--------|--------|------|
+| 容量余量 | [如 >30% at peak] | [current] | [On Track / Risk / Blocked] |
+| 可用性 | [如 99.9%] | [current %] | [✅ / ⚠️ / ❌] |
+| 响应时间（P95） | [如 <200ms] | [current] | [✅ / ⚠️ / ❌] |
+| 部署频率 | [如 weekly / manual trigger] | [current] | [✅ / ⚠️ / ❌] |
+| 平均恢复时间 | [如 <1hr] | [current] | [✅ / ⚠️ / ❌] |
+| 变更失败率 | [如 <5%] | [current] | [✅ / ⚠️ / ❌] |
 
 ---
 
@@ -46,55 +46,55 @@ template_for: ".planning/operations/OPERATIONS.md"
 
 ### 环境层级
 
-| Environment | Purpose | URL | Auto-Deploy |
-|-------------|---------|-----|-------------|
-| Development | 功能开发 | [URL] | 推送到 `develop` 时 |
-| Staging | 生产前测试 | [URL] | merge 到 `main` 时 |
-| Production | 面向真实用户 | [URL] | 手动批准 |
+| 环境 | 用途 | URL | 部署触发方式 |
+|------|------|-----|--------------|
+| 开发环境 | 功能开发 | [URL] | [如手动触发 / 按需] |
+| 预发环境 | 生产前测试 | [URL] | [如手动触发 / 发布前] |
+| 生产环境 | 面向真实用户 | [URL] | 手动触发 |
 
 ### 配置管理
 
-| Config Type | Storage | Rotation | Access |
-|-------------|---------|----------|--------|
-| Environment Variables | [如 Vercel Dashboard] | [frequency] | [who can access] |
-| Secrets | [如 Vault, AWS Secrets] | [frequency] | [who can access] |
-| Feature Flags | [如 LaunchDarkly] | N/A | [who can access] |
+| 配置类型 | 存储位置 | 轮换频率 | 访问权限 |
+|----------|----------|----------|----------|
+| 环境变量 | [如 Vercel Dashboard] | [frequency] | [who can access] |
+| 密钥/凭据 | [如 Vault, AWS Secrets] | [frequency] | [who can access] |
+| 功能开关 | [如 LaunchDarkly] | N/A | [who can access] |
 
 ---
 
-## CI/CD Pipeline
+## CI/CD 流水线
 
-### Pipeline 总览
+### 流水线总览
 
 ```
 [用图示或文字描述 CI/CD 流程]
 Commit -> Build -> Test -> Deploy
 ```
 
-### Pipeline 阶段
+### 流水线阶段
 
-| Stage | Trigger | Duration | Critical Checks |
-|-------|---------|----------|-----------------|
-| Build | 每次 push | ~[X]min | Compilation, lint |
-| Test | Build 之后 | ~[X]min | Unit, integration |
-| Security Scan | Test 之后 | ~[X]min | SAST, dependency |
-| Deploy (Dev) | `develop` 更新后 | ~[X]min | Smoke tests |
-| Deploy (Prod) | 手动触发 | ~[X]min | Canary, rollback ready |
+| 阶段 | 触发条件 | 耗时 | 关键检查 |
+|------|----------|------|----------|
+| 构建 | 每次 push | ~[X]min | Compilation, lint |
+| 测试 | Build 之后 | ~[X]min | Unit, integration |
+| 安全扫描 | Test 之后 | ~[X]min | SAST, dependency |
+| 部署（开发） | `develop` 更新后 | ~[X]min | Smoke tests |
+| 部署（生产） | 手动触发 | ~[X]min | Canary, rollback ready |
 
 ### 部署策略
 
-- **Strategy:** [Blue-Green / Rolling / Canary / Feature Flags]
-- **Rollback:** [Automated / Manual] - [触发条件]
-- **Maintenance Windows:** [何时 / 无]
+- **策略：** [Blue-Green / Rolling / Canary / Feature Flags]
+- **回滚：** [Automated / Manual] - [触发条件]
+- **维护窗口：** [何时 / 无]
 
 ---
 
 ## 团队职责
 
-### On-Call 轮值
+### 值班轮值
 
-| Role | Primary | Backup | Schedule |
-|------|---------|--------|----------|
+| 角色 | 主值班 | 备值班 | 排班 |
+|------|--------|--------|------|
 | [Role 1] | [Person/Team] | [Person/Team] | [Rotation] |
 | [Role 2] | [Person/Team] | [Person/Team] | [Rotation] |
 
@@ -114,8 +114,8 @@ Level 4: VP Engineering（响应：1hr）
 
 ## 关键运维决策
 
-| Decision | Rationale | Date | Outcome |
-|----------|-----------|------|---------|
+| 决策 | 原因 | 日期 | 结果 |
+|------|------|------|------|
 | [Decision 1] | [Why] | [Date] | [✅ / ⚠️ / ❌] |
 | [Decision 2] | [Why] | [Date] | [✅ / ⚠️ / ❌] |
 
@@ -132,8 +132,8 @@ Level 4: VP Engineering（响应：1hr）
 
 ---
 
-*Operations audit: [date]*  
-*运维要求发生变化时及时更新*
+*运维审计：[date]*  
+*重大部署、运维要求变化或事故复盘后更新*
 ```
 
 </template>
@@ -151,7 +151,7 @@ Level 4: VP Engineering（响应：1hr）
 - 尽可能使用 DORA 指标
 - 目标要现实且可度量
 - 保留当前状态，方便对比
-- 至少按季度更新一次，或在目标变化时更新
+- 至少按季度复核一次，且在重大部署、目标变化或事故复盘后更新
 
 **环境配置：**
 - 记录所有环境

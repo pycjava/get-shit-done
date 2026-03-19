@@ -6,6 +6,7 @@
 - frontmatter 键名保持英文，便于工具读取
 - 面向人的标题、表头和正文使用中文
 - 一句话总结必须具体，不要写“阶段完成”“实现完成”这种空话
+- 如果计划声明了 `golden_signal`，总结里必须明确写出该信号的现状、风险、阈值 / 告警候选和 runbook 影响
 
 ---
 
@@ -15,7 +16,7 @@
 ---
 phase: XX-name
 plan: YY
-subsystem: [主要类别，如 auth, payments, ui, api, database, infra, testing ...]
+subsystem: [主要类别，如 api, database, infra, monitoring, alerting, runbook ...]
 tags: [可检索技术标签]
 
 # Dependency graph
@@ -25,6 +26,29 @@ requires:
 provides:
   - [本计划交付了什么]
 affects: [后续会受影响的阶段或关键词]
+
+signal-focus:
+  primary: [latency|traffic|errors|saturation|mixed|none]
+  secondary: []
+
+monitoring-coverage:
+  metrics_added: []
+  dashboards_touched: []
+  alerts_added: []
+  gaps_remaining: []
+
+alert-candidates:
+  - signal: latency
+    condition: [例如 P95 > 800ms 持续 10 分钟]
+    severity: [warning|critical]
+    action: [先看哪里]
+
+runbook-impact:
+  updated: []
+  follow_up: []
+
+business-watchpoints:
+  - "[需要重点关注的业务结果或风险点]"
 
 # Tech tracking
 tech-stack:
@@ -62,22 +86,42 @@ completed: YYYY-MM-DD
 - **完成任务：** [count completed]
 - **修改文件：** [count]
 
-## 主要成果
+## 信号结论
 
-- [最重要的成果]
-- [第二个关键成果]
-- [如有需要，再写第三项]
+- **主信号：** [latency / traffic / errors / saturation / none]
+- **当前现状：** [基线、现有数据、已知缺口]
+- **主要风险：** [用户体验 / 业务 / 发布 / 值班影响]
+- **阈值 / 观察项：** [告警阈值、观察窗口、升级条件]
+
+## 监控覆盖与告警候选
+
+- [新增或确认的指标]
+- [新增或确认的仪表盘]
+- [新增或确认的告警候选]
+- [仍然缺失的采集或阈值]
+
+## 业务关注点
+
+- [业务链路 1：为什么重要]
+- [业务链路 2：什么情况下要报警]
+- [如果没有，写“无”]
+
+## 文档与手册影响
+
+- **已更新：** [MONITORING.md / RUNBOOK.md / DEPLOYMENT.md / 其他]
+- **下次部署前还需补齐：** [follow-up items]
 
 ## 任务提交记录
 
 每个任务都应原子提交：
-1. **任务 1：[任务名称]** - `abc123f` (feat/fix/test/refactor)
-2. **任务 2：[任务名称]** - `def456g` (feat/fix/test/refactor)
-3. **任务 3：[任务名称]** - `hij789k` (feat/fix/test/refactor)
+1. **任务 1：[任务名称]** - `abc123f` (docs/fix/perf/chore...)
+2. **任务 2：[任务名称]** - `def456g` (docs/fix/perf/chore...)
+3. **任务 3：[任务名称]** - `hij789k` (docs/fix/perf/chore...)
 
 **计划元数据提交：** `lmn012o` (docs: complete plan)
 
 ## 创建 / 修改的文件
+
 - `path/to/file.ts` - 文件作用
 - `path/to/another.ts` - 文件作用
 
@@ -87,11 +131,12 @@ completed: YYYY-MM-DD
 
 ## 偏离计划
 
-[如果没有偏离：写“无——完全按计划执行”]
+[如果没有偏离：写“无——完全按计划原样执行”]
 
 [如果有偏离：]
 
 ### 自动修复的问题
+
 **1. [Rule X - Category] 简述**
 
 - **发现于：** 任务 [N]（[任务名称]）
@@ -107,6 +152,7 @@ completed: YYYY-MM-DD
 **对计划的影响：** [简短评估]
 
 ## 遇到的问题
+
 [执行过程中遇到的问题及处理方式；如果没有，写“无”]
 
 ## 用户需要完成的设置
@@ -119,6 +165,12 @@ completed: YYYY-MM-DD
 
 [如果没有 USER-SETUP.md：]
 无——不需要额外人工配置。
+
+## 下一次发布 / 部署前关注
+
+- [发布前必须确认的信号]
+- [部署后第一观察窗需要看的指标]
+- [值班或回滚注意事项]
 
 ## 下一阶段准备情况
 
@@ -135,8 +187,7 @@ completed: YYYY-MM-DD
 ## 编写规则
 
 - frontmatter 必须完整
-- 一句话总结要可感知、可复述，例如“基于 jose 的 JWT 鉴权与刷新轮换”
-- “已作决策”记录执行中真实发生的关键选择
-- “偏离计划”记录计划外但已自动处理的工作
-- “遇到的问题”记录计划内工作中的排障过程
-- 如果有 `USER-SETUP.md`，要在总结里明确提示
+- 一句话总结要可感知、可复述，例如“补齐登录链路的延迟基线、阈值和发布后观察项”
+- `signal-focus`、`monitoring-coverage`、`alert-candidates`、`runbook-impact` 是这次运维版改造新增的关键字段
+- “业务关注点”要写真实会影响值班和告警优先级的链路
+- 如果计划没有 `golden_signal`，也要说明它支撑了哪类运维分析输出

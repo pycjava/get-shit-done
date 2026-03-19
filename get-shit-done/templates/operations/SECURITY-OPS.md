@@ -33,11 +33,11 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 
 | 领域 | 当前状态 | 目标状态 | 优先级 |
 |------|----------|----------|--------|
-| 访问控制 | [State] | [Target] | [P1/P2/P3] |
-| 数据保护 | [State] | [Target] | [P1/P2/P3] |
-| 网络安全 | [State] | [Target] | [P1/P2/P3] |
-| 漏洞管理 | [State] | [Target] | [P1/P2/P3] |
-| Incident Response | [State] | [Target] | [P1/P2/P3] |
+| 访问控制 | [当前状态] | [目标状态] | [P1/P2/P3] |
+| 数据保护 | [当前状态] | [目标状态] | [P1/P2/P3] |
+| 网络安全 | [当前状态] | [目标状态] | [P1/P2/P3] |
+| 漏洞管理 | [当前状态] | [目标状态] | [P1/P2/P3] |
+| 事故响应 | [当前状态] | [目标状态] | [P1/P2/P3] |
 
 ---
 
@@ -47,11 +47,11 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 
 | 方法 | 环境 | 状态 | 备注 |
 |------|------|------|------|
-| Email/Password | [Env] | [Enabled/Disabled] | [Notes] |
-| OAuth (Google) | [Env] | [Enabled/Disabled] | [Notes] |
-| SSO (SAML/OIDC) | [Env] | [Enabled/Disabled] | [Notes] |
-| API Keys | [Env] | [Enabled/Disabled] | [Notes] |
-| Service-to-Service | [Env] | [Enabled/Disabled] | [Notes] |
+| 邮箱/密码 | [Env] | [Enabled/Disabled] | [Notes] |
+| OAuth（Google） | [Env] | [Enabled/Disabled] | [Notes] |
+| SSO（SAML/OIDC） | [Env] | [Enabled/Disabled] | [Notes] |
+| API 密钥 | [Env] | [Enabled/Disabled] | [Notes] |
+| 服务到服务 | [Env] | [Enabled/Disabled] | [Notes] |
 
 ### 密码策略
 
@@ -69,10 +69,10 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 
 | 角色 | 权限 | 用户数 |
 |------|------|--------|
-| Admin | 完整访问 | [Count] |
-| Editor | 创建、编辑、删除自己的内容 | [Count] |
-| Viewer | 只读 | [Count] |
-| API Service | 受限的服务访问 | [Count] |
+| 管理员 | 完整访问 | [Count] |
+| 编辑者 | 创建、编辑、删除自己的内容 | [Count] |
+| 观察者 | 只读 | [Count] |
+| API 服务 | 受限的服务访问 | [Count] |
 
 **权限模型：**
 - 遵循 least privilege 原则
@@ -81,11 +81,11 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 
 ---
 
-## Secrets 管理
+## 密钥与凭据管理
 
-### Secrets 存储
+### 凭据存储
 
-| Secret 类型 | 存储位置 | 可访问人群 | 轮换 |
+| 凭据类型 | 存储位置 | 可访问人群 | 轮换 |
 |-------------|----------|------------|------|
 | API Keys | [例如：AWS Secrets Manager] | [Who] | [Schedule] |
 | 数据库凭据 | [例如：Vault] | [Who] | [Schedule] |
@@ -93,14 +93,14 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 | 加密密钥 | [例如：AWS KMS] | [Who] | [Schedule] |
 | SSH Keys | [例如：AWS Secrets Manager] | [Who] | [Schedule] |
 
-### Secrets 轮换
+### 凭据轮换
 
-| Secret | 轮换频率 | 最近轮换 | 自动化？ |
+| 凭据 | 轮换频率 | 最近轮换 | 自动化？ |
 |--------|----------|----------|----------|
 | [Secret 1] | [Frequency] | [Date] | [Yes/No] |
 | [Secret 2] | [Frequency] | [Date] | [Yes/No] |
 
-### Secrets 管理清单
+### 凭据管理清单
 
 - [ ] 代码中没有 secrets
 - [ ] 配置文件中没有 secrets
@@ -152,7 +152,7 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 | CI/CD | App Servers | 22 | SSH | 部署 |
 | Monitoring | App Servers | 443 | HTTPS | 健康检查 |
 
-### VPN / Bastion
+### VPN / 跳板机
 
 | 组件 | 用途 | 访问人群 |
 |------|------|----------|
@@ -167,24 +167,24 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 
 | 分级 | 说明 | 示例 | 处理方式 |
 |------|------|------|----------|
-| Public | 可自由共享 | 营销内容 | 无限制 |
-| Internal | 仅公司内部 | 内部文档 | 访问控制 |
-| Confidential | 受限访问 | 用户数据、财务数据 | 必须加密 |
-| Secret | 高敏感 | 凭据、密钥 | 严格访问与审计 |
+| 公开 | 可自由共享 | 营销内容 | 无限制 |
+| 内部 | 仅公司内部 | 内部文档 | 访问控制 |
+| 机密 | 受限访问 | 用户数据、财务数据 | 必须加密 |
+| 高敏感 | 高敏感 | 凭据、密钥 | 严格访问与审计 |
 
 ### 加密
 
 | 数据状态 | 方法 | 密钥管理 | 标准 |
 |----------|------|----------|------|
-| At Rest | [AES-256] | [KMS] | FIPS 140-2 |
-| In Transit | TLS 1.3 | [Certificate Manager] | - |
-| Backups | [AES-256] | [Separate key] | - |
+| 静态存储 | [AES-256] | [KMS] | FIPS 140-2 |
+| 传输中 | TLS 1.3 | [Certificate Manager] | - |
+| 备份数据 | [AES-256] | [Separate key] | - |
 
-### PII 处理
+### 个人敏感信息处理
 
 | 数据 | 收集方式 | 存储 | 访问 | 保留策略 |
 |------|----------|------|------|----------|
-| Email | 用户输入 | 加密 | 仅 Admin | 账户删除时清理 |
+| 邮箱 | 用户输入 | 加密 | 仅管理员 | 账户删除时清理 |
 | 姓名 | 用户输入 | 加密 | 仅 Admin | 账户删除时清理 |
 | [其他 PII] | [Method] | [Storage] | [Access] | [Retention] |
 
@@ -196,20 +196,20 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 
 | 扫描类型 | 频率 | 工具 | 负责人 |
 |----------|------|------|--------|
-| SAST (Static) | 每次 commit | [例如：SonarQube] | Automated |
-| DAST (Dynamic) | 每周 | [例如：OWASP ZAP] | [Team] |
-| Dependency | 每个 PR | [例如：Snyk] | Automated |
-| Container | 每次构建 | [例如：Trivy] | Automated |
-| Infrastructure | 每月 | [例如：Prowler] | [Team] |
+| SAST（静态） | 每次 commit | [例如：SonarQube] | Automated |
+| DAST（动态） | 每周 | [例如：OWASP ZAP] | [Team] |
+| 依赖扫描 | 每个 PR | [例如：Snyk] | Automated |
+| 容器扫描 | 每次构建 | [例如：Trivy] | Automated |
+| 基础设施扫描 | 每月 | [例如：Prowler] | [Team] |
 
 ### 漏洞响应
 
 | 严重级别 | 响应时限 | 示例 |
 |----------|----------|------|
-| Critical (9.0-10.0) | 24 小时 | 远程代码执行 |
-| High (7.0-8.9) | 7 天 | SQL injection |
-| Medium (4.0-6.9) | 30 天 | 信息泄露 |
-| Low (0.1-3.9) | 90 天 | 次要问题 |
+| 严重（9.0-10.0） | 24 小时 | 远程代码执行 |
+| 高（7.0-8.9） | 7 天 | SQL injection |
+| 中（4.0-6.9） | 30 天 | 信息泄露 |
+| 低（0.1-3.9） | 90 天 | 次要问题 |
 
 ### 已知漏洞
 
@@ -225,11 +225,11 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 
 | 日志类型 | 保留期 | 存储 | 告警 |
 |----------|--------|------|------|
-| Authentication | 1 年 | [Storage] | 登录失败 > 5 次 |
-| Authorization | 90 天 | [Storage] | 未授权访问 |
-| API Requests | 30 天 | [Storage] | 可疑模式 |
-| Infrastructure | 1 年 | [Storage] | 配置变更 |
-| Database | 1 年 | [Storage] | Schema 变更 |
+| 认证日志 | 1 年 | [Storage] | 登录失败 > 5 次 |
+| 授权日志 | 90 天 | [Storage] | 未授权访问 |
+| API 请求日志 | 30 天 | [Storage] | 可疑模式 |
+| 基础设施日志 | 1 年 | [Storage] | 配置变更 |
+| 数据库日志 | 1 年 | [Storage] | Schema 变更 |
 
 ### SIEM/SOAR
 
@@ -250,18 +250,18 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 
 ---
 
-## Incident Response
+## 事故响应
 
 ### 安全事故等级
 
 | 等级 | 定义 | 示例 | 响应团队 |
 |------|------|------|----------|
-| P1 - Critical | 正在发生入侵，数据已暴露 | 勒索软件 | 完整 incident response |
-| P2 - High | 潜在入侵 | 可疑访问 | 安全团队 |
-| P3 - Medium | 安全策略违规 | 轻微暴露 | 团队负责人 |
-| P4 - Low | 策略提醒 | 配置漂移 | 仅通知 |
+| P1 - 严重 | 正在发生入侵，数据已暴露 | 勒索软件 | 完整事故响应 |
+| P2 - 高 | 潜在入侵 | 可疑访问 | 安全团队 |
+| P3 - 中 | 安全策略违规 | 轻微暴露 | 团队负责人 |
+| P4 - 低 | 策略提醒 | 配置漂移 | 仅通知 |
 
-### Incident Response 流程
+### 事故响应流程
 
 ```
 1. DETECT
@@ -294,10 +294,10 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 
 | 角色 | 姓名 | 联系方式 | 可用时段 |
 |------|------|----------|----------|
-| Security Lead | [Name] | [Email/Phone] | 24/7 |
-| On-Call | [Name] | [Email/Phone] | 24/7 |
-| Engineering Lead | [Name] | [Email/Phone] | 工作时间 |
-| Legal/Compliance | [Name] | [Email/Phone] | 工作时间 |
+| 安全负责人 | [Name] | [Email/Phone] | 24/7 |
+| 值班人员 | [Name] | [Email/Phone] | 24/7 |
+| 工程负责人 | [Name] | [Email/Phone] | 工作时间 |
+| 法务/合规 | [Name] | [Email/Phone] | 工作时间 |
 
 ---
 
@@ -307,9 +307,9 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 
 | 框架 | 状态 | 最近审计 | 下次审计 |
 |------|------|----------|----------|
-| SOC 2 | [Compliant/In Progress] | [Date] | [Date] |
-| GDPR | [Compliant/In Progress] | [Date] | [Date] |
-| [Other] | [Status] | [Date] | [Date] |
+| SOC 2 | [已合规/进行中] | [Date] | [Date] |
+| GDPR | [已合规/进行中] | [Date] | [Date] |
+| [Other] | [状态] | [Date] | [Date] |
 
 ### 合规控制
 
@@ -335,8 +335,8 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 |------|------|------|--------|
 | 安全意识 | 每年 | 全员 | [X]% |
 | 钓鱼演练 | 每季度 | 全员 | [X]% |
-| 开发者安全 | Onboarding | 工程师 | [X]% |
-| Incident Response | 每年 | On-call | [X]% |
+| 开发者安全 | 入职阶段 | 工程师 | [X]% |
+| 事故响应 | 每年 | On-call | [X]% |
 
 ---
 
@@ -360,7 +360,7 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 **这份文档是什么：**
 - 安全运营流程
 - 访问控制与授权
-- Secrets 管理
+- 密钥与凭据管理
 - 事故响应
 
 **安全概览：**
@@ -373,7 +373,7 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 - 定义密码策略
 - 映射角色与权限
 
-**Secrets 管理：**
+**密钥与凭据管理：**
 - 绝不记录真实 secrets
 - 说明存储方案
 - 跟踪轮换计划
@@ -398,7 +398,7 @@ template_for: ".planning/operations/SECURITY-OPS.md"
 - 配置告警规则
 - 记录 SIEM 集成
 
-**Incident Response：**
+**事故响应：**
 - 定义事故等级
 - 记录响应流程
 - 保持联系人信息最新

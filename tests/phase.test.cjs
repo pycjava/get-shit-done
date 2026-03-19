@@ -349,21 +349,22 @@ objective: Manual review needed
     assert.strictEqual(output.plans[0].autonomous, false, 'plan marked non-autonomous');
   });
 
-  test('extracts TDD metadata for TDD plans', () => {
+  test('extracts golden-signal metadata for signal-focused plans', () => {
     const phaseDir = path.join(tmpDir, '.planning', 'phases', '03-api');
     fs.mkdirSync(phaseDir, { recursive: true });
 
     fs.writeFileSync(
       path.join(phaseDir, '03-01-PLAN.md'),
       `---
-type: tdd
+type: execute
+golden_signal: latency
 wave: 1
 autonomous: true
-objective: Authentication flow
+objective: Analyze request latency budget
 ---
 
-## Task 1: Write failing tests
-## Task 2: Implement auth flow
+## Task 1: Collect latency metrics
+## Task 2: Document alert thresholds
 `
     );
 
@@ -371,10 +372,12 @@ objective: Authentication flow
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
-    assert.strictEqual(output.tdd_plans, 1, 'should count one TDD plan');
-    assert.strictEqual(output.plans[0].type, 'tdd', 'type extracted');
-    assert.strictEqual(output.plans[0].execution_pattern, 'RED -> GREEN -> REFACTOR', 'TDD execution pattern surfaced');
-    assert.deepStrictEqual(output.plans[0].tdd_cycle, ['red', 'green', 'refactor'], 'TDD cycle surfaced');
+    assert.strictEqual(output.golden_signal_plans, 1, 'should count one signal-focused plan');
+    assert.deepStrictEqual(output.golden_signal_counts, { latency: 1, traffic: 0, errors: 0, saturation: 0 }, 'signal totals surfaced');
+    assert.strictEqual(output.plans[0].type, 'execute', 'type extracted');
+    assert.strictEqual(output.plans[0].golden_signal, 'latency', 'golden signal surfaced');
+    assert.strictEqual(output.plans[0].analysis_mode, 'golden-signal', 'analysis mode surfaced');
+    assert.strictEqual(output.plans[0].execution_pattern, 'LATENCY', 'execution pattern surfaced');
   });
 
   test('phase not found returns error', () => {

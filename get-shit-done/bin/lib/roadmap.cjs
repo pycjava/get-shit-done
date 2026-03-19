@@ -7,6 +7,25 @@ const path = require('path');
 const { escapeRegex, normalizePhaseName, comparePhaseNum, output, error, findPhaseInternal, stripShippedMilestones, replaceInCurrentMilestone } = require('./core.cjs');
 const { getPhasePlanIndexInternal } = require('./phase.cjs');
 
+function createEmptyGoldenSignalCounts() {
+  return {
+    latency: 0,
+    traffic: 0,
+    errors: 0,
+    saturation: 0,
+  };
+}
+
+function mergeGoldenSignalCounts(target, counts) {
+  const merged = target || createEmptyGoldenSignalCounts();
+
+  for (const key of Object.keys(merged)) {
+    merged[key] += Number(counts?.[key] || 0);
+  }
+
+  return merged;
+}
+
 function analyzeRoadmapInternal(cwd) {
   const roadmapPath = path.join(cwd, '.planning', 'ROADMAP.md');
 
@@ -205,12 +224,13 @@ function createMasterPlanSteps(phase, planIndex) {
     });
 
     for (const plan of sortedPlans) {
+      const mode = plan.golden_signal || (plan.analysis_mode === 'legacy-tdd' ? 'legacy-tdd' : 'standard');
       steps.push({
         id: `${phase.number}-${plan.id}`,
         phase: phase.number,
         phase_name: phase.name,
         kind: 'plan-execution',
-        mode: plan.type === 'tdd' ? 'tdd' : 'standard',
+        mode,
         status: plan.has_summary ? 'complete' : 'pending',
         title: `${plan.id} execution`,
         summary: plan.objective || `Execute plan ${plan.id}.`,
@@ -218,8 +238,9 @@ function createMasterPlanSteps(phase, planIndex) {
         plan_type: plan.type,
         wave: plan.wave,
         autonomous: plan.autonomous,
+        golden_signal: plan.golden_signal,
+        analysis_mode: plan.analysis_mode,
         execution_pattern: plan.execution_pattern,
-        tdd_cycle: plan.tdd_cycle,
       });
     }
   } else {
@@ -367,7 +388,9 @@ function cmdRoadmapExecutionPlan(cwd, fromPhase, raw) {
         total: phase.plan_count,
         complete: phase.summary_count,
         incomplete: Math.max(phase.plan_count - phase.summary_count, 0),
-        tdd: planIndex?.tdd_plans || 0,
+        golden_signal_plans: planIndex?.golden_signal_plans || 0,
+        golden_signal_counts: planIndex?.golden_signal_counts || createEmptyGoldenSignalCounts(),
+        legacy_tdd_plans: planIndex?.legacy_tdd_plans || 0,
         checkpoints: planIndex?.plans?.filter(plan => !plan.autonomous).length || 0,
         waves: Object.keys(planIndex?.waves || {}).length,
       },
@@ -378,6 +401,10 @@ function cmdRoadmapExecutionPlan(cwd, fromPhase, raw) {
   const master_steps = phases.flatMap(phase => phase.steps);
   const countByStatus = (status) => master_steps.filter(step => step.status === status).length;
   const next_step = master_steps.find(step => step.status !== 'complete' && step.status !== 'skipped') || null;
+  const totalsBySignal = phases.reduce(
+    (acc, phase) => mergeGoldenSignalCounts(acc, phase.plan_summary.golden_signal_counts),
+    createEmptyGoldenSignalCounts()
+  );
 
   output({
     generated_at: new Date().toISOString(),
@@ -393,7 +420,11 @@ function cmdRoadmapExecutionPlan(cwd, fromPhase, raw) {
       in_progress: countByStatus('in_progress'),
       blocked: countByStatus('blocked'),
       skipped: countByStatus('skipped'),
-      tdd_plans: master_steps.filter(step => step.kind === 'plan-execution' && step.mode === 'tdd').length,
+      golden_signal_plans: master_steps.filter(
+        step => step.kind === 'plan-execution' && ['latency', 'traffic', 'errors', 'saturation'].includes(step.mode)
+      ).length,
+      golden_signal_counts: totalsBySignal,
+      legacy_tdd_plans: master_steps.filter(step => step.kind === 'plan-execution' && step.mode === 'legacy-tdd').length,
       checkpoint_plans: master_steps.filter(step => step.kind === 'plan-execution' && step.autonomous === false).length,
     },
     next_step,

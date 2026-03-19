@@ -366,8 +366,8 @@ function cmdInitPhaseOp(cwd, phase, raw) {
   let phaseInfo = findPhaseInternal(cwd, phase);
 
   // If the only disk match comes from an archived milestone, prefer the
-  // current milestone's ROADMAP entry so discuss-phase and similar flows
-  // don't attach to shipped work that reused the same phase number.
+  // current roadmap entry so active phase operations don't attach to
+  // shipped work that reused the same phase number.
   if (phaseInfo?.archived) {
     const roadmapPhase = getRoadmapPhaseInternal(cwd, phase);
     if (roadmapPhase?.found) {

@@ -1,10 +1,10 @@
-# Discovery 模板
+# 调研模板
 
 用于生成 `.planning/phases/XX-name/DISCOVERY.md`，适合做库选型、方案对比这一类浅层调研。
 
 **目的：** 回答 `plan-phase` 强制 discovery 阶段里的“我们应该选哪个库 / 哪种方案”。
 
-如果需要的是更深的生态研究，比如“这个领域里成熟团队通常怎么做”，应该改用 `/gsd:research-phase`，它会产出 `RESEARCH.md`。
+如果需要的是更深的生态研究，比如“这个领域里成熟团队通常怎么做”，应该在 `/gsd:plan-phase` 中升级为深度研究，产出 `RESEARCH.md`。
 
 ---
 
@@ -72,16 +72,16 @@ Output: DISCOVERY.md with recommendation
 ```markdown
 # [主题] 调研结论
 
-## Summary（总结）
+## 总结
 [2-3 段执行摘要：研究了什么、发现了什么、建议怎么做]
 
-## Primary Recommendation（主要建议）
+## 主要建议
 [明确写出推荐方案和原因，要求具体、可执行]
 
-## Alternatives Considered（备选方案）
+## 备选方案
 [还评估了哪些选择，以及为什么没有采用]
 
-## Key Findings（关键发现）
+## 关键发现
 
 ### [类别 1]
 - [结论 + 来源 URL + 与当前场景的关联]
@@ -89,10 +89,10 @@ Output: DISCOVERY.md with recommendation
 ### [类别 2]
 - [结论 + 来源 URL + 关联]
 
-## Code Examples（代码示例）
+## 代码示例
 [如果适用，给出相关实现模式]
 
-## Metadata（元信息）
+## 元信息
 <metadata>
 <confidence level="high|medium|low">
 [为什么给出这个置信度，基于哪些来源和验证]
@@ -137,6 +137,6 @@ Output: DISCOVERY.md with recommendation
 - 细分或复杂领域（3D、游戏、音频、shader 等）
 - 需要生态知识，而不只是简单选型
 - 问题是“这个方向通常怎么做？”
-- 使用 `/gsd:research-phase`
+- 在 `/gsd:plan-phase` 中触发深度研究并产出 `RESEARCH.md`
 </guidelines>
 ```

@@ -35,14 +35,14 @@ You are NOT the executor or verifier — you verify plans WILL work before execu
 1. 列出可用技能目录
 2. 读取每个技能的 `SKILL.md`（轻量索引，约 130 行）
 3. 在验证过程中按需加载具体的 `rules/*.md`
-4. 不要加载完整 `AGENTS.md` 文件（上下文成本过高）
+4. 不要加载完整代理总说明文件（上下文成本过高）
 5. 校验计划时要把项目既有技能模式算进去
 
 这样可以确保你的判断依据与项目实际约定一致。
 </project_context>
 
 <upstream_input>
-**CONTEXT.md** (if exists) — User decisions from `/gsd:discuss-phase`
+**CONTEXT.md** (if exists) — User decisions captured for this phase
 
 | Section | How You Use It |
 |---------|----------------|
@@ -122,7 +122,13 @@ issue:
 |------|-------|--------|--------|------|
 | `auto` | Required | Required | Required | Required |
 | `checkpoint:*` | N/A | N/A | N/A | N/A |
-| `tdd` | Required | Behavior + Implementation | Test commands | Expected outcomes |
+
+If a plan declares `golden_signal`, also verify that its tasks cover:
+
+- current baseline or observable fact source
+- user / business risk
+- threshold or alert candidate
+- runbook / monitoring / deployment document impact
 
 **Red flags:**
 - Missing `<verify>` — can't confirm completion
@@ -271,7 +277,7 @@ issue:
 
 ## Dimension 7: Context Compliance (if CONTEXT.md exists)
 
-**Question:** Do plans honor user decisions from /gsd:discuss-phase?
+**Question:** Do plans honor user decisions recorded for this phase?
 
 **Only check if CONTEXT.md was provided in the verification context.**
 
@@ -494,7 +500,7 @@ The `tasks` array in the result shows each task's completeness:
 - `hasVerify` — verify element present
 - `hasDone` — done element present
 
-**Check:** valid task type (auto, checkpoint:*, tdd), auto tasks have files/action/verify/done, action is specific, verify is runnable, done is measurable.
+**Check:** valid task type (auto, checkpoint:*), auto tasks have files/action/verify/done, action is specific, verify is runnable, done is measurable.
 
 **For manual validation of specificity** (gsd-tools checks structure, not content quality):
 ```bash

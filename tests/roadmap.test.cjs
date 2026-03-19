@@ -368,7 +368,7 @@ describe('roadmap execution-plan command', () => {
     cleanup(tmpDir);
   });
 
-  test('builds a unified master plan with TDD execution metadata', () => {
+  test('builds a unified master plan with golden-signal execution metadata', () => {
     fs.writeFileSync(
       path.join(tmpDir, '.planning', 'ROADMAP.md'),
       `# Roadmap
@@ -387,14 +387,15 @@ describe('roadmap execution-plan command', () => {
     fs.writeFileSync(
       path.join(p1, '01-01-PLAN.md'),
       `---
-type: tdd
+type: execute
+golden_signal: latency
 wave: 1
 autonomous: true
-objective: Login flow
+objective: Checkout latency review
 ---
 
-## Task 1: RED
-## Task 2: GREEN
+## Task 1: Capture p95 latency
+## Task 2: Define threshold
 `
     );
     fs.writeFileSync(
@@ -415,18 +416,29 @@ objective: Session review
 
     const output = JSON.parse(result.output);
     assert.strictEqual(output.phase_count, 2, 'two remaining phases should be included');
-    assert.strictEqual(output.totals.tdd_plans, 1, 'TDD plans counted in totals');
+    assert.strictEqual(output.totals.golden_signal_plans, 1, 'signal-focused plans counted in totals');
+    assert.deepStrictEqual(
+      output.totals.golden_signal_counts,
+      { latency: 1, traffic: 0, errors: 0, saturation: 0 },
+      'signal totals are surfaced'
+    );
 
     const phase1 = output.phases[0];
     assert.strictEqual(phase1.number, '1', 'phase 1 should be first');
     assert.strictEqual(phase1.lifecycle.context, 'complete', 'existing CONTEXT.md should mark context complete');
-    assert.strictEqual(phase1.plan_summary.tdd, 1, 'phase summary should count TDD plans');
+    assert.strictEqual(phase1.plan_summary.golden_signal_plans, 1, 'phase summary should count signal-focused plans');
+    assert.deepStrictEqual(
+      phase1.plan_summary.golden_signal_counts,
+      { latency: 1, traffic: 0, errors: 0, saturation: 0 },
+      'phase signal totals should be surfaced'
+    );
 
-    const tddStep = phase1.steps.find(step => step.plan_id === '01-01');
-    assert.ok(tddStep, 'TDD plan execution step should exist');
-    assert.strictEqual(tddStep.mode, 'tdd', 'TDD step mode should be surfaced');
-    assert.strictEqual(tddStep.execution_pattern, 'RED -> GREEN -> REFACTOR', 'TDD execution pattern should be shown');
-    assert.deepStrictEqual(tddStep.tdd_cycle, ['red', 'green', 'refactor'], 'TDD cycle should be shown');
+    const latencyStep = phase1.steps.find(step => step.plan_id === '01-01');
+    assert.ok(latencyStep, 'signal-focused plan execution step should exist');
+    assert.strictEqual(latencyStep.mode, 'latency', 'step mode should be surfaced as the signal');
+    assert.strictEqual(latencyStep.golden_signal, 'latency', 'golden signal should be shown');
+    assert.strictEqual(latencyStep.analysis_mode, 'golden-signal', 'analysis mode should be surfaced');
+    assert.strictEqual(latencyStep.execution_pattern, 'LATENCY', 'signal execution pattern should be shown');
 
     const phase2 = output.phases[1];
     assert.strictEqual(phase2.number, '2', 'phase 2 should be second');

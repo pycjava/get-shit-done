@@ -21,14 +21,16 @@ color: yellow
 
 Your research feeds operations documents:
 
-| Research Area | Documents Informed |
-|---------------|-------------------|
-| Deployment platform, CI/CD | DEPLOYMENT.md |
-| Monitoring tools, metrics | MONITORING.md |
-| Capacity baselines, forecasts | CAPACITY.md |
-| Incident response patterns | RUNBOOK.md |
-| Data storage, backup solutions | BACKUP.md |
-| Security requirements | SECURITY-OPS.md |
+**Language rule:** `.planning/operations/` 下产出的面向人类标题、表头、正文和建议默认使用中文；文件名、命令、URL、版本号、frontmatter 键名保持英文。
+
+| 研究领域 | 产出文档 |
+|----------|----------|
+| 部署平台、CI/CD | DEPLOYMENT.md |
+| 监控工具、指标体系 | MONITORING.md |
+| 容量基线、增长预测 | CAPACITY.md |
+| 事故响应模式 | RUNBOOK.md |
+| 数据存储、备份方案 | BACKUP.md |
+| 安全与合规要求 | SECURITY-OPS.md |
 
 **要求：务实且具体。** 推荐真实可用的工具，并给出理由，而不是泛泛而谈。
 </role>
@@ -179,7 +181,7 @@ If a codebase map exists, read relevant files:
 
 <output_format>
 
-## Research Notes Output
+## 研究笔记输出
 
 Return structured notes for the orchestrator:
 
@@ -189,81 +191,81 @@ Return structured notes for the orchestrator:
 **项目：** {project_name}
 **研究日期：** {date}
 
-### Deployment Findings（部署结论）
+### 部署结论
 
-**Recommended Platform:** [platform] because [reason]
-- CI/CD: [recommendation]
-- Environments: [list]
-- Strategy: [deployment strategy]
-- Key Commands: [list]
+**推荐平台：** [platform]，原因：[reason]
+- CI/CD： [recommendation]
+- 环境： [list]
+- 策略： [deployment strategy]
+- 关键命令： [list]
 
-### Monitoring Findings（监控结论）
+### 监控结论
 
-**Recommended Stack:** [tools]
-- Metrics: [what to track]
-- Alerts: [threshold recommendations]
-- Dashboards: [what to create]
-- SLOs: [recommended targets]
+**推荐栈：** [tools]
+- 指标： [what to track]
+- 告警： [threshold recommendations]
+- 仪表盘： [what to create]
+- SLO： [recommended targets]
 
-### Capacity Findings（容量结论）
+### 容量结论
 
-**Capacity Baseline:** [current safe load]
-- Peak assumptions: [expected bursts]
-- Bottlenecks: [likely first limits]
-- Scaling path: [auto/manual approach]
-- Review cadence: [how often to reassess]
+**容量基线：** [current safe load]
+- 峰值假设： [expected bursts]
+- 首要瓶颈： [likely first limits]
+- 扩缩容路径： [auto/manual approach]
+- 复盘频率： [how often to reassess]
 
-### Incident Response Findings（故障响应结论）
+### 故障响应结论
 
-**Common Issues:**
+**常见问题：**
 1. [Issue] - [prevention/detection]
 2. [Issue] - [prevention/detection]
 
-**Escalation Path:** [recommendation based on team size]
+**升级路径：** [recommendation based on team size]
 
-### Backup Findings（备份结论）
+### 备份结论
 
-**Data Categories:**
-- Critical: [data types, RTO/RPO]
-- Important: [data types, RTO/RPO]
-- Archive: [data types, RTO/RPO]
+**数据分类：**
+- 核心： [data types, RTO/RPO]
+- 重要： [data types, RTO/RPO]
+- 归档： [data types, RTO/RPO]
 
-**Recommended Solution:** [tool/approach]
+**推荐方案：** [tool/approach]
 
-### Security Findings（安全结论）
+### 安全结论
 
-**Data Classification:** [what is sensitive]
-**Compliance:** [what applies]
-**Access Control:** [recommendation]
-**Scanning:** [what to implement]
+**数据分级：** [what is sensitive]
+**合规要求：** [what applies]
+**访问控制：** [recommendation]
+**扫描方案：** [what to implement]
 
-### Tool Recommendations（工具建议）
+### 工具建议
 
-| Category | Tool | Tier | Cost Est. | Why |
-|----------|------|------|-----------|-----|
+| 类别 | 工具 | 档位 | 预估成本 | 原因 |
+|------|------|------|----------|------|
 | [cat] | [tool] | [tier] | [cost] | [reason] |
 
-### Quick Wins（可快速落地项）
+### 可快速落地项
 
 1. [Easy improvement 1]
 2. [Easy improvement 2]
 
-### Long-term Investments（长期投入项）
+### 长期投入项
 
 1. [Important but not urgent 1]
 2. [Important but not urgent 2]
 
-### Confidence Assessment（置信度评估）
+### 置信度评估
 
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Deployment | [level] | [reason] |
-| Monitoring | [level] | [reason] |
-| Capacity | [level] | [reason] |
-| Backup | [level] | [reason] |
-| Security | [level] | [reason] |
+| 领域 | 置信度 | 说明 |
+|------|--------|------|
+| 部署 | [level] | [reason] |
+| 监控 | [level] | [reason] |
+| 容量 | [level] | [reason] |
+| 备份 | [level] | [reason] |
+| 安全 | [level] | [reason] |
 
-### Gaps（缺口）
+### 缺口
 
 - [What could not be determined]
 - [What needs team input]

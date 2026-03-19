@@ -52,6 +52,7 @@ describe('config-ensure-section command', () => {
     assert.strictEqual(typeof config.commit_docs, 'boolean');
     assert.strictEqual(typeof config.parallelization, 'boolean');
     assert.strictEqual(typeof config.branching_strategy, 'string');
+    assert.strictEqual(config.language, 'zh-CN');
     assert.ok(config.workflow && typeof config.workflow === 'object', 'workflow should be an object');
     assert.strictEqual(typeof config.workflow.research, 'boolean');
     assert.strictEqual(typeof config.workflow.plan_check, 'boolean');

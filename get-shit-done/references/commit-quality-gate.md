@@ -55,7 +55,7 @@ grep -r "process.env.$VAR_NAME" src/
 如果它不可达：要么现在把它接上，要么明确记录为有意延后。
 
 ### Gate 4: Functional（已在 VERIFY 完成）
-这一步由 `tdd-discipline.md` 的 VERIFY 阶段负责。如果 VERIFY 被跳过，就**不要进入 commit**。
+这一步由执行流程里的 VERIFY 阶段负责。如果 VERIFY 被跳过，就**不要进入 commit**。
 
 </gates>
 
@@ -90,13 +90,13 @@ Pyramid: Exists ✓ / Substantive ✓ / Wired ✓ / Functional ✓
   这不是原子提交，而是在拿 commit 伪装 checkpoint
 - commit message 带有理想化描述（比如 “add user auth”），但代码里实际上并没有对应能力
 
-**如果你过不了这道门：** 就把它视为一次 VERIFY 失败（参考 `tdd-discipline.md`），继续调试，直到过关。
+**如果你过不了这道门：** 就把它视为一次 VERIFY 失败，继续调试，直到过关。
 </halt_conditions>
 
 <integration>
 ## 与其他纪律的关系
 
-- **tdd-discipline.md 的 SELF-CHECK**：发生在 VERIFY 之后、commit 之前；这里的 Pyramid Gate 1-3 本质上就是它的结构化版本
+- **执行流程里的 SELF-CHECK**：发生在 VERIFY 之后、commit 之前；这里的 Pyramid Gate 1-3 本质上就是它的结构化版本
 - **systematic-debugging.md**：如果某道 gate 挂了而你不清楚原因，先走它的 Phase 1-3，再尝试修
 - **verification-patterns.md**：提供了更细的 Level 2-3 检查模式，按产物类型展开（React component、API route、schema、hook 等）
 </integration>

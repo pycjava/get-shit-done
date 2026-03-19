@@ -72,8 +72,8 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: initialize [p
 **提交类型：**
 - `feat` - 新功能 / 新行为
 - `fix` - 修复 bug
-- `test` - 仅测试（TDD RED 阶段）
-- `refactor` - 代码整理（TDD REFACTOR 阶段）
+- `test` - 探针、验证脚本、smoke 检查
+- `refactor` - 代码整理（不改变结论或行为）
 - `perf` - 性能优化
 - `chore` - 依赖、配置、工具链
 
@@ -89,16 +89,16 @@ git commit -m "feat(08-02): create user registration endpoint
 - Returns JWT token on success
 "
 
-# TDD 任务 - RED 阶段
+# 验证任务
 git add src/__tests__/jwt.test.ts
-git commit -m "test(07-02): add failing test for JWT generation
+git commit -m "test(07-02): add smoke check for JWT generation
 
 - Tests token contains user ID claim
 - Tests token expires in 1 hour
 - Tests signature verification
 "
 
-# TDD 任务 - GREEN 阶段
+# 功能或文档更新任务
 git add src/utils/jwt.ts
 git commit -m "feat(07-02): implement JWT generation
 

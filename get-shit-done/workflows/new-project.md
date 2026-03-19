@@ -31,7 +31,6 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 - `.planning/config.json`
 
 5. 展示下一步：
-- 如果需要先讨论阶段，运行 `/gsd:discuss-phase 1`
-- 如果阶段定义已经清楚，运行 `/gsd:plan-phase 1`
+- 继续运行 `/gsd:plan-phase 1`
 
 </process>

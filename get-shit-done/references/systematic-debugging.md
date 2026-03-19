@@ -78,7 +78,7 @@
 - **Rule 2（Missing Critical）**：同样如此，先理解为什么缺失，再补
 - **Rule 3（Blocking）**：先把阻塞追到源头，再去解除
 - **DEFINE -> VERIFY 步骤中的验证失败**：重试前先触发 Phase 1
-- **调用 node-repair 时**：node-repair 里的 `RETRY` / `DECOMPOSE` 必须建立在 Phase 1-3 的分析上，不能靠猜
+- **调用后续修复动作时**：`RETRY` / `DECOMPOSE` 必须建立在 Phase 1-3 的分析上，不能靠猜
 
 **以下理由都不能成为绕过此流程的借口：**
 - 修复看起来很 obvious

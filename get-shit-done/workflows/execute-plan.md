@@ -7,15 +7,15 @@
 再读取 `config.json`，了解当前规划 / 执行行为配置。
 
 @~/.claude/get-shit-done/references/git-integration.md
-@~/.claude/get-shit-done/references/tdd-discipline.md
+@~/.claude/get-shit-done/references/golden-signals.md
 @~/.claude/get-shit-done/references/systematic-debugging.md
 @~/.claude/get-shit-done/references/commit-quality-gate.md
 </required_reading>
 
-<tdd_discipline_mandate>
-每个原子任务 — 无论类型 — 都必须遵循：DEFINE → IMPLEMENT → VERIFY + SELF-CHECK。
-这不是可选项，没有任何例外。执行任务前必须读取 tdd-discipline.md。
-</tdd_discipline_mandate>
+<golden_signal_mandate>
+每个原子任务 — 无论类型 — 都必须遵循：DEFINE → ANALYZE → VERIFY + SELF-CHECK。
+如果计划 frontmatter 中声明了 `golden_signal`，还必须围绕该信号补齐现状、风险、阈值 / 告警候选、runbook 影响。
+</golden_signal_mandate>
 
 <debugging_mandate>
 遇到任何错误、测试失败或验证不通过时，必须先完成根因调查（systematic-debugging.md Phase 1-3），才能提出修复方案。
@@ -195,10 +195,14 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" phases list --type summarie
    - `type="auto"`：
      - **强制三步纪律（所有任务，无例外）：**
        1. **DEFINE** — 实现前明确：可观测的完成状态是什么？验证命令是什么？可能的失败模式是什么？写不出来就不能开始。
-       2. **IMPLEMENT** — 按计划实现，不随意扩展范围，记录所有修改的文件
+       2. **ANALYZE** — 按计划分析或实现，不随意扩展范围，记录所有修改的文件
        3. **VERIFY** — 运行 DEFINE 中写好的验证命令。通过 → SELF-CHECK。失败 → 调试修复，不能标记为"完成"
        4. **SELF-CHECK** — 提交前 30 秒自查：done-criteria 逐条核对、意外修改的文件说明、是否影响下游、commit message 是否诚实
-     - 若 `tdd="true"`，在三步纪律之上叠加完整的 RED-GREEN-REFACTOR 循环（见 tdd.md）
+     - 若 frontmatter 中存在 `golden_signal`，在三步纪律之上补齐完整的信号分析：
+       1. 建立当前信号基线
+       2. 说明用户 / 业务影响
+       3. 提炼阈值、告警候选或观察项
+       4. 回写 monitoring / runbook / deployment 文档影响
      - 验证通过、自查通过后提交（见 task_commit）
    - `type="checkpoint:*"`：
      - 立刻停止
@@ -314,41 +318,34 @@ Rule 4（必须停） > Rules 1-3（先调查根因，再自动修） > 不确�
 
 </deviation_documentation>
 
-<tdd_plan_execution>
-## TDD 执行方式
+<golden_signal_execution>
+## 四大黄金信号执行方式
 
-对于 `type: tdd` 的计划，严格执行 `RED -> GREEN -> REFACTOR`：
+对于声明了 `golden_signal` 的计划，执行时必须显式围绕该信号收口：
 
-1. **基础设施准备**（只在第一个 TDD 计划中出现）
-   - 检测项目类型
-   - 安装测试框架
-   - 补配置
-   - 确认空测试套件能运行
+1. **Baseline**
+   - 读取代码、配置、现有文档和指标定义
+   - 明确当前信号的可用事实、缺口和数据来源
 
-2. **RED**
-   - 读取 `<behavior>`
-   - 写失败测试
-   - 运行测试，**必须失败**
-   - 提交：`test({phase}-{plan}): add failing test for [feature]`
+2. **Risk**
+   - 识别用户体验、业务结果、发布风险或值班风险
+   - 标出哪些场景最值得告警，哪些只应观察
 
-3. **GREEN**
-   - 读取 `<implementation>`
-   - 写最小实现
-   - 跑测试，**必须通过**
-   - 提交：`feat({phase}-{plan}): implement [feature]`
+3. **Threshold**
+   - 给出阈值、告警候选、观察窗口、升级条件
+   - 如果当前仓库缺少足够数据，就明确写成“待补指标 / 待补采集”
 
-4. **REFACTOR**
-   - 清理实现
-   - 保证测试仍全部通过
-   - 提交：`refactor({phase}-{plan}): clean up [feature]`
+4. **Runbook Impact**
+   - 回写到 `MONITORING.md`、`RUNBOOK.md`、`DEPLOYMENT.md` 或相关总结
+   - 明确发布前、发布中、发布后分别看什么
 
-异常处理：
-- RED 没失败：先判断是测试写错了，还是现有实现已经满足需求
-- GREEN 没通过：继续调试直到通过
-- REFACTOR 引入回归：撤回并修正
+按信号聚焦时，优先使用以下问题模板：
 
-详见 `~/.claude/get-shit-done/references/tdd.md`。
-</tdd_plan_execution>
+- `latency`：哪里慢，慢到什么程度，用户何时可感知，发布后第一观察窗看什么
+- `traffic`：峰值来自哪里，吞吐拐点在哪里，是否需要限流 / 扩容 / 发布窗口控制
+- `errors`：哪些失败会直接影响业务，哪些错误码需要立刻呼叫，哪些只是噪声
+- `saturation`：哪些资源最先打满，余量阈值是多少，何时必须扩容或暂停部署
+</golden_signal_execution>
 
 <precommit_failure_handling>
 ## pre-commit hook 失败处理
@@ -407,8 +404,8 @@ git add src/types/user.ts
 |------|----------|------|
 | `feat` | 新功能 | `feat(08-02): create user registration endpoint` |
 | `fix` | 修 bug | `fix(08-02): correct email validation regex` |
-| `test` | 仅测试（TDD RED） | `test(08-02): add failing test for password hashing` |
-| `refactor` | 不改行为的重构（TDD REFACTOR） | `refactor(08-02): extract validation to helper` |
+| `test` | 探针、验证脚本、smoke 检查 | `test(08-02): add release smoke check for login endpoint` |
+| `refactor` | 不改行为的整理 | `refactor(08-02): extract monitoring threshold helpers` |
 | `perf` | 性能优化 | `perf(08-02): add database index` |
 | `docs` | 文档 | `docs(08-02): add API docs` |
 | `style` | 纯格式调整 | `style(08-02): format auth module` |
@@ -505,29 +502,6 @@ orchestrator 拿到这份结构化结果后：
 
 <step name="verification_failure_gate">
 如果验证失败：
-
-**先看是否启用 node repair：**
-
-```bash
-NODE_REPAIR=$(node "./.claude/get-shit-done/bin/gsd-tools.cjs" config-get workflow.node_repair 2>/dev/null || echo "true")
-```
-
-如果 `NODE_REPAIR=true`：
-- 调用 `@./.claude/get-shit-done/workflows/node-repair.md`
-- 传入：
-  - `FAILED_TASK`
-  - `ERROR`
-  - `PLAN_CONTEXT`
-  - `REPAIR_BUDGET`
-
-node repair 会自主尝试：
-- `RETRY`
-- `DECOMPOSE`
-- `PRUNE`
-
-只有在 repair budget 用尽并返回 `ESCALATE` 时，才重新回到这里。
-
-如果 `NODE_REPAIR=false`，或 repair 最终 `ESCALATE`：
 - 停止执行
 - 清楚展示：
   - 哪个任务验证失败
@@ -728,8 +702,8 @@ ls -1 .planning/phases/[current-phase-dir]/*-SUMMARY.md 2>/dev/null | wc -l
 | 条件 | 路由 | 动作 |
 |------|------|------|
 | `summaries < plans` | A：还有计划未执行 | 找下一个 plan，`yolo` 直接继续，交互模式提示用户运行 `/gsd:execute-phase {phase}` |
-| `summaries = plans` 且 `current < highest phase` | B：当前阶段完成 | 提示下一阶段，推荐 `/gsd:plan-phase {Z+1}` 或 `/gsd:discuss-phase {Z+1}` |
-| `summaries = plans` 且 `current = highest phase` | C：里程碑完成 | 推荐 `/gsd:complete-milestone` |
+| `summaries = plans` 且 `current < highest phase` | B：当前阶段完成 | 提示下一阶段，推荐 `/gsd:plan-phase {Z+1}` 或刷新 `/gsd:ops-runbook` |
+| `summaries = plans` 且 `current = highest phase` | C：当前阶段完成 | 推荐刷新 `/gsd:ops-runbook`，然后执行 `/gsd:ops-audit` |
 
 所有路线都建议先 `/clear`，再进入下一步。
 </step>

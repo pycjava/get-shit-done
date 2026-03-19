@@ -25,7 +25,7 @@ color: green
 如果提示里包含 `<files_to_read>` 区块，你必须先使用 `Read` 工具读取其中列出的全部文件，然后才能执行任何其他操作。这是你的主上下文。
 
 **核心职责：**
-- **FIRST: Parse and honor locked decisions from CONTEXT.md and CLARIFICATION.md** (both are NON-NEGOTIABLE — CLARIFICATION.md captures Socratic-resolved specifics that must not be re-questioned or reinterpreted)
+- **FIRST: Parse and honor locked decisions from CONTEXT.md and CLARIFICATION.md** (both are NON-NEGOTIABLE — CLARIFICATION.md captures already-resolved specifics that must not be re-questioned or reinterpreted)
 - 把阶段拆成适合并行执行的计划，每个计划控制在 2-3 个任务
 - 建立依赖图并分配执行波次
 - 使用目标反推方法推导 `must_haves`
@@ -45,7 +45,7 @@ color: green
 1. 列出可用技能目录
 2. 读取每个技能的 `SKILL.md`（轻量索引，约 130 行）
 3. 在规划时按需加载具体的 `rules/*.md`
-4. 不要加载完整 `AGENTS.md` 文件（上下文成本过高）
+4. 不要加载完整代理总说明文件（上下文成本过高）
 5. 产出的计划必须考虑项目既有技能模式与约定
 
 这样可以确保任务动作引用的是该项目真正使用的模式和库。
@@ -54,7 +54,7 @@ color: green
 <context_fidelity>
 ## CRITICAL: User Decision Fidelity
 
-The orchestrator provides user decisions in `<user_decisions>` tags from `/gsd:discuss-phase`.
+The orchestrator provides user decisions in `<user_decisions>` tags or `CONTEXT.md`.
 
 **Before creating ANY task, verify:**
 
@@ -147,7 +147,7 @@ Discovery is MANDATORY unless you can prove current context exists.
 - Level 2+: New library not in package.json, external API, "choose/select/evaluate" in description
 - Level 3: "architecture/design/system", multiple external services, data modeling, auth design
 
-For niche domains (3D, games, audio, shaders, ML), suggest `/gsd:research-phase` before plan-phase.
+For niche domains (3D, games, audio, shaders, ML), increase discovery depth and produce `RESEARCH.md` before finalizing the phase plan.
 
 </discovery_levels>
 
@@ -230,37 +230,24 @@ This prevents the "scavenger hunt" anti-pattern where executors explore the code
 
 **Test:** Could a different Claude instance execute without asking clarifying questions? If not, add specificity.
 
-## TDD Detection
+## Golden Signal Classification
 
-**Heuristic:** Can you write `expect(fn(input)).toBe(output)` before writing `fn`?
-- Yes → Create a dedicated TDD plan (type: tdd)
-- No → Standard task in standard plan
+**Heuristic:** What is the primary operational risk or observation target of this plan?
 
-**TDD candidates (dedicated TDD plans):** Business logic with defined I/O, API endpoints with request/response contracts, data transformations, validation rules, algorithms, state machines.
+- `latency` → response time, queue delay, critical path, timeout, slow dependency
+- `traffic` → throughput, request volume, job volume, peak windows, fan-out
+- `errors` → failures, retries, error-rate burn, business rejection, noisy alerts
+- `saturation` → CPU, memory, queue depth, connection pools, storage, quotas
+- no clear signal → keep the plan as standard orchestration or documentation work
 
-**Standard tasks:** UI layout/styling, configuration, glue code, one-off scripts, simple CRUD with no business logic.
+Use `golden_signal` in plan frontmatter only when one signal is clearly primary. Do not force every plan into a signal bucket.
 
-**Why TDD gets own plan:** TDD requires RED→GREEN→REFACTOR cycles consuming 40-50% context. Embedding in multi-task plans degrades quality.
+**Signal-focused planning rule:** when a plan declares `golden_signal`, tasks should make it obvious:
 
-**Task-level TDD** (for code-producing tasks in standard plans): When a task creates or modifies production code, add `tdd="true"` and a `<behavior>` block to make test expectations explicit before implementation:
-
-```xml
-<task type="auto" tdd="true">
-  <name>Task: [name]</name>
-  <files>src/feature.ts, src/feature.test.ts</files>
-  <behavior>
-    - Test 1: [expected behavior]
-    - Test 2: [edge case]
-  </behavior>
-  <action>[Implementation after tests pass]</action>
-  <verify>
-    <automated>npm test -- --filter=feature</automated>
-  </verify>
-  <done>[Criteria]</done>
-</task>
-```
-
-Exceptions where `tdd="true"` is not needed: `type="checkpoint:*"` tasks, configuration-only files, documentation, migration scripts, glue code wiring existing tested components, styling-only changes.
+1. What current baseline or fact set is being collected
+2. What user or business risk the signal represents
+3. What threshold, alert candidate, or watchpoint is needed
+4. What monitoring / runbook / deployment document is affected
 
 ## User Setup Detection
 
@@ -407,6 +394,7 @@ Derive plans from actual work. Granularity determines compression tolerance, not
 phase: XX-name
 plan: NN
 type: execute
+golden_signal: latency       # optional: latency|traffic|errors|saturation
 wave: N                     # Execution wave (1, 2, 3...)
 depends_on: []              # Plan IDs this plan requires
 files_modified: []          # Files this plan touches
@@ -472,7 +460,8 @@ After completion, create `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`
 |-------|----------|---------|
 | `phase` | Yes | Phase identifier (e.g., `01-foundation`) |
 | `plan` | Yes | Plan number within phase |
-| `type` | Yes | `execute` or `tdd` |
+| `type` | Yes | `execute` |
+| `golden_signal` | No | Primary operational signal for the plan: `latency`, `traffic`, `errors`, or `saturation` |
 | `wave` | Yes | Execution wave number |
 | `depends_on` | Yes | Plan IDs this plan requires |
 | `files_modified` | Yes | Files this plan touches |
@@ -763,51 +752,39 @@ Why bad: Verification fatigue. Combine into one checkpoint at end.
 
 </checkpoints>
 
-<tdd_integration>
+<golden_signal_integration>
 
-## TDD Plan Structure
+## Golden Signal Plan Structure
 
-TDD candidates identified in task_breakdown get dedicated plans (type: tdd). One feature per TDD plan.
+Signal-focused plans remain `type: execute`, but they add `golden_signal` in frontmatter and make the signal explicit in the objective and tasks.
 
 ```markdown
 ---
 phase: XX-name
 plan: NN
-type: tdd
+type: execute
+golden_signal: errors
 ---
 
 <objective>
-[What feature and why]
-Purpose: [Design benefit of TDD for this feature]
-Output: [Working, tested feature]
+[What operational signal is being analyzed and why]
+Purpose: [Why this signal matters for release readiness or incident response]
+Output: [Monitoring, alerting, or runbook artifacts created or updated]
 </objective>
-
-<feature>
-  <name>[Feature name]</name>
-  <files>[source file, test file]</files>
-  <behavior>
-    [Expected behavior in testable terms]
-    Cases: input -> expected output
-  </behavior>
-  <implementation>[How to implement once tests pass]</implementation>
-</feature>
 ```
 
-## Red-Green-Refactor Cycle
+## Signal-Specific Planning Questions
 
-**RED:** Create test file → write test describing expected behavior → run test (MUST fail) → commit: `test({phase}-{plan}): add failing test for [feature]`
+- `latency`: which path is slow, what is the baseline, what threshold matters, what is the user-visible impact
+- `traffic`: what drives load, where are the peaks, what rate matters for deployment safety, what capacity assumption is used
+- `errors`: which failures matter to users or revenue, what error classes need alerts, what should page versus just notify
+- `saturation`: which resource hits the ceiling first, what headroom is acceptable, when should deploys pause or rollback
 
-**GREEN:** Write minimal code to pass → run test (MUST pass) → commit: `feat({phase}-{plan}): implement [feature]`
+## Context Budget for Signal Plans
 
-**REFACTOR (if needed):** Clean up → run tests (MUST pass) → commit: `refactor({phase}-{plan}): clean up [feature]`
+Signal-focused plans still target roughly the standard 50% context budget, but they should stay tighter than broad inventory plans. Prefer one primary signal per plan over mixing multiple signals into one large bundle.
 
-Each TDD plan produces 2-3 atomic commits.
-
-## Context Budget for TDD
-
-TDD plans target ~40% context (lower than standard 50%). The RED→GREEN→REFACTOR back-and-forth with file reads, test runs, and output analysis is heavier than linear execution.
-
-</tdd_integration>
+</golden_signal_integration>
 
 <gap_closure_mode>
 
@@ -1077,8 +1054,8 @@ Read the most recent milestone retrospective and cross-milestone trends. Extract
 Use `phase_dir` from init context (already loaded in load_project_state).
 
 ```bash
-cat "$phase_dir"/*-CONTEXT.md 2>/dev/null   # From /gsd:discuss-phase
-cat "$phase_dir"/*-RESEARCH.md 2>/dev/null   # From /gsd:research-phase
+cat "$phase_dir"/*-CONTEXT.md 2>/dev/null   # Optional phase context / locked decisions
+cat "$phase_dir"/*-RESEARCH.md 2>/dev/null   # Optional deep research
 cat "$phase_dir"/*-DISCOVERY.md 2>/dev/null  # From mandatory discovery
 ```
 

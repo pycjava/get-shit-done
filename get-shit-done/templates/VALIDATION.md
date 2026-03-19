@@ -7,7 +7,7 @@ wave_0_complete: false
 created: {date}
 ---
 
-# Phase {N} - Validation Strategy
+# 阶段 {N}：验证策略
 
 > 按 phase 定义的验证契约，用于执行过程中的反馈采样。
 
@@ -15,13 +15,13 @@ created: {date}
 
 ## 测试基础设施
 
-| Property | Value |
-|----------|-------|
-| **Framework** | {pytest 7.x / jest 29.x / vitest / go test / other} |
-| **Config file** | {path or "none - Wave 0 installs"} |
-| **Quick run command** | `{quick command}` |
-| **Full suite command** | `{full command}` |
-| **Estimated runtime** | ~{N} seconds |
+| 属性 | 值 |
+|------|----|
+| **测试框架** | {pytest 7.x / jest 29.x / vitest / go test / other} |
+| **配置文件** | {path or "none - Wave 0 installs"} |
+| **快速执行命令** | `{quick command}` |
+| **完整测试命令** | `{full command}` |
+| **预计耗时** | ~{N} seconds |
 
 ---
 
@@ -36,11 +36,11 @@ created: {date}
 
 ## 每任务验证映射
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| {N}-01-01 | 01 | 1 | REQ-{XX} | unit | `{command}` | ✅ / ❌ W0 | pending |
+| 任务 ID | 计划 | Wave | 需求 | 测试类型 | 自动化命令 | 文件是否存在 | 状态 |
+|---------|------|------|------|----------|------------|--------------|------|
+| {N}-01-01 | 01 | 1 | REQ-{XX} | unit | `{command}` | ✅ / ❌ W0 | 待验证 |
 
-*Status: `pending` / `green` / `red` / `flaky`*
+*状态：`待验证` / `通过` / `失败` / `不稳定`*
 
 ---
 
@@ -56,15 +56,15 @@ created: {date}
 
 ## 仅能人工完成的验证
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
+| 行为 | 需求 | 必须人工验证的原因 | 测试说明 |
+|------|------|------------------|----------|
 | {behavior} | REQ-{XX} | {reason} | {steps} |
 
 *如果没有：`All phase behaviors have automated verification.`*
 
 ---
 
-## Validation Sign-Off
+## 验证签署
 
 - [ ] 所有任务都有 `<automated>` verify 或 Wave 0 依赖
 - [ ] 采样连续性成立：不存在连续 3 个任务都没有自动验证
@@ -73,4 +73,4 @@ created: {date}
 - [ ] 反馈延迟 < {N}s
 - [ ] frontmatter 中已设置 `nyquist_compliant: true`
 
-**Approval:** {pending / approved YYYY-MM-DD}
+**批准状态：** {待定 / 已批准 YYYY-MM-DD}

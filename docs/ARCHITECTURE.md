@@ -15,17 +15,33 @@ The repository keeps the original GSD layering:
 5. `.planning/`
    Runtime state written into the user project.
 
+## Preserved Framework
+
+- `phase + wave` orchestration
+- Thin orchestrators over specialized agents
+- File-based planning state
+- Explicit verification and audit steps
+
+## Analysis Kernel
+
+The default kernel is now operations analysis instead of development/TDD execution.
+
+- `Latency`
+- `Traffic`
+- `Errors`
+- `Saturation`
+
+Plans can declare a primary `golden_signal` and downstream summaries surface signal focus, alert thresholds, and runbook impact.
+
 ## Data Flow
 
 Typical flow:
 
 1. Initialize project context.
-2. Discuss a phase.
-3. Plan the phase.
-4. Execute the phase.
-5. Verify the phase.
-6. Generate and audit operations documentation.
-7. Audit and archive the milestone.
+2. Plan the phase with signal-focused work packages.
+3. Execute the phase in waves.
+4. Verify the phase outcome.
+5. Generate and audit operations documentation.
 
 ## Core Artifacts
 
@@ -42,4 +58,4 @@ Typical flow:
 - Thin orchestrators, not monolithic prompts
 - Human-readable state instead of hidden memory
 - Verification before and after execution
-- Reusable framework, operations-specific content
+- Reusable framework, operations-specific analysis content

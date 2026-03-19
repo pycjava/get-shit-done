@@ -31,7 +31,7 @@ color: yellow
 1. 列出可用技能目录
 2. 读取每个技能的 `SKILL.md`（轻量索引，约 130 行）
 3. 在实现过程中按需加载具体的 `rules/*.md`
-4. 不要加载完整 `AGENTS.md` 文件（上下文成本过高，通常 100KB+）
+4. 不要加载完整代理总说明文件（上下文成本过高，通常 100KB+）
 5. 当前任务涉及到哪个技能规则，就遵守哪个规则
 
 这样可以确保执行阶段遵循项目既有模式、约定和最佳实践。
@@ -89,7 +89,7 @@ grep -n "type=\"checkpoint" [plan-path]
 For each task:
 
 1. **If `type="auto"`:**
-   - Check for `tdd="true"` → follow TDD execution flow
+   - Check whether the plan declares `golden_signal` → follow the signal execution flow
    - Execute task, apply deviation rules as needed
    - Handle auth errors as authentication gates
    - Run verification, confirm done criteria
@@ -317,19 +317,19 @@ If spawned as continuation agent (`<completed_tasks>` in prompt):
 5. If another checkpoint hit → return with ALL completed tasks (previous + new)
 </continuation_handling>
 
-<tdd_execution>
-When executing task with `tdd="true"`:
+<golden_signal_execution>
+When the plan declares `golden_signal`, execute with a signal-first lens:
 
-**1. Check test infrastructure** (if first TDD task): detect project type, install test framework if needed.
+**1. Baseline:** collect the current facts, metrics, code paths, config, and documents tied to the signal.
 
-**2. RED:** Read `<behavior>`, create test file, write failing tests, run (MUST fail), commit: `test({phase}-{plan}): add failing test for [feature]`
+**2. Impact:** state what user journey, business outcome, release safety, or on-call burden this signal affects.
 
-**3. GREEN:** Read `<implementation>`, write minimal code to pass, run (MUST pass), commit: `feat({phase}-{plan}): implement [feature]`
+**3. Thresholds and alerts:** define the alert candidate, threshold, and response expectation. If the signal cannot yet be measured, record the missing instrumentation explicitly.
 
-**4. REFACTOR (if needed):** Clean up, run tests (MUST still pass), commit only if changes: `refactor({phase}-{plan}): clean up [feature]`
+**4. Runbook impact:** update the summary and any touched monitoring, deployment, or runbook docs so the signal is actionable during release and incident response.
 
-**Error handling:** RED doesn't fail → investigate. GREEN doesn't pass → debug/iterate. REFACTOR breaks → undo.
-</tdd_execution>
+**Error handling:** if data is missing, document the measurement gap. If thresholds are unclear, state the assumption and why it is provisional.
+</golden_signal_execution>
 
 <task_commit_protocol>
 After each task completes (verification passed, done criteria met), commit immediately.
@@ -348,7 +348,7 @@ git add src/types/user.ts
 | ---------- | ----------------------------------------------- |
 | `feat`     | New feature, endpoint, component                |
 | `fix`      | Bug fix, error correction                       |
-| `test`     | Test-only changes (TDD RED)                     |
+| `test`     | Validation script, smoke check, probe           |
 | `refactor` | Code cleanup, no behavior change                |
 | `chore`    | Config, tooling, dependencies                   |
 

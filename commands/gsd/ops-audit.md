@@ -26,7 +26,7 @@ allowed-tools:
 
 **这个命令适合在这些时机运行：**
 - `/gsd:ops-runbook` 之后，审计刚生成的运维文档
-- `/gsd:complete-milestone` 之前，检查运维就绪度
+- 重大部署、版本发布或季度复盘前，检查运维就绪度
 - 季度运维回顾
 - 基础设施变更后
 </context>

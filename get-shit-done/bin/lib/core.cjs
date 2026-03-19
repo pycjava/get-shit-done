@@ -21,7 +21,7 @@ function initI18n(cwd) {
     const zhCN = require('../../../locales/zh-CN.json');
 
     // Load language preference from config
-    let language = 'en';
+    let language = 'zh-CN';
     try {
       const configPath = path.join(cwd, '.planning', 'config.json');
       if (fs.existsSync(configPath)) {
@@ -31,7 +31,7 @@ function initI18n(cwd) {
         }
       }
     } catch (e) {
-      // Use default 'en'
+      // Use default 'zh-CN'
     }
 
     i18next.init({
@@ -115,7 +115,7 @@ function loadConfig(cwd) {
     nyquist_validation: true,
     parallelization: true,
     brave_search: false,
-    language: 'en',
+    language: 'zh-CN',
   };
 
   try {

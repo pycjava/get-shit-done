@@ -13,7 +13,7 @@ const {
 
 const VALID_CONFIG_KEYS = new Set([
   'mode', 'granularity', 'parallelization', 'commit_docs', 'model_profile',
-  'search_gitignored', 'brave_search',
+  'search_gitignored', 'brave_search', 'language',
   'workflow.research', 'workflow.plan_check', 'workflow.verifier',
   'workflow.nyquist_validation',
   'workflow._auto_chain_active',
@@ -88,6 +88,7 @@ function ensureConfigFile(cwd) {
     model_profile: 'balanced',
     commit_docs: true,
     search_gitignored: false,
+    language: 'zh-CN',
     branching_strategy: 'none',
     phase_branch_template: 'gsd/phase-{phase}-{slug}',
     milestone_branch_template: 'gsd/{milestone}-{slug}',

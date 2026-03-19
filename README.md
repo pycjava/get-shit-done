@@ -2,13 +2,20 @@
 
 Operations-first context engineering and phased workflow automation for AI agents.
 
-This repository keeps the original GSD backbone:
+This edition keeps the original GSD backbone:
 
-- Layered structure: `commands -> workflows -> agents -> templates -> .planning`
-- Working style: file-based state, thin orchestrators, specialized agents, explicit validation
-- Working flow: discover -> discuss -> plan -> execute -> verify -> audit -> archive
+- `phase + wave` orchestration
+- File-based state and thin orchestrators
+- Specialized agents and explicit validation
 
-What changed is the product focus. This edition is for operations work: service readiness, deployment, monitoring, capacity planning, incident response, backup, security operations, and operational acceptance.
+What changed is the inner kernel. This repository is now centered on operations analysis and runbook generation, not generic development execution. The default analysis model is the Google SRE four golden signals:
+
+- `Latency`
+- `Traffic`
+- `Errors`
+- `Saturation`
+
+Plans, summaries, monitoring templates, and roadmap execution views now surface signal focus instead of `RED -> GREEN -> REFACTOR`.
 
 ## Install
 
@@ -35,52 +42,43 @@ After install:
 - OpenCode: `/gsd-help`
 - Codex: `$gsd-help`
 
-## Core Workflow
+## Recommended Workflow
 
-For a new or existing system:
+For a new or existing service:
 
 1. `/gsd:map-codebase`
-   Use this when you need a brownfield view of the current service, stack, and integration surface.
+   Build a brownfield map of services, dependencies, interfaces, and operational surface area.
 2. `/gsd:new-project`
-   Capture the service boundary, environments, dependencies, capacity constraints, operational limits, and success criteria.
-3. `/gsd:autonomous`
-   Build one unified master plan across all remaining phases, display it up front, then execute phase-by-phase automatically. TDD plans are surfaced explicitly as `RED -> GREEN -> REFACTOR`.
-4. Manual phase control when you want to steer a specific phase yourself:
-   `/gsd:discuss-phase 1`
-   Lock decisions for the current operations phase: rollout, alerting, capacity triggers, recovery, ownership, and change windows.
-5. `/gsd:plan-phase 1`
-   Produce executable phase plans and validation criteria.
-6. `/gsd:execute-phase 1`
-   Execute the phase through the normal GSD wave-based model.
-7. `/gsd:verify-work 1`
-   Validate the operational outcome through drills, checks, and acceptance prompts.
-8. `/gsd:ops-runbook`
+   Capture service boundaries, environments, owners, deployment cadence, operational constraints, and readiness goals.
+3. `/gsd:plan-phase 1`
+   Break the phase into wave-based execution plans. Each plan can declare a primary `golden_signal`.
+4. `/gsd:execute-phase 1`
+   Execute the phase and generate summaries that highlight monitoring coverage, alert candidates, and runbook impact.
+5. `/gsd:verify-work 1`
+   Validate that the operational outcome is usable, observable, and ready for handoff.
+6. `/gsd:ops-runbook`
    Generate or refresh operations documentation.
-9. `/gsd:ops-audit`
-   Audit runbooks and operational coverage.
+7. `/gsd:ops-audit`
+   Audit stale or missing operational coverage.
 
-At milestone boundaries:
+## Operational Model
 
-1. `/gsd:audit-milestone`
-2. `/gsd:complete-milestone`
-3. `/gsd:new-milestone`
+- Deployments are assumed to be manually triggered, not fully automated CI/CD promotions.
+- A weekly release cadence is normal, even when the exact deployment time varies.
+- Operations docs should be refreshed on deployment or release checkpoints, after major operational changes, and after incidents. They do not need to change on every code commit.
+- Signal-focused plans should capture thresholds, alerting candidates, and business watchpoints that matter during release and incident response.
 
 ## Primary Commands
 
 | Command | Purpose |
 |---|---|
-| `/gsd:new-project` | Initialize an operations-focused planning workspace |
 | `/gsd:map-codebase` | Map an existing codebase or service surface before planning |
-| `/gsd:autonomous` | Show one cross-phase master plan, then execute it automatically |
-| `/gsd:discuss-phase` | Capture phase-specific operational decisions |
+| `/gsd:new-project` | Initialize an operations-focused planning workspace |
 | `/gsd:plan-phase` | Create verified phase plans |
 | `/gsd:execute-phase` | Execute a phase in dependency waves |
 | `/gsd:verify-work` | Run operational UAT, drills, and fix-loop planning |
 | `/gsd:ops-runbook` | Create operations documents under `.planning/operations/` |
 | `/gsd:ops-audit` | Review operational coverage and stale docs |
-| `/gsd:audit-milestone` | Verify milestone-level operational readiness |
-| `/gsd:complete-milestone` | Archive a completed milestone |
-| `/gsd:new-milestone` | Start the next operational milestone |
 
 ## Operational Outputs
 
@@ -95,19 +93,14 @@ The framework still writes into `.planning/`, but the content is now centered on
 
 ## Repo Scope
 
-Removed from this edition:
+Removed from this trimmed edition:
 
 - UI design contract and UI review flows
 - Developer behavior profiling
 - Community marketing commands
 - Test-generation-specific command surface
-
-Retained because they support the framework:
-
-- Phase and milestone management
-- Brownfield mapping
-- Debugging and validation
-- Progress, pause/resume, update, and settings utilities
+- Milestone and backlog management commands
+- Legacy routing, milestone lifecycle, and non-ops support utilities
 
 ## Docs
 

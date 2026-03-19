@@ -17,29 +17,7 @@ Run `/gsd:new-project` and capture:
 - ownership boundaries
 - operational constraints
 
-### 3. Phase discussion
-
-Run `/gsd:discuss-phase N` to lock decisions such as:
-
-- deployment path
-- capacity thresholds and scale triggers
-- rollback approach
-- monitoring and alerting
-- backup and recovery
-- incident workflow
-
-### 4. One-command execution
-
-Run `/gsd:autonomous` when you want the system to:
-
-- build one unified master plan across all remaining phases
-- show that plan before execution starts
-- execute phase-by-phase automatically
-- surface any TDD plans as `RED -> GREEN -> REFACTOR`
-
-Use `--from N` if you want to start from a later phase.
-
-### 5. Manual planning and execution
+### 3. Phase planning and execution
 
 Run:
 
@@ -47,30 +25,44 @@ Run:
 2. `/gsd:execute-phase N`
 3. `/gsd:verify-work N`
 
-### 6. Operations documentation
+During planning, classify each plan by its primary operational signal when helpful:
+
+- `Latency`
+- `Traffic`
+- `Errors`
+- `Saturation`
+
+### 4. Optional discussion and automation
+This trimmed edition keeps the flow manual and explicit. Plan, execute, verify, then refresh ops docs.
+
+### 5. Operations documentation
 
 Run:
 
 1. `/gsd:ops-runbook`
 2. `/gsd:ops-audit`
 
-### 7. Milestone closeout
+### 6. Release and doc refresh model
 
-Run:
-
-1. `/gsd:audit-milestone`
-2. `/gsd:complete-milestone`
+- Weekly deployments can still be manual.
+- The framework does not assume CI/CD auto-promotion.
+- Refresh ops docs on deployment checkpoints, major operational changes, or incidents.
+- Do not treat every code commit as a required doc update event.
 
 ## Typical Outputs
 
-- Phase plans for specific operational work packages
-- Summaries and verification reports after execution
+- Phase plans for signal-focused operational work packages
+- Summaries that capture monitoring coverage, alert candidates, business watchpoints, and runbook impact
 - Runbooks covering deployment, monitoring, capacity, backup, security ops, and incident response
 
-## Recovery Utilities
+## Command Surface
 
-- `/gsd:progress`
-- `/gsd:resume-work`
-- `/gsd:pause-work`
-- `/gsd:health`
-- `/gsd:debug`
+Only the core operations commands remain in this trimmed edition:
+
+- `/gsd:map-codebase`
+- `/gsd:new-project`
+- `/gsd:plan-phase`
+- `/gsd:execute-phase`
+- `/gsd:verify-work`
+- `/gsd:ops-runbook`
+- `/gsd:ops-audit`

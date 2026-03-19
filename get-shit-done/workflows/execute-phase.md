@@ -138,8 +138,7 @@ Task(
     @~/.claude/get-shit-done/workflows/execute-plan.md
     @~/.claude/get-shit-done/templates/summary.md
     @~/.claude/get-shit-done/references/checkpoints.md
-    @~/.claude/get-shit-done/references/tdd.md
-    @~/.claude/get-shit-done/references/tdd-discipline.md
+    @~/.claude/get-shit-done/references/golden-signals.md
     </execution_context>
 
     <files_to_read>
@@ -153,7 +152,7 @@ Task(
 
     <success_criteria>
     - [ ] All tasks executed
-    - [ ] Every task followed DEFINE → IMPLEMENT → VERIFY + SELF-CHECK (tdd-discipline.md)
+    - [ ] Every task followed DEFINE → ANALYZE → VERIFY + SELF-CHECK (golden-signals.md)
     - [ ] Each task committed individually
     - [ ] SUMMARY.md created in plan directory
     - [ ] STATE.md updated with position and decisions
@@ -463,13 +462,7 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs(phase-{X}): co
 
 **例外：** 如果验证结果是 `gaps_found`，本 workflow 已在 `verify_phase_goal` 中给出补洞路径，此时不要继续自动推进。
 
-**先解析 `--no-transition` 标记。**
-
-如果带了 `--no-transition`：
-- 说明这是被自动链上的上游 workflow 调起的
-- 当前 workflow 只负责完成阶段执行与验证，不负责阶段切换
-
-在验证通过并完成 roadmap/state 更新后，只返回阶段完成摘要：
+在验证通过并完成 roadmap/state 更新后，直接停止并返回阶段完成摘要：
 
 ```
 ## 阶段完成
@@ -481,49 +474,15 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs(phase-{X}): co
 [附上 aggregate_results 输出]
 ```
 
-到这里停止，不再自动触发 `transition.md`。
-
-**如果没有 `--no-transition`：**
-
-继续判断是否应该自动推进。
-
-1. 解析 `--auto`
-2. 读取自动链状态和用户偏好：
-
-```bash
-AUTO_CHAIN=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-AUTO_CFG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
-```
-
-**如果满足以下任一条件，且验证状态是 `passed`：**
-- 显式带了 `--auto`
-- `AUTO_CHAIN=true`
-- `AUTO_CFG=true`
-
-则展示：
-
-```
-自动推进：进入阶段切换
-阶段 {X} 已通过验证，继续执行自动链。
-```
-
-然后**直接内联执行** `~/.claude/get-shit-done/workflows/transition.md`，并把 `--auto` 继续向后传递。
-
-不要用 `Task()` 包一层，因为当前编排器上下文已经掌握了阶段完成数据，直接转场更稳。
-
-**如果以上条件都不满足：**
-
-到此停止，不自动推进，不自动执行阶段切换，也不自动规划下一阶段。
-
 向用户展示可选下一步：
 
 ```
-## 阶段 {X}: {Name} 已完成
+## 下一步
 
-/gsd:progress - 查看最新路线图
-/gsd:discuss-phase {next} - 先讨论下一阶段
 /gsd:plan-phase {next} - 规划下一阶段
-/gsd:execute-phase {next} - 直接执行下一阶段
+/gsd:execute-phase {next} - 执行下一阶段
+/gsd:ops-runbook - 刷新运维文档
+/gsd:ops-audit - 审计运维覆盖
 ```
 </step>
 
