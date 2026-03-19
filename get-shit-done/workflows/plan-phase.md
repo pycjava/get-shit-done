@@ -1,35 +1,33 @@
 <purpose>
-为一个运维阶段创建可执行计划，并在执行前验证计划质量。
+Use phase as an analysis scaffold for operations work. Do not create or update phase tracking documents. Phase conclusions stay in the response only unless the user explicitly asks for formal operations docs to be written into `.planning/operations/`.
 </purpose>
 
 <process>
 
-1. 运行 init：
-
-```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init plan-phase "$ARGUMENTS")
-if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-```
-
-2. 读取该阶段上下文：
-- `PROJECT.md`
-- `REQUIREMENTS.md`
-- `ROADMAP.md`
-- `STATE.md`
-- 如果存在则读取 `CONTEXT.md`
-- 如果存在也读取历史 research / verification 产物
-
-3. 如果开启了 research，则拉起 phase researcher。
-4. 执行 Clarification 子任务：
-   - 读取并遵照 `@~/.claude/get-shit-done/references/clarification.md`
-   - 以 `PROJECT.md`、`REQUIREMENTS.md`、`ROADMAP.md` 及已有 `CONTEXT.md` 为输入
-   - 写入 `{phase}-CLARIFICATION.md`，作为 planner 的强制输入
-5. 拉起 planner 创建该阶段的可执行计划，并把 `CONTEXT.md`、`CLARIFICATION.md` 和所有历史产物都作为输入。
-6. 如果开启了 plan checking，则运行 checker 循环，直到 plans 通过检查，或 workflow 必须升级处理。
-7. 确保 plans 写成具体、可落地的运维工作包，并且包含验证步骤。
+1. Run `init plan-phase` with the user topic or requested document names.
+2. If `analysis_mode=true`, treat the workflow as a three-step analysis sequence:
+   - Phase 1: Current State and Scope
+   - Phase 2: Risk and Operations Decisions
+   - Phase 3: Runbook Output Selection
+3. Read only the project context that exists and is relevant:
+   - `.planning/PROJECT.md`
+   - `.planning/REQUIREMENTS.md`
+   - `.planning/ROADMAP.md`
+   - `.planning/config.json`
+   - existing `.planning/operations/*.md`
+   - deployment, CI, infra, secrets-handling, backup, monitoring, and runtime files in the repo
+4. Do not create `CONTEXT.md`, `CLARIFICATION.md`, `RESEARCH.md`, `PLAN.md`, `SUMMARY.md`, `ROADMAP.md`, `STATE.md`, or `.planning/phases/*`.
+5. Summarize each analysis phase in the reply:
+   - assumptions and known facts
+   - material risks and decisions
+   - which formal operations docs should be created or updated
+6. If the user wants formal outputs, route to `ops-runbook` so the only written files are the selected `.planning/operations/*.md` documents.
 
 </process>
 
-<notes>
-当前版本不使用 UI 设计合同，也不使用 UI 安全闸门。
-</notes>
+<success_criteria>
+- [ ] Analysis ran in ordered phases
+- [ ] No phase tracking artifacts were written
+- [ ] The reply captures phase conclusions clearly enough to drive runbook generation
+- [ ] If formal docs are requested, the next step is `.planning/operations/` output only
+</success_criteria>

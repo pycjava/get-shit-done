@@ -182,6 +182,36 @@ describe('init commands', () => {
     assert.strictEqual(output.phase_req_ids, null, 'TBD placeholder should return null');
   });
 
+  test('init plan-phase without phase enters operations analysis mode', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'PROJECT.md'),
+      '# Example Project\n\n**Stage**: Production\n'
+    );
+
+    const result = runGsdTools('init plan-phase', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.analysis_mode, true);
+    assert.strictEqual(output.analysis_scope, 'operations');
+    assert.strictEqual(output.phase_tracking, false);
+    assert.strictEqual(output.project_name, 'Example Project');
+    assert.strictEqual(output.project_stage, 'Production');
+    assert.strictEqual(output.ops_dir, '.planning/operations');
+    assert.strictEqual(output.requested_docs.length, 7);
+    assert.strictEqual(output.analysis_phases.length, 3);
+  });
+
+  test('init plan-phase treats non-phase argument as operations analysis topic', () => {
+    const result = runGsdTools('init plan-phase monitoring security', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.analysis_mode, true);
+    assert.strictEqual(output.analysis_topic, 'monitoring security');
+    assert.deepStrictEqual(output.requested_docs, ['MONITORING.md', 'SECURITY-OPS.md']);
+  });
+
   test('init execute-phase returns null phase_req_ids when Requirements line is absent', () => {
     const phaseDir = path.join(tmpDir, '.planning', 'phases', '03-api');
     fs.mkdirSync(phaseDir, { recursive: true });
@@ -196,6 +226,24 @@ describe('init commands', () => {
 
     const output = JSON.parse(result.output);
     assert.strictEqual(output.phase_req_ids, null);
+  });
+
+  test('init ops-runbook exposes analysis phases and requested docs without state tracking', () => {
+    const opsDir = path.join(tmpDir, '.planning', 'operations');
+    fs.mkdirSync(opsDir, { recursive: true });
+    fs.writeFileSync(path.join(opsDir, 'OPERATIONS.md'), '# Operations');
+
+    const result = runGsdTools('init ops-runbook deployment capacity', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.analysis_mode, true);
+    assert.strictEqual(output.phase_tracking, false);
+    assert.strictEqual(output.has_operations, true);
+    assert.strictEqual(output.ops_dir, '.planning/operations');
+    assert.deepStrictEqual(output.requested_docs, ['DEPLOYMENT.md', 'CAPACITY.md']);
+    assert.strictEqual(output.analysis_phases.length, 3);
+    assert.ok(output.existing_docs.some(doc => doc.name === 'OPERATIONS.md'));
   });
 });
 

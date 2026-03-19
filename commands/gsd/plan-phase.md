@@ -1,7 +1,7 @@
 ---
 name: gsd:plan-phase
-description: 研究、规划并校验一个阶段
-argument-hint: "<阶段号>"
+description: Analyze operations work in phases without creating phase tracking docs
+argument-hint: "[analysis topic or doc names]"
 allowed-tools:
   - Read
   - Bash
@@ -11,7 +11,7 @@ allowed-tools:
 ---
 
 <objective>
-为目标阶段产出可执行计划，并显式保留验证要求。
+Use phase as an analysis scaffold for operations work. Walk the analysis in ordered phases, keep the phase conclusions in the reply only, and do not create `CONTEXT.md`, `RESEARCH.md`, `PLAN.md`, `SUMMARY.md`, `ROADMAP.md`, `STATE.md`, or `.planning/phases/*` tracking artifacts.
 </objective>
 
 <execution_context>
@@ -19,5 +19,5 @@ allowed-tools:
 </execution_context>
 
 <process>
-端到端执行该 workflow。计划应当能够支撑真实落地工作，例如部署加固、监控上线、runbook 完善、备份验证或安全控制等。
+Execute the workflow as an analysis-only phase runner. Use the requested topic or document names to scope the analysis, then summarize the phase conclusions in the response. If the user wants formal operations deliverables, hand off to `/gsd:ops-runbook` so the only written output lands in `.planning/operations/`.
 </process>

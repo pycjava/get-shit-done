@@ -120,7 +120,7 @@
  *   init new-project                   All context for new-project workflow
  *   init verify-work <phase>           All context for verify-work workflow
  *   init map-codebase                  All context for map-codebase workflow
- *   init ops-runbook                   All context for ops-runbook workflow
+ *   init ops-runbook [selection]       All context for ops-runbook workflow
  *   init ops-audit                     All context for ops-audit workflow
  *   init progress                      All context for progress workflow
  */
@@ -540,7 +540,7 @@ async function main() {
           init.cmdInitExecutePhase(cwd, args[2], raw);
           break;
         case 'plan-phase':
-          init.cmdInitPlanPhase(cwd, args[2], raw);
+          init.cmdInitPlanPhase(cwd, args.slice(2).join(' '), raw);
           break;
         case 'new-project':
           init.cmdInitNewProject(cwd, raw);
@@ -558,7 +558,7 @@ async function main() {
           init.cmdInitVerifyWork(cwd, args[2], raw);
           break;
         case 'phase-op':
-          init.cmdInitPhaseOp(cwd, args[2], raw);
+          init.cmdInitPhaseOp(cwd, args.slice(2).join(' '), raw);
           break;
         case 'todos':
           init.cmdInitTodos(cwd, args[2], raw);
@@ -573,7 +573,7 @@ async function main() {
           init.cmdInitProgress(cwd, raw);
           break;
         case 'ops-runbook':
-          init.cmdInitOpsRunbook(cwd, raw);
+          init.cmdInitOpsRunbook(cwd, args.slice(2).join(' '), raw);
           break;
         case 'ops-audit':
           init.cmdInitOpsAudit(cwd, raw);

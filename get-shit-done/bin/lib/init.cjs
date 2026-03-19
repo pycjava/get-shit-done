@@ -7,6 +7,129 @@ const path = require('path');
 const { execSync } = require('child_process');
 const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, generateSlugInternal, getMilestoneInfo, getMilestonePhaseFilter, stripShippedMilestones, normalizePhaseName, toPosixPath, output, error } = require('./core.cjs');
 
+const OPERATIONS_DOCS = [
+  'OPERATIONS.md',
+  'DEPLOYMENT.md',
+  'MONITORING.md',
+  'CAPACITY.md',
+  'RUNBOOK.md',
+  'BACKUP.md',
+  'SECURITY-OPS.md',
+];
+
+const OPERATIONS_DOC_ALIASES = {
+  operations: 'OPERATIONS.md',
+  deployment: 'DEPLOYMENT.md',
+  monitoring: 'MONITORING.md',
+  capacity: 'CAPACITY.md',
+  runbook: 'RUNBOOK.md',
+  backup: 'BACKUP.md',
+  security: 'SECURITY-OPS.md',
+  'security-ops': 'SECURITY-OPS.md',
+};
+
+function isPhaseArgument(value) {
+  return typeof value === 'string' && /^\d+[A-Z]?(?:\.\d+)*$/i.test(value.trim());
+}
+
+function readProjectMetadata(cwd) {
+  let project_name = null;
+  let project_stage = null;
+
+  try {
+    const projectContent = fs.readFileSync(path.join(cwd, '.planning', 'PROJECT.md'), 'utf-8');
+    const nameMatch = projectContent.match(/^#\s+(.+)$/m);
+    if (nameMatch) project_name = nameMatch[1].trim();
+    const stageMatch = projectContent.match(/\*\*Stage\*\*:\s*([^\n]+)/i) ||
+      projectContent.match(/\*\*Status\*\*:\s*([^\n]+)/i);
+    if (stageMatch) project_stage = stageMatch[1].trim();
+  } catch {}
+
+  return { project_name, project_stage };
+}
+
+function listExistingOperationsDocs(cwd) {
+  const opsDir = path.join(cwd, '.planning', 'operations');
+  try {
+    return fs.readdirSync(opsDir)
+      .filter(f => f.endsWith('.md'))
+      .map(f => {
+        try {
+          const stat = fs.statSync(path.join(opsDir, f));
+          return { name: f, mtime: stat.mtime.toISOString() };
+        } catch {
+          return { name: f, mtime: null };
+        }
+      });
+  } catch {
+    return [];
+  }
+}
+
+function parseOperationsSelection(selection) {
+  if (!selection || !selection.trim()) {
+    return [...OPERATIONS_DOCS];
+  }
+
+  const normalized = selection.trim().toLowerCase();
+  if (normalized === 'all') {
+    return [...OPERATIONS_DOCS];
+  }
+
+  const requested = [];
+  const seen = new Set();
+  const tokens = normalized.split(/[,\s]+/).filter(Boolean);
+
+  for (const token of tokens) {
+    const mapped = OPERATIONS_DOC_ALIASES[token];
+    if (mapped && !seen.has(mapped)) {
+      requested.push(mapped);
+      seen.add(mapped);
+    }
+  }
+
+  return requested.length > 0 ? requested : [...OPERATIONS_DOCS];
+}
+
+function buildOperationsAnalysisContext(cwd, config, fields = {}) {
+  const {
+    requested_docs: requestedDocsInput,
+    analysis_topic: analysisTopic = null,
+    ...restFields
+  } = fields;
+  const { project_name, project_stage } = readProjectMetadata(cwd);
+  const existingDocs = listExistingOperationsDocs(cwd);
+
+  return {
+    analysis_mode: true,
+    analysis_scope: 'operations',
+    phase_tracking: false,
+    analysis_topic: analysisTopic,
+    analysis_phases: [
+      { number: 1, name: 'Current State and Scope' },
+      { number: 2, name: 'Risk and Operations Decisions' },
+      { number: 3, name: 'Runbook Output Selection' },
+    ],
+    project_name,
+    project_stage,
+    commit_docs: config.commit_docs,
+    planning_exists: pathExistsInternal(cwd, '.planning'),
+    project_exists: pathExistsInternal(cwd, '.planning/PROJECT.md'),
+    requirements_exists: pathExistsInternal(cwd, '.planning/REQUIREMENTS.md'),
+    roadmap_exists: pathExistsInternal(cwd, '.planning/ROADMAP.md'),
+    config_exists: pathExistsInternal(cwd, '.planning/config.json'),
+    ops_dir: '.planning/operations',
+    existing_docs: existingDocs,
+    has_operations: existingDocs.length > 0,
+    requested_docs: parseOperationsSelection(requestedDocsInput),
+    project_path: '.planning/PROJECT.md',
+    requirements_path: '.planning/REQUIREMENTS.md',
+    roadmap_path: '.planning/ROADMAP.md',
+    config_path: '.planning/config.json',
+    ...restFields,
+  };
+}
+
 function cmdInitExecutePhase(cwd, phase, raw) {
   if (!phase) {
     error('phase required for init execute-phase');
@@ -81,8 +204,19 @@ function cmdInitExecutePhase(cwd, phase, raw) {
 }
 
 function cmdInitPlanPhase(cwd, phase, raw) {
-  if (!phase) {
-    error('phase required for init plan-phase');
+  if (!phase || !isPhaseArgument(phase)) {
+    const config = loadConfig(cwd);
+    const result = buildOperationsAnalysisContext(cwd, config, {
+      researcher_model: resolveModelInternal(cwd, 'gsd-phase-researcher'),
+      planner_model: resolveModelInternal(cwd, 'gsd-planner'),
+      checker_model: resolveModelInternal(cwd, 'gsd-plan-checker'),
+      research_enabled: config.research,
+      plan_checker_enabled: config.plan_checker,
+      nyquist_validation_enabled: config.nyquist_validation,
+      analysis_topic: phase || null,
+      requested_docs: phase || null,
+    });
+    output(result, raw);
   }
 
   const config = loadConfig(cwd);
@@ -363,6 +497,16 @@ function cmdInitVerifyWork(cwd, phase, raw) {
 
 function cmdInitPhaseOp(cwd, phase, raw) {
   const config = loadConfig(cwd);
+
+  if (!phase || !isPhaseArgument(phase)) {
+    const result = buildOperationsAnalysisContext(cwd, config, {
+      brave_search: config.brave_search,
+      analysis_topic: phase || null,
+      requested_docs: phase || null,
+    });
+    output(result, raw);
+  }
+
   let phaseInfo = findPhaseInternal(cwd, phase);
 
   // If the only disk match comes from an archived milestone, prefer the
@@ -648,58 +792,12 @@ function cmdInitOpsAudit(cwd, raw) {
   output(result, raw);
 }
 
-function cmdInitOpsRunbook(cwd, raw) {
+function cmdInitOpsRunbook(cwd, selection, raw) {
   const config = loadConfig(cwd);
-
-  // Parse project_name and project_stage from PROJECT.md
-  let project_name = null;
-  let project_stage = null;
-  try {
-    const projectContent = fs.readFileSync(path.join(cwd, '.planning', 'PROJECT.md'), 'utf-8');
-    const nameMatch = projectContent.match(/^#\s+(.+)$/m);
-    if (nameMatch) project_name = nameMatch[1].trim();
-    const stageMatch = projectContent.match(/\*\*Stage\*\*:\s*([^\n]+)/i) ||
-                       projectContent.match(/\*\*Status\*\*:\s*([^\n]+)/i);
-    if (stageMatch) project_stage = stageMatch[1].trim();
-  } catch {}
-
-  // Check for existing operations docs with modification times
-  const opsDir = path.join(cwd, '.planning', 'operations');
-  let existingDocs = [];
-  try {
-    existingDocs = fs.readdirSync(opsDir)
-      .filter(f => f.endsWith('.md'))
-      .map(f => {
-        try {
-          const stat = fs.statSync(path.join(opsDir, f));
-          return { name: f, mtime: stat.mtime.toISOString() };
-        } catch {
-          return { name: f, mtime: null };
-        }
-      });
-  } catch {}
-
-  const result = {
-    // Models
+  const result = buildOperationsAnalysisContext(cwd, config, {
     ops_research_model: resolveModelInternal(cwd, 'gsd-ops-researcher'),
-
-    // Project context
-    project_name,
-    project_stage,
-
-    // Config
-    commit_docs: config.commit_docs,
-    planning_exists: pathExistsInternal(cwd, '.planning'),
-    ops_dir: '.planning/operations',
-    existing_docs: existingDocs,
-    has_operations: existingDocs.length > 0,
-
-    // File paths
-    state_path: '.planning/STATE.md',
-    project_path: '.planning/PROJECT.md',
-    roadmap_path: '.planning/ROADMAP.md',
-    config_path: '.planning/config.json',
-  };
+    requested_docs: selection || null,
+  });
 
   output(result, raw);
 }
