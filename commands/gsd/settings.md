@@ -1,6 +1,6 @@
 ---
 name: gsd:settings
-description: Configure workflow settings for the operations workflow
+description: 配置这套 workflow 的运行设置
 allowed-tools:
   - Read
   - Bash
@@ -9,7 +9,7 @@ allowed-tools:
 ---
 
 <objective>
-Edit workflow configuration without reintroducing removed UI or profiling features.
+编辑 workflow 配置，同时避免重新引入已移除的 UI 或旧 profiling 功能。
 </objective>
 
 <execution_context>
@@ -17,5 +17,5 @@ Edit workflow configuration without reintroducing removed UI or profiling featur
 </execution_context>
 
 <process>
-Execute the settings workflow end-to-end.
+端到端执行 `settings` workflow。
 </process>

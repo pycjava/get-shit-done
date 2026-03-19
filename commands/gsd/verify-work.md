@@ -1,7 +1,7 @@
 ---
 name: gsd:verify-work
-description: Validate operational outcomes, drills, and acceptance criteria
-argument-hint: "[phase]"
+description: 校验阶段结果、演练项与验收标准
+argument-hint: "[阶段号]"
 allowed-tools:
   - Read
   - Bash
@@ -11,7 +11,7 @@ allowed-tools:
 ---
 
 <objective>
-Validate a completed phase through operational acceptance checks and gap closure planning.
+对一个已完成阶段做验收式验证，并在必要时为缺口收尾规划。
 </objective>
 
 <execution_context>
@@ -19,5 +19,5 @@ Validate a completed phase through operational acceptance checks and gap closure
 </execution_context>
 
 <process>
-Focus on deployment checks, rollback readiness, alert coverage, recovery drills, runbook correctness, and handoff quality.
+重点检查部署结果、回滚准备度、告警覆盖、恢复演练、runbook 正确性与交接质量。
 </process>

@@ -1,13 +1,13 @@
 ---
 name: gsd:progress
-description: Show current project and phase status
+description: 显示当前项目与阶段状态
 allowed-tools:
   - Read
   - Bash
 ---
 
 <objective>
-Show where the project is in the operations workflow and what is next.
+展示项目目前在整套工作流中的位置，以及下一步最合适的动作。
 </objective>
 
 <execution_context>
@@ -15,5 +15,5 @@ Show where the project is in the operations workflow and what is next.
 </execution_context>
 
 <process>
-Execute the progress workflow end-to-end.
+端到端执行 `progress` workflow。
 </process>

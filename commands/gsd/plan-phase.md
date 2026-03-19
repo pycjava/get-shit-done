@@ -1,7 +1,7 @@
 ---
 name: gsd:plan-phase
-description: Research, plan, and verify an operations phase
-argument-hint: "<phase>"
+description: 研究、规划并校验一个阶段
+argument-hint: "<阶段号>"
 allowed-tools:
   - Read
   - Bash
@@ -11,7 +11,7 @@ allowed-tools:
 ---
 
 <objective>
-Produce executable plans for the target phase and keep validation requirements explicit.
+为目标阶段产出可执行计划，并显式保留验证要求。
 </objective>
 
 <execution_context>
@@ -19,5 +19,5 @@ Produce executable plans for the target phase and keep validation requirements e
 </execution_context>
 
 <process>
-Run the workflow end-to-end. Plans should be suitable for operational work packages such as deployment hardening, monitoring rollout, runbook completion, backup validation, or security controls.
+端到端执行该 workflow。计划应当能够支撑真实落地工作，例如部署加固、监控上线、runbook 完善、备份验证或安全控制等。
 </process>

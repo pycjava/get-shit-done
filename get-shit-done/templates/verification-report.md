@@ -1,322 +1,135 @@
-# Verification Report Template
+# 验证报告模板
 
-Template for `.planning/phases/XX-name/{phase_num}-VERIFICATION.md` — phase goal verification results.
+用于生成 `.planning/phases/XX-name/{phase_num}-VERIFICATION.md`。
+
+要求：
+- frontmatter 键名与状态值保持英文，便于工具读取
+- 面向人的标题、表头、正文使用中文
+- frontmatter 中的 `gaps` 与 `human_verification` 必须结构化，供后续流程读取
 
 ---
 
-## File Template
+## 文件模板
 
 ```markdown
 ---
 phase: XX-name
 verified: YYYY-MM-DDTHH:MM:SSZ
 status: passed | gaps_found | human_needed
-score: N/M must-haves verified
+score: N/M 个必备项已验证
 ---
 
-# Phase {X}: {Name} Verification Report
+# 阶段 {X}: {Name} - 验证报告
 
-**Phase Goal:** {goal from ROADMAP.md}
-**Verified:** {timestamp}
-**Status:** {passed | gaps_found | human_needed}
+**阶段目标：** {goal from ROADMAP.md}
+**验证时间：** {timestamp}
+**状态：** {passed | gaps_found | human_needed}
 
-## Goal Achievement
+## 目标达成情况
 
-### Observable Truths
+### 可观察事实
 
-| # | Truth | Status | Evidence |
-|---|-------|--------|----------|
-| 1 | {truth from must_haves} | ✓ VERIFIED | {what confirmed it} |
-| 2 | {truth from must_haves} | ✗ FAILED | {what's wrong} |
-| 3 | {truth from must_haves} | ? UNCERTAIN | {why can't verify} |
+| # | 事实 | 状态 | 证据 |
+|---|------|------|------|
+| 1 | {truth} | ✅ 已验证 | {evidence} |
+| 2 | {truth} | ❌ 未通过 | {what's wrong} |
+| 3 | {truth} | ❓ 不确定 | {why can't verify} |
 
-**Score:** {N}/{M} truths verified
+**得分：** {N}/{M} 个事实已验证
 
-### Required Artifacts
+### 必需产物
 
-| Artifact | Expected | Status | Details |
-|----------|----------|--------|---------|
-| `src/components/Chat.tsx` | Message list component | ✓ EXISTS + SUBSTANTIVE | Exports ChatList, renders Message[], no stubs |
-| `src/app/api/chat/route.ts` | Message CRUD | ✗ STUB | File exists but POST returns placeholder |
-| `prisma/schema.prisma` | Message model | ✓ EXISTS + SUBSTANTIVE | Model defined with all fields |
+| 产物 | 预期 | 状态 | 详情 |
+|------|------|------|------|
+| `src/components/Chat.tsx` | 消息列表组件 | ✅ 存在且有效 | 导出 ChatList，渲染 Message[]，无占位桩代码 |
 
-**Artifacts:** {N}/{M} verified
+### 关键连接验证
 
-### Key Link Verification
+| 从 | 到 | 方式 | 状态 | 详情 |
+|----|----|------|------|------|
+| Chat.tsx | /api/chat | useEffect 中 fetch | ✅ 已接通 | 第 23 行调用了 `fetch('/api/chat')` |
 
-| From | To | Via | Status | Details |
-|------|----|----|--------|---------|
-| Chat.tsx | /api/chat | fetch in useEffect | ✓ WIRED | Line 23: `fetch('/api/chat')` with response handling |
-| ChatInput | /api/chat POST | onSubmit handler | ✗ NOT WIRED | onSubmit only calls console.log |
-| /api/chat POST | database | prisma.message.create | ✗ NOT WIRED | Returns hardcoded response, no DB call |
+### 需求覆盖
 
-**Wiring:** {N}/{M} connections verified
+| 需求 | 状态 | 阻塞问题 |
+|------|------|----------|
+| {REQ-01}: {description} | ✅ 满足 | - |
+| {REQ-02}: {description} | ❌ 阻塞 | API 路由仍是桩实现 |
 
-## Requirements Coverage
+### 发现的反模式
 
-| Requirement | Status | Blocking Issue |
-|-------------|--------|----------------|
-| {REQ-01}: {description} | ✓ SATISFIED | - |
-| {REQ-02}: {description} | ✗ BLOCKED | API route is stub |
-| {REQ-03}: {description} | ? NEEDS HUMAN | Can't verify WebSocket programmatically |
+| 文件 | 行号 | 模式 | 严重性 | 影响 |
+|------|------|------|--------|------|
+| src/app/api/chat/route.ts | 12 | `// TODO: implement` | ⚠️ 警告 | 表示实现不完整 |
 
-**Coverage:** {N}/{M} requirements satisfied
+### 需要人工验证
 
-## Anti-Patterns Found
+[如果不需要人工验证：]
+无——所有可验证项都已通过程序化检查。
 
-| File | Line | Pattern | Severity | Impact |
-|------|------|---------|----------|--------|
-| src/app/api/chat/route.ts | 12 | `// TODO: implement` | ⚠️ Warning | Indicates incomplete |
-| src/components/Chat.tsx | 45 | `return <div>Placeholder</div>` | 🛑 Blocker | Renders no content |
-| src/hooks/useChat.ts | - | File missing | 🛑 Blocker | Expected hook doesn't exist |
+[如果需要人工验证：]
 
-**Anti-patterns:** {N} found ({blockers} blockers, {warnings} warnings)
+#### 1. {测试名称}
 
-## Human Verification Required
+- **测试操作：** {What to do}
+- **预期结果：** {What should happen}
+- **为什么需要人工：** {Why can't verify programmatically}
 
-{If no human verification needed:}
-None — all verifiable items checked programmatically.
+### 缺口总结
 
-{If human verification needed:}
+[如果没有缺口：]
+**未发现缺口。** 阶段目标已达成，可以继续推进。
 
-### 1. {Test Name}
-**Test:** {What to do}
-**Expected:** {What should happen}
-**Why human:** {Why can't verify programmatically}
+[如果有缺口：]
 
-### 2. {Test Name}
-**Test:** {What to do}
-**Expected:** {What should happen}
-**Why human:** {Why can't verify programmatically}
-
-## Gaps Summary
-
-{If no gaps:}
-**No gaps found.** Phase goal achieved. Ready to proceed.
-
-{If gaps found:}
-
-### Critical Gaps (Block Progress)
+#### 关键缺口（阻塞推进）
 
 1. **{Gap name}**
-   - Missing: {what's missing}
-   - Impact: {why this blocks the goal}
-   - Fix: {what needs to happen}
+   - 缺失：{what's missing}
+   - 影响：{why this blocks the goal}
+   - 修复：{what needs to happen}
 
-2. **{Gap name}**
-   - Missing: {what's missing}
-   - Impact: {why this blocks the goal}
-   - Fix: {what needs to happen}
-
-### Non-Critical Gaps (Can Defer)
+#### 非关键缺口（可延后）
 
 1. **{Gap name}**
-   - Issue: {what's wrong}
-   - Impact: {limited impact because...}
-   - Recommendation: {fix now or defer}
+   - 问题：{what's wrong}
+   - 影响：{limited impact}
+   - 建议：{fix now or defer}
 
-## Recommended Fix Plans
+## 建议的修复计划
 
-{If gaps found, generate fix plan recommendations:}
+[仅在 `gaps_found` 时生成]
 
 ### {phase}-{next}-PLAN.md: {Fix Name}
 
-**Objective:** {What this fixes}
+**目标：** {What this fixes}
 
-**Tasks:**
+**任务：**
 1. {Task to fix gap 1}
 2. {Task to fix gap 2}
 3. {Verification task}
 
-**Estimated scope:** {Small / Medium}
+**预估范围：** {Small / Medium}
+
+## 验证元数据
+
+**验证方法：** 从目标反推（goal-backward）
+**must_haves 来源：** {PLAN.md frontmatter | derived from ROADMAP.md goal}
+**自动化检查：** {N} 通过，{M} 失败
+**需要人工检查：** {N}
+**总验证耗时：** {duration}
 
 ---
-
-### {phase}-{next+1}-PLAN.md: {Fix Name}
-
-**Objective:** {What this fixes}
-
-**Tasks:**
-1. {Task}
-2. {Task}
-
-**Estimated scope:** {Small / Medium}
-
----
-
-## Verification Metadata
-
-**Verification approach:** Goal-backward (derived from phase goal)
-**Must-haves source:** {PLAN.md frontmatter | derived from ROADMAP.md goal}
-**Automated checks:** {N} passed, {M} failed
-**Human checks required:** {N}
-**Total verification time:** {duration}
-
----
-*Verified: {timestamp}*
-*Verifier: Claude (subagent)*
+*验证时间：{timestamp}*
+*验证者：Claude (subagent)*
 ```
 
 ---
 
-## Guidelines
+## 规则
 
-**Status values:**
-- `passed` — All must-haves verified, no blockers
-- `gaps_found` — One or more critical gaps found
-- `human_needed` — Automated checks pass but human verification required
-
-**Evidence types:**
-- For EXISTS: "File at path, exports X"
-- For SUBSTANTIVE: "N lines, has patterns X, Y, Z"
-- For WIRED: "Line N: code that connects A to B"
-- For FAILED: "Missing because X" or "Stub because Y"
-
-**Severity levels:**
-- 🛑 Blocker: Prevents goal achievement, must fix
-- ⚠️ Warning: Indicates incomplete but doesn't block
-- ℹ️ Info: Notable but not problematic
-
-**Fix plan generation:**
-- Only generate if gaps_found
-- Group related fixes into single plans
-- Keep to 2-3 tasks per plan
-- Include verification task in each plan
-
----
-
-## Example
-
-```markdown
----
-phase: 03-chat
-verified: 2025-01-15T14:30:00Z
-status: gaps_found
-score: 2/5 must-haves verified
----
-
-# Phase 3: Chat Interface Verification Report
-
-**Phase Goal:** Working chat interface where users can send and receive messages
-**Verified:** 2025-01-15T14:30:00Z
-**Status:** gaps_found
-
-## Goal Achievement
-
-### Observable Truths
-
-| # | Truth | Status | Evidence |
-|---|-------|--------|----------|
-| 1 | User can see existing messages | ✗ FAILED | Component renders placeholder, not message data |
-| 2 | User can type a message | ✓ VERIFIED | Input field exists with onChange handler |
-| 3 | User can send a message | ✗ FAILED | onSubmit handler is console.log only |
-| 4 | Sent message appears in list | ✗ FAILED | No state update after send |
-| 5 | Messages persist across refresh | ? UNCERTAIN | Can't verify - send doesn't work |
-
-**Score:** 1/5 truths verified
-
-### Required Artifacts
-
-| Artifact | Expected | Status | Details |
-|----------|----------|--------|---------|
-| `src/components/Chat.tsx` | Message list component | ✗ STUB | Returns `<div>Chat will be here</div>` |
-| `src/components/ChatInput.tsx` | Message input | ✓ EXISTS + SUBSTANTIVE | Form with input, submit button, handlers |
-| `src/app/api/chat/route.ts` | Message CRUD | ✗ STUB | GET returns [], POST returns { ok: true } |
-| `prisma/schema.prisma` | Message model | ✓ EXISTS + SUBSTANTIVE | Message model with id, content, userId, createdAt |
-
-**Artifacts:** 2/4 verified
-
-### Key Link Verification
-
-| From | To | Via | Status | Details |
-|------|----|----|--------|---------|
-| Chat.tsx | /api/chat GET | fetch | ✗ NOT WIRED | No fetch call in component |
-| ChatInput | /api/chat POST | onSubmit | ✗ NOT WIRED | Handler only logs, doesn't fetch |
-| /api/chat GET | database | prisma.message.findMany | ✗ NOT WIRED | Returns hardcoded [] |
-| /api/chat POST | database | prisma.message.create | ✗ NOT WIRED | Returns { ok: true }, no DB call |
-
-**Wiring:** 0/4 connections verified
-
-## Requirements Coverage
-
-| Requirement | Status | Blocking Issue |
-|-------------|--------|----------------|
-| CHAT-01: User can send message | ✗ BLOCKED | API POST is stub |
-| CHAT-02: User can view messages | ✗ BLOCKED | Component is placeholder |
-| CHAT-03: Messages persist | ✗ BLOCKED | No database integration |
-
-**Coverage:** 0/3 requirements satisfied
-
-## Anti-Patterns Found
-
-| File | Line | Pattern | Severity | Impact |
-|------|------|---------|----------|--------|
-| src/components/Chat.tsx | 8 | `<div>Chat will be here</div>` | 🛑 Blocker | No actual content |
-| src/app/api/chat/route.ts | 5 | `return Response.json([])` | 🛑 Blocker | Hardcoded empty |
-| src/app/api/chat/route.ts | 12 | `// TODO: save to database` | ⚠️ Warning | Incomplete |
-
-**Anti-patterns:** 3 found (2 blockers, 1 warning)
-
-## Human Verification Required
-
-None needed until automated gaps are fixed.
-
-## Gaps Summary
-
-### Critical Gaps (Block Progress)
-
-1. **Chat component is placeholder**
-   - Missing: Actual message list rendering
-   - Impact: Users see "Chat will be here" instead of messages
-   - Fix: Implement Chat.tsx to fetch and render messages
-
-2. **API routes are stubs**
-   - Missing: Database integration in GET and POST
-   - Impact: No data persistence, no real functionality
-   - Fix: Wire prisma calls in route handlers
-
-3. **No wiring between frontend and backend**
-   - Missing: fetch calls in components
-   - Impact: Even if API worked, UI wouldn't call it
-   - Fix: Add useEffect fetch in Chat, onSubmit fetch in ChatInput
-
-## Recommended Fix Plans
-
-### 03-04-PLAN.md: Implement Chat API
-
-**Objective:** Wire API routes to database
-
-**Tasks:**
-1. Implement GET /api/chat with prisma.message.findMany
-2. Implement POST /api/chat with prisma.message.create
-3. Verify: API returns real data, POST creates records
-
-**Estimated scope:** Small
-
----
-
-### 03-05-PLAN.md: Implement Chat UI
-
-**Objective:** Wire Chat component to API
-
-**Tasks:**
-1. Implement Chat.tsx with useEffect fetch and message rendering
-2. Wire ChatInput onSubmit to POST /api/chat
-3. Verify: Messages display, new messages appear after send
-
-**Estimated scope:** Small
-
----
-
-## Verification Metadata
-
-**Verification approach:** Goal-backward (derived from phase goal)
-**Must-haves source:** 03-01-PLAN.md frontmatter
-**Automated checks:** 2 passed, 8 failed
-**Human checks required:** 0 (blocked by automated failures)
-**Total verification time:** 2 min
-
----
-*Verified: 2025-01-15T14:30:00Z*
-*Verifier: Claude (subagent)*
-```
+- `passed`：所有必备项通过，无阻塞问题
+- `gaps_found`：存在关键缺口
+- `human_needed`：自动化检查通过，但仍需人工验证
+- `gaps` frontmatter 只写结构化问题，不写散文
+- `human_verification` frontmatter 只写可执行测试项

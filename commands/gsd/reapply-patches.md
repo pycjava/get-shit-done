@@ -1,20 +1,20 @@
 ---
-description: Reapply local modifications after a GSD update
+description: 在 GSD 更新后重新套用本地修改
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion
 ---
 
 <purpose>
-After a GSD update wipes and reinstalls files, this command merges user's previously saved local modifications back into the new version. Uses intelligent comparison to handle cases where the upstream file also changed.
+当 GSD 更新过程覆盖并重装文件后，这个命令会把用户之前备份的本地修改合并回新版本。它会尽量智能比较上下游变化，处理“用户改过、上游也改过”的情况。
 </purpose>
 
 <process>
 
-## Step 1: Detect backed-up patches
+## 步骤 1：检测备份的 patch
 
-Check for local patches directory:
+检查本地 patches 目录：
 
 ```bash
-# Global install — detect runtime config directory
+# 全局安装：检测运行时配置目录
 if [ -d "$HOME/.config/opencode/gsd-local-patches" ]; then
   PATCHES_DIR="$HOME/.config/opencode/gsd-local-patches"
 elif [ -d "$HOME/.opencode/gsd-local-patches" ]; then
@@ -24,7 +24,7 @@ elif [ -d "$HOME/.gemini/gsd-local-patches" ]; then
 else
   PATCHES_DIR="$HOME/.claude/gsd-local-patches"
 fi
-# Local install fallback — check all runtime directories
+# 本地安装兜底：检查所有运行时目录
 if [ ! -d "$PATCHES_DIR" ]; then
   for dir in .config/opencode .opencode .gemini .claude; do
     if [ -d "./$dir/gsd-local-patches" ]; then
@@ -35,89 +35,94 @@ if [ ! -d "$PATCHES_DIR" ]; then
 fi
 ```
 
-Read `backup-meta.json` from the patches directory.
+读取 patches 目录中的 `backup-meta.json`。
 
-**If no patches found:**
-```
-No local patches found. Nothing to reapply.
-
-Local patches are automatically saved when you run /gsd:update
-after modifying any GSD workflow, command, or agent files.
-```
-Exit.
-
-## Step 2: Show patch summary
+**如果没找到 patch：**
 
 ```
-## Local Patches to Reapply
+没有找到本地 patch，无需重新套用。
 
-**Backed up from:** v{from_version}
-**Current version:** {read VERSION file}
-**Files modified:** {count}
-
-| # | File | Status |
-|---|------|--------|
-| 1 | {file_path} | Pending |
-| 2 | {file_path} | Pending |
+当你修改过 GSD 的 workflow、command 或 agent 文件后运行 /gsd:update，
+这些本地修改会被自动备份。
 ```
 
-## Step 3: Merge each file
+然后退出。
 
-For each file in `backup-meta.json`:
+## 步骤 2：展示 patch 摘要
 
-1. **Read the backed-up version** (user's modified copy from `gsd-local-patches/`)
-2. **Read the newly installed version** (current file after update)
-3. **Compare and merge:**
+```markdown
+## 待重新套用的本地补丁
 
-   - If the new file is identical to the backed-up file: skip (modification was incorporated upstream)
-   - If the new file differs: identify the user's modifications and apply them to the new version
+**备份来源版本：** v{from_version}
+**当前版本：** {read VERSION file}
+**涉及文件数：** {count}
 
-   **Merge strategy:**
-   - Read both versions fully
-   - Identify sections the user added or modified (look for additions, not just differences from path replacement)
-   - Apply user's additions/modifications to the new version
-   - If a section the user modified was also changed upstream: flag as conflict, show both versions, ask user which to keep
+| # | 文件 | 状态 |
+|---|------|------|
+| 1 | {file_path} | 待处理 |
+| 2 | {file_path} | 待处理 |
+```
 
-4. **Write merged result** to the installed location
-5. **Report status:**
-   - `Merged` — user modifications applied cleanly
-   - `Skipped` — modification already in upstream
-   - `Conflict` — user chose resolution
+## 步骤 3：逐文件合并
 
-## Step 4: Update manifest
+对 `backup-meta.json` 中的每个文件：
 
-After reapplying, regenerate the file manifest so future updates correctly detect these as user modifications:
+1. 读取备份版本（用户修改过的副本）
+2. 读取当前新安装版本
+3. 对比并合并
+
+**合并策略：**
+- 如果新文件与备份文件完全一致：跳过，说明上游已经吸收了改动
+- 如果不同：识别用户的本地修改，并尝试把它们重新套到新版本
+
+细则：
+- 完整读取两个版本
+- 识别用户新增或修改的区块，而不是只做机械 diff
+- 将用户改动迁移到新版本
+- 如果某段内容用户和上游都改过：标记为冲突，展示两边，让用户决定保留哪边
+
+4. 把合并结果写回安装位置
+5. 汇报处理状态：
+   - `Merged`：用户改动已顺利合并
+   - `已跳过`：改动已被上游吸收
+   - `Conflict`：由用户手动裁决后解决
+
+## 步骤 4：更新 manifest
+
+重新套用后，需要让后续更新能正确识别这些文件仍是“用户做过本地修改”的状态。
 
 ```bash
-# The manifest will be regenerated on next /gsd:update
-# For now, just note which files were modified
+# manifest 会在下次 /gsd:update 时重建
+# 这里先只记录哪些文件被改回去了
 ```
 
-## Step 5: Cleanup option
+## 步骤 5：询问是否清理 patch 备份
 
-Ask user:
-- "Keep patch backups for reference?" → preserve `gsd-local-patches/`
-- "Clean up patch backups?" → remove `gsd-local-patches/` directory
+询问用户：
+- `保留 patch 备份供后续参考`
+- `清理 patch 备份`
 
-## Step 6: Report
+如果用户选择清理，则删除 `gsd-local-patches/`。
 
-```
-## Patches Reapplied
+## 步骤 6：结果汇报
 
-| # | File | Status |
-|---|------|--------|
+```markdown
+## Patch 重新套用完成
+
+| # | 文件 | 状态 |
+|---|------|------|
 | 1 | {file_path} | ✓ Merged |
-| 2 | {file_path} | ○ Skipped (already upstream) |
+| 2 | {file_path} | ○ 已跳过（上游已吸收） |
 | 3 | {file_path} | ⚠ Conflict resolved |
 
-{count} file(s) updated. Your local modifications are active again.
+共更新 {count} 个文件。你的本地修改已经重新生效。
 ```
 
 </process>
 
 <success_criteria>
-- [ ] All backed-up patches processed
-- [ ] User modifications merged into new version
-- [ ] Conflicts resolved with user input
-- [ ] Status reported for each file
+- [ ] 所有备份 patch 都已处理
+- [ ] 用户本地修改已重新合并到新版本
+- [ ] 如有冲突，已通过用户输入解决
+- [ ] 每个文件都有清晰状态汇报
 </success_criteria>

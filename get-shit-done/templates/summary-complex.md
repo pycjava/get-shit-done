@@ -23,37 +23,37 @@ duration: Xmin
 completed: YYYY-MM-DD
 ---
 
-# Phase [X]: [Name] Summary (Complex)
+# 阶段 [X]: [Name] 总结（复杂版）
 
-**[Substantive one-liner describing outcome]**
+**[用一句有信息量的话概括本次产出]**
 
-## Performance
-- **Duration:** [time]
-- **Tasks:** [count completed]
-- **Files modified:** [count]
+## 执行概况
+- **耗时：** [time]
+- **完成任务：** [count completed]
+- **修改文件：** [count]
 
-## Accomplishments
-- [Key outcome 1]
-- [Key outcome 2]
+## 主要成果
+- [关键成果 1]
+- [关键成果 2]
 
-## Task Commits
-1. **Task 1: [task name]** - `hash`
-2. **Task 2: [task name]** - `hash`
-3. **Task 3: [task name]** - `hash`
+## 任务提交记录
+1. **任务 1：[任务名称]** - `hash`
+2. **任务 2：[任务名称]** - `hash`
+3. **任务 3：[任务名称]** - `hash`
 
-## Files Created/Modified
-- `path/to/file.ts` - What it does
-- `path/to/another.ts` - What it does
+## 创建/修改的文件
+- `path/to/file.ts` - 文件作用
+- `path/to/another.ts` - 文件作用
 
-## Decisions Made
-[Key decisions with brief rationale]
+## 已作决策
+[关键决策及其简要理由]
 
-## Deviations from Plan (Auto-fixed)
-[Detailed auto-fix records per GSD deviation rules]
+## 偏离计划（已自动修复）
+[按 GSD 偏差规则记录自动修复详情]
 
-## Issues Encountered
-[Problems during planned work and resolutions]
+## 遇到的问题
+[计划执行中遇到的问题及处理方式]
 
-## Next Phase Readiness
-[What's ready for next phase]
-[Blockers or concerns]
+## 下一阶段准备情况
+[下一阶段已经具备的条件]
+[阻塞项或注意事项]

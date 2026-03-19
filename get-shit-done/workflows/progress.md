@@ -1,141 +1,139 @@
 <purpose>
-检查项目进度，总结近期工作并展望下一步，然后智能路由到下一个操作 — 执行现有计划或创建新计划。在继续工作前提供态势感知。
+检查项目进度，汇总最近完成的工作，判断当前处于哪一步，并把下一条最合适的 `/gsd:*` 命令明确展示给用户。
 </purpose>
 
 <required_reading>
-在开始之前，阅读执行上下文所引用文件的所有内容。
+开始前，先读取 invoking prompt 的 execution_context 中引用的全部文件。
 </required_reading>
 
 <process>
 
 <step name="init_context">
-**加载进度上下文（仅路径）：**
+先加载进度上下文（只拿结构化信息，避免把整份项目文档都塞进上下文）：
 
 ```bash
 INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init progress)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-从初始化 JSON 中提取：`project_exists`、`roadmap_exists`、`state_exists`、`phases`、`current_phase`、`next_phase`、`milestone_version`、`completed_count`、`phase_count`、`paused_at`、`state_path`、`roadmap_path`、`project_path`、`config_path`。
+从 init JSON 提取：`project_exists`、`roadmap_exists`、`state_exists`、`phases`、`current_phase`、`next_phase`、`milestone_version`、`completed_count`、`phase_count`、`paused_at`、`state_path`、`roadmap_path`、`project_path`、`config_path`。
 
-如果 `project_exists` 为 false（没有 `.planning/` 目录）：
+如果 `project_exists` 为 `false`（没有 `.planning/`）：
 
 ```
-未找到规划结构。
-
+未找到规划目录。
 运行 /gsd:new-project 开始新项目。
 ```
 
-退出。
+直接退出。
 
-如果缺少 STATE.md：建议 `/gsd:new-project`。
+如果 `state_exists` 为 `false`：提示用户先运行 `/gsd:new-project`。
 
-**如果 ROADMAP.md 缺失但 PROJECT.md 存在：**
+如果 `roadmap_exists` 为 `false` 但 `PROJECT.md` 存在：
+- 说明当前里程碑大概率已经归档完成。
+- 进入“路由 F：里程碑之间”。
 
-这意味着里程碑已完成并归档。转到**路由 F**（里程碑之间）。
-
-如果 ROADMAP.md 和 PROJECT.md 都缺失：建议 `/gsd:new-project`。
+如果 `ROADMAP.md` 和 `PROJECT.md` 都缺失：提示用户先运行 `/gsd:new-project`。
 </step>
 
 <step name="load">
-**使用 gsd-tools 的结构化提取：**
+只用 `gsd-tools` 提取报告需要的数据，不要整份手读：
 
-不要读取完整文件，只使用目标工具获取报告所需的数据：
 - `ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)`
 - `STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" state-snapshot)`
 
-这可以最小化编排器的上下文使用。
+这样可以把编排器的上下文占用压到最低。
 </step>
 
 <step name="analyze_roadmap">
-**获取综合路线图分析（替换手动解析）：**
+使用结构化路线图分析结果：
 
 ```bash
 ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
 ```
 
-返回结构化 JSON，包含：
-- 所有阶段的磁盘状态（complete/partial/planned/empty/no_directory）
-- 每个阶段的目标和依赖
-- 每个阶段的计划数和总结数
-- 聚合统计：总计划数、总结数、进度百分比
-- 当前阶段和下一阶段识别
+返回的 JSON 至少包含：
+- 所有阶段的磁盘状态：`complete` / `partial` / `planned` / `empty` / `no_directory`
+- 每个阶段的目标与依赖
+- 每个阶段的计划数与总结数
+- 聚合统计：总计划数、总总结数、整体进度百分比
+- 当前阶段与下一阶段识别结果
 
-使用此方法代替手动读取/解析 ROADMAP.md。
+优先使用这个结果，不要再手工解析 `ROADMAP.md` 正文。
 </step>
 
 <step name="recent">
-**收集近期工作上下文：**
+收集最近完成的工作：
 
-- 找到 2-3 个最新的 SUMMARY.md 文件
-- 使用 `summary-extract` 高效解析：
-  ```bash
-  node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" summary-extract <path> --fields one_liner
-  ```
-- 这显示"我们一直在做什么"
-  </step>
-
-<step name="position">
-**从初始化上下文和路线图分析中解析当前位置：**
-
-- 使用 `$ROADMAP` 中的 `current_phase` 和 `next_phase`
-- 注意 `$STATE` 中的 `paused_at`（如果工作已暂停）
-- 统计待处理 todos：使用 `init todos` 或 `list-todos`
-- 检查活动调试会话：`ls .planning/debug/*.md 2>/dev/null | grep -v resolved | wc -l`
-  </step>
-
-<step name="report">
-**从 gsd-tools 生成进度条，然后展示丰富的状态报告：**
+- 找到最近 2-3 个 `SUMMARY.md`
+- 用 `summary-extract` 抽取简要成果
 
 ```bash
-# 获取格式化的进度条
+node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" summary-extract <path> --fields one_liner
+```
+
+这部分用于回答“最近实际做了什么”。
+</step>
+
+<step name="position">
+确定当前项目位置：
+
+- 用 `$ROADMAP` 中的 `current_phase` 和 `next_phase`
+- 结合 `$STATE` 中的 `paused_at`
+- 统计未处理的 todos：使用 `init todos` 或 `list-todos`
+- 统计活动调试会话：
+
+```bash
+ls .planning/debug/*.md 2>/dev/null | grep -v resolved | wc -l
+```
+</step>
+
+<step name="report">
+先生成格式化进度条，再输出状态报告：
+
+```bash
 PROGRESS_BAR=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" progress bar --raw)
 ```
 
-展示：
+展示格式：
 
 ```
 # [项目名称]
 
 **进度：** {PROGRESS_BAR}
-**配置：** [quality/balanced/budget/inherit]
+**配置：** [quality / balanced / budget / inherit]
 
-## 近期工作
-- [阶段 X, 计划 Y]：[从 summary-extract 提取的成就 - 1 行]
-- [阶段 X, 计划 Z]：[从 summary-extract 提取的成就 - 1 行]
+## 最近工作
+- [阶段 X，计划 Y]：[从 summary-extract 提取的一句话成果]
+- [阶段 X，计划 Z]：[从 summary-extract 提取的一句话成果]
 
 ## 当前位置
 阶段 [N] / [总数]：[阶段名称]
-计划 [M] / [阶段总数]：[状态]
-上下文：[✓ 有上下文 | - 无]
+计划 [M] / [阶段计划总数]：[状态]
+上下文：[有 CONTEXT.md / 无]
 
 ## 关键决策
-- [从 $STATE.decisions[] 提取]
-- [例如：jq -r '.decisions[].decision' from state-snapshot]
+- [来自 $STATE.decisions[]]
 
-## 障碍/关注
-- [从 $STATE.blockers[] 提取]
-- [例如：jq -r '.blockers[].text' from state-snapshot]
+## 阻塞 / 关注项
+- [来自 $STATE.blockers[]]
 
 ## 待处理 Todos
-- [数量] 个待处理 — /gsd:check-todos 查看
+- [数量] 个待处理，可运行 /gsd:check-todos
 
 ## 活动调试会话
-- [数量] 个活动 — /gsd:debug 继续
-（仅在数量 > 0 时显示此部分）
+- [数量] 个活动会话，可运行 /gsd:debug
+（仅在数量 > 0 时显示）
 
 ## 下一步
-[来自路线图分析的下一阶段/计划目标]
+[基于路线图分析推导出的下一条命令]
 ```
-
 </step>
 
 <step name="route">
-**根据验证后的统计确定下一步操作。**
+根据结构化统计决定下一步。
 
-**步骤 1：统计当前阶段的计划、总结和问题**
-
-列出当前阶段目录中的文件：
+**第 1 步：统计当前阶段的计划、总结和 UAT**
 
 ```bash
 ls -1 .planning/phases/[current-phase-dir]/*-PLAN.md 2>/dev/null | wc -l
@@ -143,166 +141,126 @@ ls -1 .planning/phases/[current-phase-dir]/*-SUMMARY.md 2>/dev/null | wc -l
 ls -1 .planning/phases/[current-phase-dir]/*-UAT.md 2>/dev/null | wc -l
 ```
 
-状态："此阶段有 {X} 个计划，{Y} 个总结。"
+说明当前阶段“有多少计划、完成了多少总结”。
 
-**步骤 1.5：检查未处理的 UAT 缺口**
-
-检查状态为 "diagnosed" 的 UAT.md 文件（存在需要修复的缺口）。
+**第 1.5 步：检查尚未处理完的 UAT 缺口**
 
 ```bash
-# 检查有缺口的已诊断 UAT
 grep -l "status: diagnosed" .planning/phases/[current-phase-dir]/*-UAT.md 2>/dev/null
 ```
 
-跟踪：
-- `uat_with_gaps`：状态为 "diagnosed" 的 UAT.md 文件（需要修复缺口）
+如果存在状态为 `diagnosed` 的 `UAT.md`，说明已有缺口被诊断出来，但还没有进入修复规划。
 
-**步骤 2：根据统计路由**
+**第 2 步：按条件路由**
 
-| 条件 | 含义 | 操作 |
-|-----------|---------|--------|
-| uat_with_gaps > 0 | UAT 缺口需要修复计划 | 转到**路由 E** |
-| summaries < plans | 存在未执行计划 | 转到**路由 A** |
-| summaries = plans AND plans > 0 | 阶段完成 | 转到步骤 3 |
-| plans = 0 | 阶段尚未规划 | 转到**路由 B** |
+| 条件 | 含义 | 路由 |
+|------|------|------|
+| `uat_with_gaps > 0` | UAT 缺口待修复 | 路由 E |
+| `summaries < plans` | 当前阶段还有未执行计划 | 路由 A |
+| `summaries = plans` 且 `plans > 0` | 当前阶段计划已执行完 | 进入第 3 步 |
+| `plans = 0` | 当前阶段尚未规划 | 路由 B |
 
 ---
 
 **路由 A：存在未执行计划**
 
-找到第一个没有对应 SUMMARY.md 的 PLAN.md。
-读取其 `<objective>` 部分。
+找出第一个没有对应 `SUMMARY.md` 的 `PLAN.md`，读取它的 `<objective>`，然后展示：
 
 ```
----
-
-## ▶ 下一步
-
-**{phase}-{plan}：[计划名称]** — [来自 PLAN.md 的目标摘要]
+## 下一步
+**{phase}-{plan}：[计划名]** - [来自 PLAN.md 的目标摘要]
 
 `/gsd:execute-phase {phase}`
 
-<sub>先 `/clear` → 清空上下文窗口</sub>
-
----
+先执行 `/clear`，再继续会更稳。
 ```
 
 ---
 
-**路由 B：阶段需要规划**
+**路由 B：当前阶段需要先规划**
 
-检查阶段目录中是否存在 `{phase_num}-CONTEXT.md`。
+检查阶段目录下是否已有 `{phase_num}-CONTEXT.md`。
 
-**如果 CONTEXT.md 存在：**
-
-```
----
-
-## ▶ 下一步
-
-**阶段 {N}：{名称}** — [来自 ROADMAP.md 的目标]
-<sub>✓ 上下文已收集，准备规划</sub>
-
-`/gsd:plan-phase {phase-number}`
-
-<sub>先 `/clear` → 清空上下文窗口</sub>
-
----
-```
-
-**如果 CONTEXT.md 不存在：**
+如果 `CONTEXT.md` 存在：
 
 ```
----
+## 下一步
+**阶段 {N}：[名称]** - [来自 ROADMAP.md 的阶段目标]
+上下文已收集，可以直接规划。
 
-## ▶ 下一步
+`/gsd:plan-phase {phase}`
 
-**阶段 {N}：{名称}** — [来自 ROADMAP.md 的目标]
+先执行 `/clear`，再继续会更稳。
+```
 
-`/gsd:discuss-phase {phase}` — 收集上下文并明确方法
+如果 `CONTEXT.md` 不存在：
 
-<sub>先 `/clear` → 清空上下文窗口</sub>
+```
+## 下一步
+**阶段 {N}：[名称]** - [来自 ROADMAP.md 的阶段目标]
 
----
+`/gsd:discuss-phase {phase}` - 先收集上下文并明确方法
 
-**同样可用：**
-- `/gsd:plan-phase {phase}` — 跳过讨论，直接规划
-- `/gsd:list-phase-assumptions {phase}` — 查看 Claude 的假设
+先执行 `/clear`，再继续会更稳。
 
----
+也可以用：
+- `/gsd:plan-phase {phase}` - 跳过讨论直接规划
+- `/gsd:list-phase-assumptions {phase}` - 查看 Claude 当前假设
 ```
 
 ---
 
-**路由 E：UAT 缺口需要修复计划**
+**路由 E：UAT 缺口需要修复规划**
 
-UAT.md 存在缺口（已诊断问题）。用户需要规划修复。
+如果当前阶段存在 `status: diagnosed` 的 `UAT.md`：
 
 ```
----
+## 发现 UAT 缺口
 
-## ⚠ 发现 UAT 缺口
-
-**{phase_num}-UAT.md** 有 {N} 个缺口需要修复。
+**{phase_num}-UAT.md** 中仍有待修复缺口。
 
 `/gsd:plan-phase {phase} --gaps`
 
-<sub>先 `/clear` → 清空上下文窗口</sub>
+先执行 `/clear`，再继续会更稳。
 
----
-
-**同样可用：**
-- `/gsd:execute-phase {phase}` — 执行阶段计划
-- `/gsd:verify-work {phase}` — 运行更多 UAT 测试
-
----
+也可以用：
+- `/gsd:execute-phase {phase}` - 继续执行现有计划
+- `/gsd:verify-work {phase}` - 继续补做验证
 ```
 
 ---
 
-**步骤 3：检查里程碑状态（仅在阶段完成时）**
+**第 3 步：仅当当前阶段完成时，检查整个里程碑状态**
 
-读取 ROADMAP.md 并识别：
-1. 当前阶段编号
-2. 当前里程碑部分中的所有阶段编号
+通过 `ROADMAP` 结果识别：
+- 当前阶段编号
+- 当前里程碑内的所有阶段编号
+- 最高阶段号
 
-统计总阶段数并识别最高阶段编号。
+然后按下表路由：
 
-状态："当前阶段是 {X}。里程碑有 {N} 个阶段（最高：{Y}）。"
-
-**根据里程碑状态路由：**
-
-| 条件 | 含义 | 操作 |
-|-----------|---------|--------|
-| current phase < highest phase | 还有更多阶段 | 转到**路由 C** |
-| current phase = highest phase | 里程碑完成 | 转到**路由 D** |
+| 条件 | 含义 | 路由 |
+|------|------|------|
+| `current phase < highest phase` | 还有后续阶段 | 路由 C |
+| `current phase = highest phase` | 里程碑阶段全部完成 | 路由 D |
 
 ---
 
-**路由 C：阶段完成，还有更多阶段**
-
-读取 ROADMAP.md 获取下一阶段的名称和目标。
+**路由 C：当前阶段完成，但还有下一阶段**
 
 ```
----
+## 阶段 {Z} 已完成
 
-## ✓ 阶段 {Z} 完成
+## 下一步
+**阶段 {Z+1}：[名称]** - [来自 ROADMAP.md 的目标]
 
-## ▶ 下一步
+`/gsd:discuss-phase {Z+1}` - 先为下一阶段收集上下文
 
-**阶段 {Z+1}：{名称}** — [来自 ROADMAP.md 的目标]
+先执行 `/clear`，再继续会更稳。
 
-`/gsd:discuss-phase {Z+1}` — 收集上下文并明确方法
-
-<sub>先 `/clear` → 清空上下文窗口</sub>
-
----
-
-**同样可用：**
-- `/gsd:plan-phase {Z+1}` — 跳过讨论，直接规划
-- `/gsd:verify-work {Z}` — 继续前进行用户验收测试
-
----
+也可以用：
+- `/gsd:plan-phase {Z+1}` - 跳过讨论直接规划
+- `/gsd:verify-work {Z}` - 先继续做人手验证
 ```
 
 ---
@@ -310,73 +268,55 @@ UAT.md 存在缺口（已诊断问题）。用户需要规划修复。
 **路由 D：里程碑完成**
 
 ```
----
+## 里程碑已完成
+所有 {N} 个阶段都已完成。
 
-## 🎉 里程碑完成
-
-所有 {N} 个阶段已完成！
-
-## ▶ 下一步
-
-**完成里程碑** — 归档并准备下一个
+## 下一步
+**完成里程碑** - 归档并准备下一个周期
 
 `/gsd:complete-milestone`
 
-<sub>先 `/clear` → 清空上下文窗口</sub>
+先执行 `/clear`，再继续会更稳。
 
----
-
-**同样可用：**
-- `/gsd:verify-work` — 完成里程碑前行用户验收测试
-
----
+也可以用：
+- `/gsd:verify-work` - 在归档前继续做用户验收
 ```
 
 ---
 
-**路由 F：里程碑之间（ROADMAP.md 缺失，PROJECT.md 存在）**
+**路由 F：里程碑之间（`ROADMAP.md` 缺失，但 `PROJECT.md` 存在）**
 
-里程碑已完成并归档。准备开始下一个里程碑周期。
-
-读取 MILESTONES.md 找到最后完成的里程碑版本。
+这通常表示上一个里程碑已经归档完成，可以开始新的里程碑周期：
 
 ```
----
+## 上一个里程碑已完成
 
-## ✓ 里程碑 v{X.Y} 完成
-
-准备规划下一个里程碑。
-
-## ▶ 下一步
-
-**开始下一个里程碑** — 提问 → 研究 → 需求 → 路线图
+## 下一步
+**开始新的里程碑** - 提问 -> 研究 -> 需求 -> 路线图
 
 `/gsd:new-milestone`
 
-<sub>先 `/clear` → 清空上下文窗口</sub>
-
----
+先执行 `/clear`，再继续会更稳。
 ```
-
 </step>
 
 <step name="edge_cases">
-**处理边缘情况：**
+处理常见边缘情况：
 
-- 阶段完成但下一阶段未规划 → 提供 `/gsd:plan-phase [next]`
-- 所有工作完成 → 提供里程碑完成
-- 存在障碍 → 在继续前突出显示
-- 存在交接文件 → 提及并提供 `/gsd:resume-work`
-  </step>
+- 当前阶段已完成，但下一阶段还没规划：明确给出 `/gsd:plan-phase [next]`
+- 所有工作已完成：明确给出 `/gsd:complete-milestone`
+- 仍有 blocker：在“阻塞 / 关注项”里前置展示
+- 有 handoff 文件：额外提示 `/gsd:resume-work`
+</step>
 
 </process>
 
 <success_criteria>
-
-- [ ] 提供丰富上下文（近期工作、决策、问题）
-- [ ] 当前位置清晰，进度可视化
-- [ ] 下一步解释清楚
-- [ ] 智能路由：有计划时 /gsd:execute-phase，无计划时 /gsd:plan-phase
-- [ ] 任何操作前用户确认
-- [ ] 无缝交接至适当的 gsd 命令
-      </success_criteria>
+- [ ] 能展示最近工作、关键决策和阻塞项
+- [ ] 能准确说明当前阶段和总体进度
+- [ ] 能根据实际状态给出正确的下一条 `/gsd:*` 命令
+- [ ] 存在计划时优先路由到 `/gsd:execute-phase`
+- [ ] 缺少计划时优先路由到 `/gsd:plan-phase` 或 `/gsd:discuss-phase`
+- [ ] 遇到 UAT 缺口时优先路由到 `--gaps`
+- [ ] 里程碑完成后路由到 `/gsd:complete-milestone`
+</success_criteria>

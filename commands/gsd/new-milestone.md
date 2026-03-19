@@ -1,7 +1,7 @@
 ---
 name: gsd:new-milestone
-description: Start the next operations milestone
-argument-hint: "[milestone name]"
+description: 开始下一轮里程碑
+argument-hint: "[里程碑名称]"
 allowed-tools:
   - Read
   - Bash
@@ -11,7 +11,7 @@ allowed-tools:
 ---
 
 <objective>
-Create the next milestone with updated operational requirements and roadmap coverage.
+创建下一轮里程碑，并同步更新运维侧需求与路线图覆盖范围。
 </objective>
 
 <execution_context>
@@ -19,5 +19,5 @@ Create the next milestone with updated operational requirements and roadmap cove
 </execution_context>
 
 <process>
-Run the workflow end-to-end and keep the discussion scoped to operational outcomes and readiness work.
+端到端执行该 workflow，并把讨论范围控制在结果、就绪度与运维侧交付上。
 </process>

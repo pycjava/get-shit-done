@@ -1,7 +1,7 @@
 ---
 name: gsd:execute-phase
-description: Execute all plans in an operations phase
-argument-hint: "<phase>"
+description: 执行一个阶段中的全部计划
+argument-hint: "<阶段号>"
 allowed-tools:
   - Read
   - Bash
@@ -10,7 +10,7 @@ allowed-tools:
 ---
 
 <objective>
-Execute a phase using the standard GSD wave model and produce summaries plus verification output.
+按标准 GSD wave 模型执行一个阶段，并产出总结与验证结果。
 </objective>
 
 <execution_context>
@@ -18,5 +18,5 @@ Execute a phase using the standard GSD wave model and produce summaries plus ver
 </execution_context>
 
 <process>
-Run the workflow end-to-end.
+端到端执行该 workflow。
 </process>

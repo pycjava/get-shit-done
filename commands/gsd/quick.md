@@ -1,6 +1,6 @@
 ---
 name: gsd:quick
-description: Execute a quick task with GSD guarantees (atomic commits, state tracking) but skip optional agents
+description: 用 GSD 保障执行一个快速任务（原子提交、状态追踪），并跳过可选代理
 argument-hint: "[--full] [--discuss] [--research]"
 allowed-tools:
   - Read
@@ -13,22 +13,22 @@ allowed-tools:
   - AskUserQuestion
 ---
 <objective>
-Execute small, ad-hoc tasks with GSD guarantees (atomic commits, STATE.md tracking).
+执行一个小型、临时性的 quick task，同时保留 GSD 的核心保障：原子提交、`STATE.md` 追踪与任务产物目录化。
 
-Quick mode is the same system with a shorter path:
-- Spawns gsd-planner (quick mode) + gsd-executor(s)
-- Quick tasks live in `.planning/quick/` separate from planned phases
-- Updates STATE.md "Quick Tasks Completed" table (NOT ROADMAP.md)
+`quick` 模式是同一套系统的短路径版本：
+- 拉起 `gsd-planner`（quick mode）和 `gsd-executor`
+- quick task 独立存放在 `.planning/quick/`，不混入阶段主线
+- 更新 `STATE.md` 中的 `Quick Tasks Completed` 表（不会改 `ROADMAP.md`）
 
-**Default:** Skips research, discussion, plan-checker, verifier. Use when you know exactly what to do.
+**默认行为：** 跳过 research、discussion、plan-checker 和 verifier。适合你已经很清楚要做什么的场景。
 
-**`--discuss` flag:** Lightweight discussion phase before planning. Surfaces assumptions, clarifies gray areas, captures decisions in CONTEXT.md. Use when the task has ambiguity worth resolving upfront.
+**`--discuss`：** 规划前做轻量讨论，提前暴露灰区、锁定关键决策并写入 `CONTEXT.md`。
 
-**`--full` flag:** Enables plan-checking (max 2 iterations) and post-execution verification. Use when you want quality guarantees without full milestone ceremony.
+**`--full`：** 启用计划检查（最多 2 轮）和执行后验证，在不走完整里程碑流程的前提下加强质量保障。
 
-**`--research` flag:** Spawns a focused research agent before planning. Investigates implementation approaches, library options, and pitfalls for the task. Use when you're unsure of the best approach.
+**`--research`：** 在规划前先拉起聚焦 researcher，研究实现路径、可选库与常见坑点。
 
-Flags are composable: `--discuss --research --full` gives discussion + research + plan-checking + verification.
+这些 flag 可以叠加使用，例如：`--discuss --research --full`
 </objective>
 
 <execution_context>
@@ -38,10 +38,10 @@ Flags are composable: `--discuss --research --full` gives discussion + research 
 <context>
 $ARGUMENTS
 
-Context files are resolved inside the workflow (`init quick`) and delegated via `<files_to_read>` blocks.
+上下文文件会在 workflow 内通过 `init quick` 解析，并通过 `<files_to_read>` 传递给下游代理。
 </context>
 
 <process>
-Execute the quick workflow from @~/.claude/get-shit-done/workflows/quick.md end-to-end.
-Preserve all workflow gates (validation, task description, planning, execution, state updates, commits).
+从 `@~/.claude/get-shit-done/workflows/quick.md` 端到端执行 quick workflow。
+保留所有 workflow 闸门：校验、任务描述收集、规划、执行、状态更新与提交。
 </process>

@@ -1,280 +1,166 @@
 <purpose>
-Generate operations runbook for the project. Creates OPERATIONS.md, DEPLOYMENT.md, MONITORING.md, CAPACITY.md, RUNBOOK.md, BACKUP.md, and SECURITY-OPS.md based on project context.
+为项目生成运维文档。基于项目上下文创建 `OPERATIONS.md`、`DEPLOYMENT.md`、`MONITORING.md`、`CAPACITY.md`、`RUNBOOK.md`、`BACKUP.md`、`SECURITY-OPS.md`。
 </purpose>
 
 <required_reading>
-
-1. `.planning/PROJECT.md` — Project context and requirements
-2. `.planning/ROADMAP.md` — Project roadmap
-3. `.planning/config.json` — Project configuration
-4. `get-shit-done/templates/operations/OPERATIONS.md` — Operations template
-5. `get-shit-done/templates/operations/DEPLOYMENT.md` — Deployment template
-6. `get-shit-done/templates/operations/MONITORING.md` — Monitoring template
-7. `get-shit-done/templates/operations/RUNBOOK.md` — Runbook template
-8. `get-shit-done/templates/operations/BACKUP.md` — Backup template
-9. `get-shit-done/templates/operations/SECURITY-OPS.md` — Security template
-10. `get-shit-done/templates/operations/CAPACITY.md` — Capacity planning template
-
+1. `.planning/PROJECT.md`
+2. `.planning/ROADMAP.md`
+3. `.planning/config.json`
+4. `get-shit-done/templates/operations/OPERATIONS.md`
+5. `get-shit-done/templates/operations/DEPLOYMENT.md`
+6. `get-shit-done/templates/operations/MONITORING.md`
+7. `get-shit-done/templates/operations/RUNBOOK.md`
+8. `get-shit-done/templates/operations/BACKUP.md`
+9. `get-shit-done/templates/operations/SECURITY-OPS.md`
+10. `get-shit-done/templates/operations/CAPACITY.md`
 </required_reading>
 
 <process>
 
-## 1. Setup
-
-**MANDATORY FIRST STEP — Execute:**
+## 1. 初始化
 
 ```bash
 INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init ops-runbook)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Parse JSON for: `project_name`, `project_path`, `has_operations`, `ops_research_model`.
+解析：`project_name`、`project_path`、`has_operations`、`ops_research_model`。
 
-**If `has_operations` is true:** Offer to update existing or create new:
-- "Update existing" — Edit existing operations docs
-- "Create new" — Create new operations docs (backup first)
+如果 `has_operations` 为 true，询问用户是：
+- 更新现有文档
+- 重新生成新文档（先做备份）
 
-## 2. Check Existing Operations
+## 2. 检查现有运维文档
 
-Check if `.planning/operations/` exists:
 ```bash
 ls -la .planning/operations/ 2>/dev/null || echo "No operations directory"
 ```
 
-If exists, read existing docs to understand current state.
+如果目录存在，先读取现有文档，了解当前状态。
 
-## 3. Determine Operations Scope
+## 3. 决定需要哪些运维文档
 
-Based on project context, determine which operations documents are needed:
+根据项目上下文决定需要生成哪些文档：
 
-| Document | When Needed |
-|----------|-------------|
-| OPERATIONS.md | Always — core operations overview |
-| DEPLOYMENT.md | If deploying to production |
-| MONITORING.md | If production system |
-| CAPACITY.md | If growth, peak load, cost ceilings, or scale planning matter |
-| RUNBOOK.md | If production system |
-| BACKUP.md | If persistent data storage |
-| SECURITY-OPS.md | If handling user data or sensitive information |
+| 文档 | 何时需要 |
+|------|----------|
+| `OPERATIONS.md` | 总是需要 |
+| `DEPLOYMENT.md` | 需要部署到生产时 |
+| `MONITORING.md` | 有生产系统时 |
+| `CAPACITY.md` | 需要增长、峰值负载、成本上限或扩容规划时 |
+| `RUNBOOK.md` | 有生产系统时 |
+| `BACKUP.md` | 有持久化数据时 |
+| `SECURITY-OPS.md` | 有用户数据或敏感信息时 |
 
-Present to user:
+向用户展示待生成列表，并用 AskUserQuestion 让用户选择需要哪些文档。
+
+## 4. 研究阶段
+
+如果用户选择了任意文档：
+
+显示：
 ```
-Operations documents to generate:
-
-[ ] OPERATIONS.md — Core operations overview (required)
-[ ] DEPLOYMENT.md — Deployment procedures
-[ ] MONITORING.md — Monitoring and alerting
-[ ] CAPACITY.md — Capacity baselines and scaling plan
-[ ] RUNBOOK.md — Incident response
-[ ] BACKUP.md — Backup and recovery
-[ ] SECURITY-OPS.md — Security operations
+GSD > 正在研究运维上下文
 ```
 
-Use AskUserQuestion to select:
-- header: "Ops Docs"
-- question: "Which operations documents do you need?"
-- multiSelect: true
-- options based on project needs
+如果可以使用 `Task`，拉起 `gsd-ops-researcher` 收集：
+- 部署平台 / CI/CD / 环境
+- 基础设施 / 数据库 / 外部服务
+- 监控指标 / 告警规则
+- 容量基线 / 峰值负载 / 扩容策略
+- 安全要求 / 合规要求
+- 团队职责 / on-call 安排
 
-## 4. Research Phase
+如果没有 `Task`，则内联研究：
+- 读取 `.planning/PROJECT.md`
+- 读取 `.planning/ROADMAP.md`
+- 扫描根目录中的部署 / infra / CI 文件
+- 扫描监控相关依赖
+- 汇总为各运维文档所需的结构化输入
 
-**If any document selected:**
+## 5. 生成运维文档
 
-Display:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCHING OPERATIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+对每个选中的文档：
+- 读取对应模板
+- 结合项目上下文和研究结果填充
+- 写入 `.planning/operations/`
 
-**If Task tool is available:** Spawn gsd-ops-researcher agent to gather relevant information:
+## 6. 校验文档
 
-```
-Task(prompt="
-<task>
-Operations Research — Gather information for operations documentation.
-</task>
+对每份生成文档检查：
+- [ ] 各区块都已填充
+- [ ] 模板占位符已替换
+- [ ] 文档间交叉引用正确
+- [ ] 命令和路径都是本项目的真实值
+- [ ] 只提到 secrets，不把 secrets 本体写进去
 
-<files_to_read>
-- .planning/PROJECT.md (Project context)
-- .planning/ROADMAP.md (Project roadmap)
-- .planning/config.json (Project configuration)
-</files_to_read>
+### 6a. 交叉引用检查
 
-<research_questions>
-Based on the project, identify:
+验证每份生成文档中的内部链接都指向实际存在的 `.planning/operations/` 文件。
 
-1. **Deployment**: What deployment platform (Vercel, AWS, etc.)? What CI/CD? What environments?
-2. **Infrastructure**: What cloud provider? What databases? What external services?
-3. **Monitoring**: What metrics matter? What alerts needed?
-4. **Capacity**: What baseline, peak load, bottlenecks, and scaling path should be planned?
-5. **Security**: What data is sensitive? What compliance needed?
-6. **Team**: Who is responsible for operations? What is on-call rotation?
-</research_questions>
+如发现断链，提示：
+- 哪份文档中的哪个链接有问题
+- 是否现在补生成缺失文档
 
-<output>
-Provide structured notes for each operations document needed:
-- Key decisions to document
-- Specific configurations to include
-- Relevant thresholds and SLAs
-", subagent_type="gsd-ops-researcher", model="{ops_research_model}", description="Ops research")
-```
-
-**If Task tool is NOT available (fallback):** Research inline by reading project files directly:
-
-```
-1. Read .planning/PROJECT.md — extract tech stack, team, deployment target
-2. Read .planning/ROADMAP.md — extract infrastructure decisions
-3. Scan root for: Dockerfile, docker-compose.yml, vercel.json, netlify.toml,
-   .github/workflows/, terraform/, k8s/, package.json, requirements.txt
-4. Grep package.json/requirements.txt for monitoring deps
-   (sentry, datadog, newrelic, prometheus, grafana)
-5. Estimate capacity inputs: peak traffic, queue depth, storage growth, vendor quotas
-6. Compile research notes inline and proceed to document generation
-```
-
-## 5. Generate Operations Documents
-
-**For each selected document:**
-
-### OPERATIONS.md
-- Read template
-- Fill based on project context and research
-- Create `.planning/operations/OPERATIONS.md`
-
-### DEPLOYMENT.md
-- Read template
-- Fill based on deployment platform and CI/CD
-- Create `.planning/operations/DEPLOYMENT.md`
-
-### MONITORING.md
-- Read template
-- Fill based on monitoring tools and metrics
-- Create `.planning/operations/MONITORING.md`
-
-### CAPACITY.md
-- Read template
-- Fill based on expected load, bottlenecks, and scaling strategy
-- Create `.planning/operations/CAPACITY.md`
-
-### RUNBOOK.md
-- Read template
-- Fill with common issues based on project stack
-- Create `.planning/operations/RUNBOOK.md`
-
-### BACKUP.md
-- Read template
-- Fill based on data storage and backup solutions
-- Create `.planning/operations/BACKUP.md`
-
-### SECURITY-OPS.md
-- Read template
-- Fill based on security requirements
-- Create `.planning/operations/SECURITY-OPS.md`
-
-## 6. Verify Documents
-
-**For each created document:**
-
-Checklist:
-- [ ] All sections populated
-- [ ] Placeholders replaced with actual values
-- [ ] Cross-references between documents correct
-- [ ] Commands and paths are project-specific
-- [ ] Secrets referenced but not included
-
-## 6a. Cross-Reference Check
-
-For each generated document, verify all internal links point to files that actually exist in `.planning/operations/`:
-
-```
-for each generated doc:
-  extract all markdown links matching [text](./FILENAME.md)
-  for each link target:
-    if target NOT in generated_docs AND NOT in existing_docs:
-      warn: "Broken link in {doc}: {target} not generated"
-      offer: "Generate {target} now?" (run /gsd:ops-runbook {target})
-```
-
-**Common cross-references to check:**
-
-| Source doc | Links to check |
-|---|---|
-| OPERATIONS.md | DEPLOYMENT.md, MONITORING.md, CAPACITY.md, RUNBOOK.md, BACKUP.md, SECURITY-OPS.md |
-| MONITORING.md | OPERATIONS.md, DEPLOYMENT.md, CAPACITY.md, RUNBOOK.md |
-| CAPACITY.md | OPERATIONS.md, DEPLOYMENT.md, MONITORING.md, RUNBOOK.md, BACKUP.md |
-| RUNBOOK.md | MONITORING.md, DEPLOYMENT.md, CAPACITY.md |
-| DEPLOYMENT.md | OPERATIONS.md, RUNBOOK.md, CAPACITY.md, BACKUP.md |
-| BACKUP.md | OPERATIONS.md, DEPLOYMENT.md, CAPACITY.md |
-| SECURITY-OPS.md | OPERATIONS.md, DEPLOYMENT.md |
-
-## 7. Commit
+## 7. 提交
 
 ```bash
 mkdir -p .planning/operations
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: add operations documentation" --files .planning/operations/
 ```
 
-## 8. Present Results
+## 8. 展示结果
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► OPERATIONS DOCUMENTATION ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > 运维文档已生成
 
-Generated:
-- OPERATIONS.md — Core operations overview
-- DEPLOYMENT.md — Deployment procedures
-- MONITORING.md — Monitoring and alerting
-- CAPACITY.md — Capacity baselines and scaling strategy
-- RUNBOOK.md — Incident response
-- BACKUP.md — Backup and recovery
-- SECURITY-OPS.md — Security operations
+已生成：
+- OPERATIONS.md - 运维总览
+- DEPLOYMENT.md - 部署流程
+- MONITORING.md - 监控与告警
+- CAPACITY.md - 容量基线与扩容策略
+- RUNBOOK.md - 事故响应
+- BACKUP.md - 备份与恢复
+- SECURITY-OPS.md - 安全运维
 
-Location: .planning/operations/
+位置：.planning/operations/
 ```
 
----
-
-## Next Steps
+### 下一步
 
 ```
-## ▶ Next Up
+## 下一步
 
-**Keep operations docs updated:**
-- Run /gsd:ops-audit to review and update
-- Update after major infrastructure changes
-- Review quarterly
+**持续维护运维文档：**
+- 用 /gsd:ops-audit 定期审计
+- 基础设施有重大变更后及时更新
+- 按季度复查
 
-**Integrate with development:**
-- Reference operations docs in phase planning
-- Revisit CAPACITY.md after launches and forecast changes
-- Use RUNBOOK.md during incident response
-- Update DEPLOYMENT.md after new deployments
+**与开发流程联动：**
+- 在阶段规划中引用运维文档
+- 发布或流量变化后回看 CAPACITY.md
+- 事故发生时使用 RUNBOOK.md
+- 新部署方式落地后更新 DEPLOYMENT.md
 ```
 
 </process>
 
 <output>
-
-- `.planning/operations/OPERATIONS.md` — Operations overview
-- `.planning/operations/DEPLOYMENT.md` — Deployment procedures
-- `.planning/operations/MONITORING.md` — Monitoring configuration
-- `.planning/operations/CAPACITY.md` — Capacity planning and scaling
-- `.planning/operations/RUNBOOK.md` — Incident response
-- `.planning/operations/BACKUP.md` — Backup procedures
-- `.planning/operations/SECURITY-OPS.md` — Security operations
-
+- `.planning/operations/OPERATIONS.md`
+- `.planning/operations/DEPLOYMENT.md`
+- `.planning/operations/MONITORING.md`
+- `.planning/operations/CAPACITY.md`
+- `.planning/operations/RUNBOOK.md`
+- `.planning/operations/BACKUP.md`
+- `.planning/operations/SECURITY-OPS.md`
 </output>
 
 <success_criteria>
-
-- [ ] Operations directory created at `.planning/operations/`
-- [ ] At least OPERATIONS.md created
-- [ ] CAPACITY.md created when scale or growth planning applies
-- [ ] All selected documents match project context
-- [ ] Placeholders replaced with actual values
-- [ ] Documents committed to version control
-- [ ] User knows how to update operations docs
-
+- [ ] 已创建 `.planning/operations/`
+- [ ] 至少已生成 `OPERATIONS.md`
+- [ ] 当存在增长 / 扩容规划需求时已生成 `CAPACITY.md`
+- [ ] 所有选中文档都符合项目上下文
+- [ ] 模板占位符已替换为真实值
+- [ ] 文档已提交到版本控制
+- [ ] 用户知道如何后续更新运维文档
 </success_criteria>

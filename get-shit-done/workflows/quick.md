@@ -1,125 +1,84 @@
 <purpose>
-Execute small, ad-hoc tasks with GSD guarantees (atomic commits, STATE.md tracking). Quick mode spawns gsd-planner (quick mode) + gsd-executor(s), tracks tasks in `.planning/quick/`, and updates STATE.md's "Quick Tasks Completed" table.
+执行小型、临时性的 quick task，同时保留 GSD 的基本保障：原子提交、`STATE.md` 追踪、产物目录化。
 
-With `--discuss` flag: lightweight discussion phase before planning. Surfaces assumptions, clarifies gray areas, captures decisions in CONTEXT.md so the planner treats them as locked.
+Quick 模式会拉起 `gsd-planner`（quick mode）和 `gsd-executor`，把任务记录到 `.planning/quick/`，并把结果写入 `STATE.md` 的 `Quick Tasks Completed` 表。
 
-With `--full` flag: enables plan-checking (max 2 iterations) and post-execution verification for quality guarantees without full milestone ceremony.
+支持的增强模式：
+- `--discuss`：在规划前做轻量讨论，提前暴露灰区并把用户决策写入 `CONTEXT.md`
+- `--research`：在规划前先做聚焦研究，快速了解可选方案、库、坑点与集成方式
+- `--full`：开启 plan-checker（最多 2 轮）和执行后验证，给 quick task 增加更强质量护栏
 
-With `--research` flag: spawns a focused research agent before planning. Investigates implementation approaches, library options, and pitfalls. Use when you're unsure how to approach a task.
-
-Flags are composable: `--discuss --research --full` gives discussion + research + plan-checking + verification.
+这些 flag 可以组合使用，例如：`--discuss --research --full`
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+开始前，先读取 invoking prompt 的 execution_context 中引用的全部文件。
 </required_reading>
 
 <process>
-**Step 1: Parse arguments and get task description**
 
-Parse `$ARGUMENTS` for:
-- `--full` flag → store as `$FULL_MODE` (true/false)
-- `--discuss` flag → store as `$DISCUSS_MODE` (true/false)
-- `--research` flag → store as `$RESEARCH_MODE` (true/false)
-- Remaining text → use as `$DESCRIPTION` if non-empty
+**步骤 1：解析参数并拿到任务描述**
 
-If `$DESCRIPTION` is empty after parsing, prompt user interactively:
+从 `$ARGUMENTS` 解析：
+- `--full` -> `$FULL_MODE`
+- `--discuss` -> `$DISCUSS_MODE`
+- `--research` -> `$RESEARCH_MODE`
+- 剩余文本 -> `$DESCRIPTION`
 
-```
+如果 `$DESCRIPTION` 为空，则交互式询问：
+
+```text
 AskUserQuestion(
-  header: "Quick Task",
-  question: "What do you want to do?",
+  header: "快速任务",
+  question: "你这次想处理什么？",
   followUp: null
 )
 ```
 
-Store response as `$DESCRIPTION`.
+把回答写回 `$DESCRIPTION`。
 
-If still empty, re-prompt: "Please provide a task description."
+如果仍为空，再次提示：
+`请提供一个任务描述。`
 
-Display banner based on active flags:
+**根据启用的 flag 展示横幅。**
 
-If `$DISCUSS_MODE` and `$RESEARCH_MODE` and `$FULL_MODE`:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (DISCUSS + RESEARCH + FULL)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+不要求保留旧版花哨字符框，但必须明确显示：
+- 这是 `QUICK TASK`
+- 当前启用的模式组合，例如 `DISCUSS + RESEARCH + FULL`
+- 对用户的含义，例如：
+  - `--discuss`：先澄清灰区
+  - `--research`：先研究方案
+  - `--full`：先审计划，再做验证
 
-◆ Discussion + research + plan checking + verification enabled
-```
+示例：
 
-If `$DISCUSS_MODE` and `$FULL_MODE` (no research):
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (DISCUSS + FULL)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```markdown
+## GSD 快速任务
 
-◆ Discussion + plan checking + verification enabled
-```
-
-If `$DISCUSS_MODE` and `$RESEARCH_MODE` (no full):
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (DISCUSS + RESEARCH)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-◆ Discussion + research enabled
-```
-
-If `$RESEARCH_MODE` and `$FULL_MODE` (no discuss):
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (RESEARCH + FULL)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-◆ Research + plan checking + verification enabled
-```
-
-If `$DISCUSS_MODE` only:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (DISCUSS)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-◆ Discussion phase enabled — surfacing gray areas before planning
-```
-
-If `$RESEARCH_MODE` only:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (RESEARCH)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-◆ Research phase enabled — investigating approaches before planning
-```
-
-If `$FULL_MODE` only:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (FULL MODE)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-◆ Plan checking + verification enabled
+模式：DISCUSS + RESEARCH + FULL
+说明：先讨论，再研究，再规划；执行后还会做计划检查与结果验证。
 ```
 
 ---
 
-**Step 2: Initialize**
+**步骤 2：初始化**
 
 ```bash
 INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init quick "$DESCRIPTION")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Parse JSON for: `planner_model`, `executor_model`, `checker_model`, `verifier_model`, `commit_docs`, `quick_id`, `slug`, `date`, `timestamp`, `quick_dir`, `task_dir`, `roadmap_exists`, `planning_exists`.
+提取：`planner_model`、`executor_model`、`checker_model`、`verifier_model`、`commit_docs`、`quick_id`、`slug`、`date`、`timestamp`、`quick_dir`、`task_dir`、`roadmap_exists`、`planning_exists`。
 
-**If `roadmap_exists` is false:** Error — Quick mode requires an active project with ROADMAP.md. Run `/gsd:new-project` first.
+如果 `roadmap_exists=false`：
+- 直接报错：`quick` 模式依赖一个活跃项目，必须存在 `ROADMAP.md`
+- 提示用户先运行 `/gsd:new-project`
 
-Quick tasks can run mid-phase - validation only checks ROADMAP.md exists, not phase status.
+说明：quick task 可以插在任意阶段中途执行，只要求项目已初始化，不要求阶段本身处于“可执行”状态。
 
 ---
 
-**Step 3: Create task directory**
+**步骤 3：创建任务目录**
 
 ```bash
 mkdir -p "${task_dir}"
@@ -127,166 +86,166 @@ mkdir -p "${task_dir}"
 
 ---
 
-**Step 4: Create quick task directory**
-
-Create the directory for this quick task:
+**步骤 4：创建 quick task 目录**
 
 ```bash
 QUICK_DIR=".planning/quick/${quick_id}-${slug}"
 mkdir -p "$QUICK_DIR"
 ```
 
-Report to user:
-```
-Creating quick task ${quick_id}: ${DESCRIPTION}
-Directory: ${QUICK_DIR}
-```
+向用户报告：
 
-Store `$QUICK_DIR` for use in orchestration.
+```
+正在创建 quick task ${quick_id}: ${DESCRIPTION}
+目录：${QUICK_DIR}
+```
 
 ---
 
-**Step 4.5: Discussion phase (only when `$DISCUSS_MODE`)**
+**步骤 4.5：讨论阶段（仅在 `$DISCUSS_MODE=true` 时执行）**
 
-Skip this step entirely if NOT `$DISCUSS_MODE`.
+如果没开 `--discuss`，整步跳过。
 
-Display banner:
+先展示标题：
+
+```markdown
+## 快速任务讨论
+
+目标：为任务 ${DESCRIPTION} 提前澄清灰区，避免 planner 在关键选择上靠猜。
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DISCUSSING QUICK TASK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Surfacing gray areas for: ${DESCRIPTION}
-```
+**4.5a. 识别灰区**
 
-**4.5a. Identify gray areas**
+根据任务描述，找出 2-4 个真正会影响实现结果、且值得用户拍板的灰区。
 
-Analyze `$DESCRIPTION` to identify 2-4 gray areas — implementation decisions that would change the outcome and that the user should weigh in on.
+启发式：
+- 用户会“看到”的：布局、密度、交互、状态呈现
+- 用户会“调用”的：返回格式、错误语义、鉴权方式、版本约定
+- 用户会“运行”的：输出样式、参数、模式、异常处理
+- 用户会“阅读”的：结构、语气、深度、流向
+- 用户会“组织”的：命名、分类、例外、聚合规则
 
-Use the domain-aware heuristic to generate phase-specific (not generic) gray areas:
-- Something users **SEE** → layout, density, interactions, states
-- Something users **CALL** → responses, errors, auth, versioning
-- Something users **RUN** → output format, flags, modes, error handling
-- Something users **READ** → structure, tone, depth, flow
-- Something being **ORGANIZED** → criteria, grouping, naming, exceptions
+灰区要写得具体，例如“加载态是否骨架屏”比“UX 风格”更好。
 
-Each gray area should be a concrete decision point, not a vague category. Example: "Loading behavior" not "UX".
+**4.5b. 把灰区呈现给用户**
 
-**4.5b. Present gray areas**
-
-```
+```text
 AskUserQuestion(
-  header: "Gray Areas",
-  question: "Which areas need clarification before planning?",
+  header: "灰区",
+  question: "在开始规划前，哪些地方需要先说明白？",
   options: [
     { label: "${area_1}", description: "${why_it_matters_1}" },
     { label: "${area_2}", description: "${why_it_matters_2}" },
     { label: "${area_3}", description: "${why_it_matters_3}" },
-    { label: "All clear", description: "Skip discussion — I know what I want" }
+    { label: "全部清楚", description: "直接进入规划" }
   ],
   multiSelect: true
 )
 ```
 
-If user selects "All clear" → skip to Step 5 (no CONTEXT.md written).
+如果用户选 `全部清楚`：
+- 直接跳到步骤 5
+- 不写 `CONTEXT.md`
 
-**4.5c. Discuss selected areas**
+**4.5c. 深挖所选灰区**
 
-For each selected area, ask 1-2 focused questions via AskUserQuestion:
+对每个选中的灰区，最多追问 1-2 轮：
 
-```
+```text
 AskUserQuestion(
   header: "${area_name}",
   question: "${specific_question_about_this_area}",
   options: [
-    { label: "${concrete_choice_1}", description: "${what_this_means}" },
-    { label: "${concrete_choice_2}", description: "${what_this_means}" },
-    { label: "${concrete_choice_3}", description: "${what_this_means}" },
-    { label: "You decide", description: "Claude's discretion" }
+    { label: "${choice_1}", description: "${meaning_1}" },
+    { label: "${choice_2}", description: "${meaning_2}" },
+    { label: "${choice_3}", description: "${meaning_3}" },
+    { label: "交给 Claude", description: "由 Claude 自主判断" }
   ],
   multiSelect: false
 )
 ```
 
-Rules:
-- Options must be concrete choices, not abstract categories
-- Highlight recommended choice where you have a clear opinion
-- If user selects "Other" with freeform text, switch to plain text follow-up (per questioning.md freeform rule)
-- If user selects "You decide", capture as Claude's Discretion in CONTEXT.md
-- Max 2 questions per area — this is lightweight, not a deep dive
+规则：
+- 选项必须是具体选择，不是抽象类目
+- 如果你有明确推荐项，可以把推荐放第一位
+- 用户如果用 Other 填自由文本，就转成自然语言补充说明
+- 如果用户选 `交给 Claude`，记录到 `Claude's Discretion`
+- quick task 只做轻量澄清，不做长会话
 
-Collect all decisions into `$DECISIONS`.
+把所有结果汇总成 `$DECISIONS`。
 
-**4.5d. Write CONTEXT.md**
+**4.5d. 写 `CONTEXT.md`**
 
-Write `${QUICK_DIR}/${quick_id}-CONTEXT.md` using the standard context template structure:
+文件路径：
+`${QUICK_DIR}/${quick_id}-CONTEXT.md`
+
+结构：
 
 ```markdown
-# Quick Task ${quick_id}: ${DESCRIPTION} - Context
-
-**Gathered:** ${date}
-**Status:** Ready for planning
+# Quick 任务 ${quick_id}: ${DESCRIPTION} - 上下文
+**收集时间：** ${date}
+**状态：** 可进入规划
 
 <domain>
-## Task Boundary
+## 任务边界
 
 ${DESCRIPTION}
 
 </domain>
 
 <decisions>
-## Implementation Decisions
-
+## 决策（Decisions）
 ### ${area_1_name}
 - ${decision_from_discussion}
 
 ### ${area_2_name}
 - ${decision_from_discussion}
 
-### Claude's Discretion
+### Claude 自主判断（Claude's Discretion）
 ${areas_where_user_said_you_decide_or_areas_not_discussed}
 
 </decisions>
 
 <specifics>
-## Specific Ideas
-
+## 具体想法（Specific Ideas）
 ${any_specific_references_or_examples_from_discussion}
 
-[If none: "No specific requirements — open to standard approaches"]
+[如果没有：无特定要求——可采用标准方案]
 
 </specifics>
 
 <canonical_refs>
-## Canonical References
-
+## 规范参考（Canonical References）
 ${any_specs_adrs_or_docs_referenced_during_discussion}
 
-[If none: "No external specs — requirements fully captured in decisions above"]
+[如果没有：无外部规范——上面的决策已足够]
 
 </canonical_refs>
 ```
 
-Note: Quick task CONTEXT.md omits `<code_context>` and `<deferred>` sections (no codebase scouting, no phase scope to defer to). Keep it lean. The `<canonical_refs>` section is included when external docs were referenced — omit it only if no external docs apply.
+quick task 的 `CONTEXT.md` 保持精简：
+- 不需要 `<code_context>`
+- 不需要 `<deferred>`
+- 只有在提到外部文档时才需要 `<canonical_refs>`
 
-Report: `Context captured: ${QUICK_DIR}/${quick_id}-CONTEXT.md`
+写完后向用户报告：
+`上下文已记录：{QUICK_DIR}/${quick_id}-CONTEXT.md`
 
 ---
 
-**Step 4.75: Research phase (only when `$RESEARCH_MODE`)**
+**步骤 4.75：研究阶段（仅在 `$RESEARCH_MODE=true` 时执行）**
 
-Skip this step entirely if NOT `$RESEARCH_MODE`.
+如果没开 `--research`，整步跳过。
 
-Display banner:
+标题：
+
+```markdown
+## 快速任务研究
+
+目标：在规划前快速摸清 ${DESCRIPTION} 的可行实现路径、常见坑点和集成方式。
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCHING QUICK TASK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Investigating approaches for: ${DESCRIPTION}
-```
-
-Spawn a single focused researcher (not 4 parallel researchers like full phases — quick tasks need targeted research, not broad domain surveys):
+只启动一个聚焦 researcher，不像完整 phase 那样开多路并行：
 
 ```
 Task(
@@ -298,28 +257,28 @@ Task(
 **Output:** ${QUICK_DIR}/${quick_id}-RESEARCH.md
 
 <files_to_read>
-- .planning/STATE.md (Project state — what's already built)
-- .planning/PROJECT.md (Project context)
-- ./CLAUDE.md (if exists — project-specific guidelines)
-${DISCUSS_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-CONTEXT.md (User decisions — research should align with these)' : ''}
+- .planning/STATE.md
+- .planning/PROJECT.md
+- ./CLAUDE.md（如果存在）
+${DISCUSS_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-CONTEXT.md' : ''}
 </files_to_read>
 
 </research_context>
 
 <focus>
-This is a quick task, not a full phase. Research should be concise and targeted:
-1. Best libraries/patterns for this specific task
-2. Common pitfalls and how to avoid them
-3. Integration points with existing codebase
-4. Any constraints or gotchas worth knowing before planning
+这是 quick task，不是完整 phase。研究只需要聚焦这些点：
+1. 当前任务最合适的库 / 模式
+2. 常见坑点与规避方式
+3. 与现有代码库的集成点
+4. 开始规划前必须知道的约束或 gotcha
 
-Do NOT produce a full domain survey. Target 1-2 pages of actionable findings.
+不要做大而全的综述，控制在 1-2 页可执行结论。
 </focus>
 
 <output>
-Write research to: ${QUICK_DIR}/${quick_id}-RESEARCH.md
-Use standard research format but keep it lean — skip sections that don't apply.
-Return: ## RESEARCH COMPLETE with file path
+写入：${QUICK_DIR}/${quick_id}-RESEARCH.md
+可以使用标准 research 格式，但只保留相关区块。
+返回：## RESEARCH COMPLETE with file path
 </output>
 ",
   subagent_type="gsd-phase-researcher",
@@ -328,19 +287,21 @@ Return: ## RESEARCH COMPLETE with file path
 )
 ```
 
-After researcher returns:
-1. Verify research exists at `${QUICK_DIR}/${quick_id}-RESEARCH.md`
-2. Report: "Research complete: ${QUICK_DIR}/${quick_id}-RESEARCH.md"
+researcher 返回后：
+1. 确认 `${QUICK_DIR}/${quick_id}-RESEARCH.md` 存在
+2. 向用户报告：`研究完成：${QUICK_DIR}/${quick_id}-RESEARCH.md`
 
-If research file not found, warn but continue: "Research agent did not produce output — proceeding to planning without research."
+如果文件不存在：
+- 给出 warning
+- 继续进入规划
+- 提示：`研究 agent 没有产出文件，继续按无研究输入进行规划`
 
 ---
 
-**Step 5: Spawn planner (quick mode)**
+**步骤 5：拉起 planner（`quick` 模式）**
 
-**If `$FULL_MODE`:** Use `quick-full` mode with stricter constraints.
-
-**If NOT `$FULL_MODE`:** Use standard `quick` mode.
+如果 `$FULL_MODE=true`，使用 `quick-full`。
+否则使用标准 `quick`。
 
 ```
 Task(
@@ -352,28 +313,28 @@ Task(
 **Description:** ${DESCRIPTION}
 
 <files_to_read>
-- .planning/STATE.md (Project State)
-- ./CLAUDE.md (if exists — follow project-specific guidelines)
-${DISCUSS_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-CONTEXT.md (User decisions — locked, do not revisit)' : ''}
-${RESEARCH_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-RESEARCH.md (Research findings — use to inform implementation choices)' : ''}
+- .planning/STATE.md
+- ./CLAUDE.md（如果存在）
+${DISCUSS_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-CONTEXT.md' : ''}
+${RESEARCH_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-RESEARCH.md' : ''}
 </files_to_read>
 
-**Project skills:** Check .claude/skills/ or .agents/skills/ directory (if either exists) — read SKILL.md files, plans should account for project skill rules
+**Project skills:** 如果存在 .claude/skills/ 或 .agents/skills/，读取各自 SKILL.md，并让规划遵守项目技能规则。
 
 </planning_context>
 
 <constraints>
-- Create a SINGLE plan with 1-3 focused tasks
-- Quick tasks should be atomic and self-contained
-${RESEARCH_MODE ? '- Research findings are available — use them to inform library/pattern choices' : '- No research phase'}
-${FULL_MODE ? '- Target ~40% context usage (structured for verification)' : '- Target ~30% context usage (simple, focused)'}
-${FULL_MODE ? '- MUST generate `must_haves` in plan frontmatter (truths, artifacts, key_links)' : ''}
-${FULL_MODE ? '- Each task MUST have `files`, `action`, `verify`, `done` fields' : ''}
+- 生成一个 SINGLE plan，包含 1-3 个聚焦任务
+- quick task 必须保持原子、边界清晰、可独立完成
+${RESEARCH_MODE ? '- 研究结果已提供：用它指导库与模式选择' : '- 没有研究阶段输入'}
+${FULL_MODE ? '- 目标上下文占用约 40%，方便后续验证' : '- 目标上下文占用约 30%，保持简洁'}
+${FULL_MODE ? '- 必须生成 `must_haves`（truths / artifacts / key_links）' : ''}
+${FULL_MODE ? '- 每个 task 必须带 `files` / `action` / `verify` / `done`' : ''}
 </constraints>
 
 <output>
-Write plan to: ${QUICK_DIR}/${quick_id}-PLAN.md
-Return: ## PLANNING COMPLETE with plan path
+写入：${QUICK_DIR}/${quick_id}-PLAN.md
+返回：## PLANNING COMPLETE with plan path
 </output>
 ",
   subagent_type="gsd-planner",
@@ -382,29 +343,28 @@ Return: ## PLANNING COMPLETE with plan path
 )
 ```
 
-After planner returns:
-1. Verify plan exists at `${QUICK_DIR}/${quick_id}-PLAN.md`
-2. Extract plan count (typically 1 for quick tasks)
-3. Report: "Plan created: ${QUICK_DIR}/${quick_id}-PLAN.md"
+planner 返回后：
+1. 确认 `${QUICK_DIR}/${quick_id}-PLAN.md` 存在
+2. 向用户报告：`计划已创建：${QUICK_DIR}/${quick_id}-PLAN.md`
 
-If plan not found, error: "Planner failed to create ${quick_id}-PLAN.md"
+如果没生成计划文件：
+- 直接报错：`Planner failed to create ${quick_id}-PLAN.md`
 
 ---
 
-**Step 5.5: Plan-checker loop (only when `$FULL_MODE`)**
+**步骤 5.5：计划检查循环（仅在 `$FULL_MODE=true` 时执行）**
 
-Skip this step entirely if NOT `$FULL_MODE`.
+如果不是 `--full`，整步跳过。
 
-Display banner:
+先向用户说明：
+
+```markdown
+## 计划检查
+
+当前为完整模式，会先检查 quick plan 的完备性，再决定是否执行。
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► CHECKING PLAN
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning plan checker...
-```
-
-Checker prompt:
+checker prompt：
 
 ```markdown
 <verification_context>
@@ -412,26 +372,26 @@ Checker prompt:
 **Task Description:** ${DESCRIPTION}
 
 <files_to_read>
-- ${QUICK_DIR}/${quick_id}-PLAN.md (Plan to verify)
+- ${QUICK_DIR}/${quick_id}-PLAN.md
 </files_to_read>
 
-**Scope:** This is a quick task, not a full phase. Skip checks that require a ROADMAP phase goal.
+**Scope:** 这是 quick task，不是完整 phase。跳过需要 ROADMAP 阶段目标的检查。
 </verification_context>
 
 <check_dimensions>
-- Requirement coverage: Does the plan address the task description?
-- Task completeness: Do tasks have files, action, verify, done fields?
-- Key links: Are referenced files real?
-- Scope sanity: Is this appropriately sized for a quick task (1-3 tasks)?
-- must_haves derivation: Are must_haves traceable to the task description?
+- 需求覆盖：计划是否覆盖任务描述
+- 任务完整性：是否包含 files / action / verify / done
+- Key links：引用的文件是否真实存在
+- 规模合理性：对 quick task 来说是否仍是 1-3 个任务
+- must_haves 推导：是否能回溯到任务描述
 
-Skip: cross-plan deps (single plan), ROADMAP alignment
-${DISCUSS_MODE ? '- Context compliance: Does the plan honor locked decisions from CONTEXT.md?' : '- Skip: context compliance (no CONTEXT.md)'}
+Skip: cross-plan deps、ROADMAP alignment
+${DISCUSS_MODE ? '- Context compliance：计划是否遵守 CONTEXT.md 中锁定的决策' : '- Skip: context compliance（无 CONTEXT.md）'}
 </check_dimensions>
 
 <expected_output>
-- ## VERIFICATION PASSED — all checks pass
-- ## ISSUES FOUND — structured issue list
+- ## VERIFICATION PASSED
+- ## ISSUES FOUND
 </expected_output>
 ```
 
@@ -444,27 +404,24 @@ Task(
 )
 ```
 
-**Handle checker return:**
+处理 checker 返回：
 
-- **`## VERIFICATION PASSED`:** Display confirmation, proceed to step 6.
-- **`## ISSUES FOUND`:** Display issues, check iteration count, enter revision loop.
+- `## VERIFICATION PASSED`
+  - 说明计划已通过检查
+- 进入步骤 6
 
-**Revision loop (max 2 iterations):**
+- `## ISSUES FOUND`
+  - 展示 issue 列表
+  - 如果还没达到 2 轮上限，就发回 planner 做修订
 
-Track `iteration_count` (starts at 1 after initial plan + check).
-
-**If iteration_count < 2:**
-
-Display: `Sending back to planner for revision... (iteration ${N}/2)`
-
-Revision prompt:
+**修订循环最多 2 轮：**
 
 ```markdown
 <revision_context>
 **Mode:** quick-full (revision)
 
 <files_to_read>
-- ${QUICK_DIR}/${quick_id}-PLAN.md (Existing plan)
+- ${QUICK_DIR}/${quick_id}-PLAN.md
 </files_to_read>
 
 **Checker issues:** ${structured_issues_from_checker}
@@ -472,52 +429,39 @@ Revision prompt:
 </revision_context>
 
 <instructions>
-Make targeted updates to address checker issues.
-Do NOT replan from scratch unless issues are fundamental.
-Return what changed.
+只做定向修订，不要整份重做。
+除非 checker 提出的是结构性根本问题，否则禁止完全重规划。
+返回你改了什么。
 </instructions>
 ```
 
-```
-Task(
-  prompt=revision_prompt,
-  subagent_type="gsd-planner",
-  model="{planner_model}",
-  description="Revise quick plan: ${DESCRIPTION}"
-)
-```
-
-After planner returns → spawn checker again, increment iteration_count.
-
-**If iteration_count >= 2:**
-
-Display: `Max iterations reached. ${N} issues remain:` + issue list
-
-Offer: 1) Force proceed, 2) Abort
+如果 2 轮后仍没通过：
+- 向用户展示剩余问题
+- 询问：
+  - `强行继续`
+  - `中止 quick task`
 
 ---
 
-**Step 6: Spawn executor**
-
-Spawn gsd-executor with plan reference:
+**步骤 6：拉起 executor**
 
 ```
 Task(
   prompt="
-Execute quick task ${quick_id}.
+执行 quick task ${quick_id}。
 
 <files_to_read>
-- ${QUICK_DIR}/${quick_id}-PLAN.md (Plan)
-- .planning/STATE.md (Project state)
-- ./CLAUDE.md (Project instructions, if exists)
-- .claude/skills/ or .agents/skills/ (Project skills, if either exists — list skills, read SKILL.md for each, follow relevant rules during implementation)
+- ${QUICK_DIR}/${quick_id}-PLAN.md
+- .planning/STATE.md
+- ./CLAUDE.md（如果存在）
+- .claude/skills/ 或 .agents/skills/（如果存在，读取每个 SKILL.md）
 </files_to_read>
 
 <constraints>
-- Execute all tasks in the plan
-- Commit each task atomically
-- Create summary at: ${QUICK_DIR}/${quick_id}-SUMMARY.md
-- Do NOT update ROADMAP.md (quick tasks are separate from planned phases)
+- 执行计划中的全部任务
+- 每个任务都做原子提交
+- 在 ${QUICK_DIR}/${quick_id}-SUMMARY.md 生成总结
+- 不要更新 ROADMAP.md（quick task 独立于阶段主线）
 </constraints>
 ",
   subagent_type="gsd-executor",
@@ -526,30 +470,35 @@ Execute quick task ${quick_id}.
 )
 ```
 
-After executor returns:
-1. Verify summary exists at `${QUICK_DIR}/${quick_id}-SUMMARY.md`
-2. Extract commit hash from executor output
-3. Report completion status
+executor 返回后：
+1. 确认 `${QUICK_DIR}/${quick_id}-SUMMARY.md` 存在
+2. 从输出中提取 commit hash
+3. 向用户报告完成状态
 
-**Known Claude Code bug (classifyHandoffIfNeeded):** If executor reports "failed" with error `classifyHandoffIfNeeded is not defined`, this is a Claude Code runtime bug — not a real failure. Check if summary file exists and git log shows commits. If so, treat as successful.
+**已知 Claude Code 误报：**
+如果 executor 报错为 `classifyHandoffIfNeeded is not defined`，先不要直接判定失败。检查：
+- `SUMMARY.md` 是否存在
+- git log 里是否有预期提交
 
-If summary not found, error: "Executor failed to create ${quick_id}-SUMMARY.md"
+如果两者都在，就按成功处理。
 
-Note: For quick tasks producing multiple plans (rare), spawn executors in parallel waves per execute-phase patterns.
+如果 `SUMMARY.md` 不存在：
+- 报错：`Executor failed to create ${quick_id}-SUMMARY.md`
+
+注：quick task 理论上也可能拆成多 plan，但极少见。如果真的出现多 plan，参考 `execute-phase` 的 wave 模式处理。
 
 ---
 
-**Step 6.5: Verification (only when `$FULL_MODE`)**
+**步骤 6.5：结果验证（仅在 `$FULL_MODE=true` 时执行）**
 
-Skip this step entirely if NOT `$FULL_MODE`.
+如果没开 `--full`，整步跳过。
 
-Display banner:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► VERIFYING RESULTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+向用户提示：
 
-◆ Spawning verifier...
+```markdown
+## 结果验证
+
+当前为完整模式，将对 quick task 的 must_haves 做结果回推验证。
 ```
 
 ```
@@ -559,7 +508,7 @@ Task directory: ${QUICK_DIR}
 Task goal: ${DESCRIPTION}
 
 <files_to_read>
-- ${QUICK_DIR}/${quick_id}-PLAN.md (Plan)
+- ${QUICK_DIR}/${quick_id}-PLAN.md
 </files_to_read>
 
 Check must_haves against actual codebase. Create VERIFICATION.md at ${QUICK_DIR}/${quick_id}-VERIFICATION.md.",
@@ -569,34 +518,37 @@ Check must_haves against actual codebase. Create VERIFICATION.md at ${QUICK_DIR}
 )
 ```
 
-Read verification status:
+读取状态：
+
 ```bash
 grep "^status:" "${QUICK_DIR}/${quick_id}-VERIFICATION.md" | cut -d: -f2 | tr -d ' '
 ```
 
-Store as `$VERIFICATION_STATUS`.
+把结果写入 `$VERIFICATION_STATUS`：
 
-| Status | Action |
-|--------|--------|
-| `passed` | Store `$VERIFICATION_STATUS = "Verified"`, continue to step 7 |
-| `human_needed` | Display items needing manual check, store `$VERIFICATION_STATUS = "Needs Review"`, continue |
-| `gaps_found` | Display gap summary, offer: 1) Re-run executor to fix gaps, 2) Accept as-is. Store `$VERIFICATION_STATUS = "Gaps"` |
+| Status | 动作 |
+|--------|------|
+| `passed` | 记为 `Verified`，继续步骤 7 |
+| `human_needed` | 展示人工验证项，记为 `Needs Review`，继续 |
+| `gaps_found` | 展示缺口摘要，询问“重新执行修复”还是“按现状接受”，记为 `Gaps` |
 
 ---
 
-**Step 7: Update STATE.md**
+**步骤 7：更新 `STATE.md`**
 
-Update STATE.md with quick task completion record.
+把这条 quick task 追加到 `STATE.md` 中的 quick 记录表。
 
-**7a. Check if "Quick Tasks Completed" section exists:**
+**7a. 检查是否存在 `Quick Tasks Completed` 区块**
 
-Read STATE.md and check for `### Quick Tasks Completed` section.
+读取 `STATE.md`，查找字面量：
+`### Quick Tasks Completed`
 
-**7b. If section doesn't exist, create it:**
+**7b. 如果不存在，则创建**
 
-Insert after `### Blockers/Concerns` section:
+插入到 `### Blockers/Concerns` 后面。
 
-**If `$FULL_MODE`:**
+如果是 `--full`：
+
 ```markdown
 ### Quick Tasks Completed
 
@@ -604,7 +556,8 @@ Insert after `### Blockers/Concerns` section:
 |---|-------------|------|--------|--------|-----------|
 ```
 
-**If NOT `$FULL_MODE`:**
+如果不是 `--full`：
+
 ```markdown
 ### Quick Tasks Completed
 
@@ -612,61 +565,63 @@ Insert after `### Blockers/Concerns` section:
 |---|-------------|------|--------|-----------|
 ```
 
-**Note:** If the table already exists, match its existing column format. If adding `--full` to a project that already has quick tasks without a Status column, add the Status column to the header and separator rows, and leave Status empty for the new row's predecessors.
+**注意：**
+- 如果表已经存在，优先沿用原表列结构
+- 如果以前项目里 quick 表没有 `Status` 列，而现在第一次使用 `--full`，就把表头升级为带 `Status`
+- 旧记录的 `Status` 列可留空，不必回填
 
-**7c. Append new row to table:**
+**7c. 追加新行**
 
-Use `date` from init:
+如果表带 `Status` 列：
 
-**If `$FULL_MODE` (or table has Status column):**
 ```markdown
 | ${quick_id} | ${DESCRIPTION} | ${date} | ${commit_hash} | ${VERIFICATION_STATUS} | [${quick_id}-${slug}](./quick/${quick_id}-${slug}/) |
 ```
 
-**If NOT `$FULL_MODE` (and table has no Status column):**
+如果表不带 `Status` 列：
+
 ```markdown
 | ${quick_id} | ${DESCRIPTION} | ${date} | ${commit_hash} | [${quick_id}-${slug}](./quick/${quick_id}-${slug}/) |
 ```
 
-**7d. Update "Last activity" line:**
+**7d. 更新 `Last activity`**
 
-Use `date` from init:
 ```
 Last activity: ${date} - Completed quick task ${quick_id}: ${DESCRIPTION}
 ```
 
-Use Edit tool to make these changes atomically
+用编辑工具原子地写入这些变化。
 
 ---
 
-**Step 8: Final commit and completion**
+**步骤 8：最终提交并结束**
 
-Stage and commit quick task artifacts:
-
-Build file list:
+整理要提交的 quick task 产物：
 - `${QUICK_DIR}/${quick_id}-PLAN.md`
 - `${QUICK_DIR}/${quick_id}-SUMMARY.md`
 - `.planning/STATE.md`
-- If `$DISCUSS_MODE` and context file exists: `${QUICK_DIR}/${quick_id}-CONTEXT.md`
-- If `$RESEARCH_MODE` and research file exists: `${QUICK_DIR}/${quick_id}-RESEARCH.md`
-- If `$FULL_MODE` and verification file exists: `${QUICK_DIR}/${quick_id}-VERIFICATION.md`
+- 如果有 discuss 结果：`${QUICK_DIR}/${quick_id}-CONTEXT.md`
+- 如果有 research 结果：`${QUICK_DIR}/${quick_id}-RESEARCH.md`
+- 如果是 full mode 且有验证：`${QUICK_DIR}/${quick_id}-VERIFICATION.md`
+
+执行：
 
 ```bash
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs(quick-${quick_id}): ${DESCRIPTION}" --files ${file_list}
 ```
 
-Get final commit hash:
+然后读取最终 hash：
+
 ```bash
 commit_hash=$(git rev-parse --short HEAD)
 ```
 
-Display completion output:
+**如果是 `$FULL_MODE=true`：**
 
-**If `$FULL_MODE`:**
-```
+```markdown
 ---
 
-GSD > QUICK TASK COMPLETE (FULL MODE)
+GSD > 快速任务完成（完整模式）
 
 Quick Task ${quick_id}: ${DESCRIPTION}
 
@@ -677,14 +632,15 @@ Commit: ${commit_hash}
 
 ---
 
-Ready for next task: /gsd:quick
+下一项任务：/gsd:quick
 ```
 
-**If NOT `$FULL_MODE`:**
-```
+**如果不是 full mode：**
+
+```markdown
 ---
 
-GSD > QUICK TASK COMPLETE
+GSD > 快速任务完成
 
 Quick Task ${quick_id}: ${DESCRIPTION}
 
@@ -694,24 +650,23 @@ Commit: ${commit_hash}
 
 ---
 
-Ready for next task: /gsd:quick
+下一项任务：/gsd:quick
 ```
 
 </process>
 
 <success_criteria>
-- [ ] ROADMAP.md validation passes
-- [ ] User provides task description
-- [ ] `--full`, `--discuss`, and `--research` flags parsed from arguments when present
-- [ ] Slug generated (lowercase, hyphens, max 40 chars)
-- [ ] Quick ID generated (YYMMDD-xxx format, 2s Base36 precision)
-- [ ] Directory created at `.planning/quick/YYMMDD-xxx-slug/`
-- [ ] (--discuss) Gray areas identified and presented, decisions captured in `${quick_id}-CONTEXT.md`
-- [ ] (--research) Research agent spawned, `${quick_id}-RESEARCH.md` created
-- [ ] `${quick_id}-PLAN.md` created by planner (honors CONTEXT.md decisions when --discuss, uses RESEARCH.md findings when --research)
-- [ ] (--full) Plan checker validates plan, revision loop capped at 2
-- [ ] `${quick_id}-SUMMARY.md` created by executor
-- [ ] (--full) `${quick_id}-VERIFICATION.md` created by verifier
-- [ ] STATE.md updated with quick task row (Status column when --full)
-- [ ] Artifacts committed
+- [ ] `ROADMAP.md` 存在且 quick mode 初始化通过
+- [ ] 用户提供了 quick task 描述
+- [ ] `--full` / `--discuss` / `--research` 参数正确解析
+- [ ] 已生成 slug 与 quick ID
+- [ ] 已在 `.planning/quick/YYMMDD-xxx-slug/` 创建目录
+- [ ] `--discuss` 模式下已生成 `${quick_id}-CONTEXT.md`
+- [ ] `--research` 模式下已生成 `${quick_id}-RESEARCH.md`
+- [ ] 已生成 `${quick_id}-PLAN.md`
+- [ ] `--full` 模式下已经过 plan-checker，且修订循环不超过 2 次
+- [ ] 已生成 `${quick_id}-SUMMARY.md`
+- [ ] `--full` 模式下已生成 `${quick_id}-VERIFICATION.md`
+- [ ] `STATE.md` 的 `Quick Tasks Completed` 表已追加记录
+- [ ] quick task 相关产物已提交
 </success_criteria>

@@ -1,60 +1,60 @@
 <purpose>
-Display comprehensive project statistics including phases, plans, requirements, git metrics, and timeline.
+展示完整的项目统计信息，包括阶段、计划、需求、git 指标和时间线。
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+开始前先读取调用方 `execution_context` 中引用的全部文件。
 </required_reading>
 
 <process>
 
 <step name="gather_stats">
-Gather project statistics:
+收集项目统计信息：
 
 ```bash
 STATS=$(node "$GSD_TOOLS" stats json)
 if [[ "$STATS" == @file:* ]]; then STATS=$(cat "${STATS#@file:}"); fi
 ```
 
-Extract fields from JSON: `milestone_version`, `milestone_name`, `phases`, `phases_completed`, `phases_total`, `total_plans`, `total_summaries`, `percent`, `plan_percent`, `requirements_total`, `requirements_complete`, `git_commits`, `git_first_commit_date`, `last_activity`.
+从 JSON 中提取字段：`milestone_version`、`milestone_name`、`phases`、`phases_completed`、`phases_total`、`total_plans`、`total_summaries`、`percent`、`plan_percent`、`requirements_total`、`requirements_complete`、`git_commits`、`git_first_commit_date`、`last_activity`。
 </step>
 
 <step name="present_stats">
-Present to the user with this format:
+按如下格式展示给用户：
 
 ```
-# 📊 Project Statistics — {milestone_version} {milestone_name}
+# 项目统计 - {milestone_version} {milestone_name}
 
-## Progress
-[████████░░] X/Y phases (Z%)
+## 进度
+[████░░░░░░] X/Y 个阶段（Z%）
 
-## Plans
-X/Y plans complete (Z%)
+## 计划
+X/Y 个计划已完成（Z%）
 
-## Phases
-| Phase | Name | Plans | Completed | Status |
-|-------|------|-------|-----------|--------|
-| ...   | ...  | ...   | ...       | ...    |
+## 阶段
+| 阶段 | 名称 | 计划数 | 已完成 | 状态 |
+|------|------|--------|--------|------|
+| ...  | ...  | ...    | ...    | ...  |
 
-## Requirements
-✅ X/Y requirements complete
+## 需求
+已完成 X/Y 条需求
 
 ## Git
-- **Commits:** N
-- **Started:** YYYY-MM-DD
-- **Last activity:** YYYY-MM-DD
+- **提交数：** N
+- **开始日期：** YYYY-MM-DD
+- **最近活动：** YYYY-MM-DD
 
-## Timeline
-- **Project age:** N days
+## 时间线
+- **项目年龄：** N 天
 ```
 
-If no `.planning/` directory exists, inform the user to run `/gsd:new-project` first.
+如果不存在 `.planning/` 目录，提示用户先运行 `/gsd:new-project`。
 </step>
 
 </process>
 
 <success_criteria>
-- [ ] Statistics gathered from project state
-- [ ] Results formatted clearly
-- [ ] Displayed to user
+- [ ] 已从项目状态中收集统计信息
+- [ ] 已清晰格式化结果
+- [ ] 已展示给用户
 </success_criteria>

@@ -597,9 +597,9 @@ describe('scaffold command', () => {
       path.join(tmpDir, '.planning', 'phases', '03-api', '03-CONTEXT.md'),
       'utf-8'
     );
-    assert.ok(content.includes('Phase 3'), 'should reference phase number');
-    assert.ok(content.includes('Decisions'), 'should have decisions section');
-    assert.ok(content.includes('Discretion Areas'), 'should have discretion section');
+    assert.ok(content.includes('阶段 3') || content.includes('Phase 3'), 'should reference phase number');
+    assert.ok(content.includes('决策（Decisions）'), 'should have decisions section');
+    assert.ok(content.includes('Claude 自主判断'), 'should have discretion section');
   });
 
   test('scaffolds UAT file', () => {
@@ -615,8 +615,8 @@ describe('scaffold command', () => {
       path.join(tmpDir, '.planning', 'phases', '03-api', '03-UAT.md'),
       'utf-8'
     );
-    assert.ok(content.includes('User Acceptance Testing'), 'should have UAT heading');
-    assert.ok(content.includes('Test Results'), 'should have test results section');
+    assert.ok(content.includes('用户验收测试'), 'should have UAT heading');
+    assert.ok(content.includes('测试结果'), 'should have test results section');
   });
 
   test('scaffolds verification file', () => {
@@ -632,7 +632,7 @@ describe('scaffold command', () => {
       path.join(tmpDir, '.planning', 'phases', '03-api', '03-VERIFICATION.md'),
       'utf-8'
     );
-    assert.ok(content.includes('Goal-Backward Verification'), 'should have verification heading');
+    assert.ok(content.includes('目标回溯验证'), 'should have verification heading');
   });
 
   test('scaffolds phase directory', () => {

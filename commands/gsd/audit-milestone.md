@@ -1,6 +1,6 @@
 ---
 name: gsd:audit-milestone
-description: Audit milestone-level operational readiness
+description: 审计里程碑级别的完成质量与就绪度
 allowed-tools:
   - Read
   - Bash
@@ -9,7 +9,7 @@ allowed-tools:
 ---
 
 <objective>
-Audit whether the milestone delivers the promised operational coverage.
+审计当前里程碑是否真正兑现了它承诺的覆盖范围与结果。
 </objective>
 
 <execution_context>
@@ -17,5 +17,5 @@ Audit whether the milestone delivers the promised operational coverage.
 </execution_context>
 
 <process>
-Run the workflow end-to-end with emphasis on readiness, coverage, and cross-phase gaps.
+端到端执行该 workflow，重点关注就绪度、覆盖率和跨阶段缺口。
 </process>

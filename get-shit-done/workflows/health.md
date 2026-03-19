@@ -1,17 +1,17 @@
 <purpose>
-Validate `.planning/` directory integrity and report actionable issues. Checks for missing files, invalid configurations, inconsistent state, and orphaned plans. Optionally repairs auto-fixable issues.
+验证 `.planning/` 目录的完整性，并给出可执行的问题报告。检查缺失文件、无效配置、状态不一致、孤儿计划等问题，并在可能时自动修复。
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+开始前先读取调用方 `execution_context` 中引用的全部文件。
 </required_reading>
 
 <process>
 
 <step name="parse_args">
-**Parse arguments:**
+**解析参数：**
 
-Check if `--repair` flag is present in the command arguments.
+检查命令参数中是否带有 `--repair`。
 
 ```
 REPAIR_FLAG=""
@@ -22,100 +22,100 @@ fi
 </step>
 
 <step name="run_health_check">
-**Run health validation:**
+**执行 health 校验：**
 
 ```bash
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" validate health $REPAIR_FLAG
 ```
 
-Parse JSON output:
-- `status`: "healthy" | "degraded" | "broken"
-- `errors[]`: Critical issues (code, message, fix, repairable)
-- `warnings[]`: Non-critical issues
-- `info[]`: Informational notes
-- `repairable_count`: Number of auto-fixable issues
-- `repairs_performed[]`: Actions taken if --repair was used
+解析 JSON 输出：
+- `status`: `"healthy"` | `"degraded"` | `"broken"`
+- `errors[]`: 严重问题（code, message, fix, repairable）
+- `warnings[]`: 非严重问题
+- `info[]`: 提示信息
+- `repairable_count`: 可自动修复的问题数量
+- `repairs_performed[]`: 如果用了 `--repair`，这里记录实际修复动作
 </step>
 
 <step name="format_output">
-**Format and display results:**
+**格式化并展示结果：**
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD Health Check
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ GSD 健康检查
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Status: HEALTHY | DEGRADED | BROKEN
-Errors: N | Warnings: N | Info: N
+状态：HEALTHY | DEGRADED | BROKEN
+错误：N | 警告：N | 信息：N
 ```
 
-**If repairs were performed:**
+**如果执行了修复：**
 ```
-## Repairs Performed
+## 已执行修复
 
-- ✓ config.json: Created with defaults
-- ✓ STATE.md: Regenerated from roadmap
-```
-
-**If errors exist:**
-```
-## Errors
-
-- [E001] config.json: JSON parse error at line 5
-  Fix: Run /gsd:health --repair to reset to defaults
-
-- [E002] PROJECT.md not found
-  Fix: Run /gsd:new-project to create
+- 已创建 config.json 默认配置
+- 已根据 roadmap 重建 STATE.md
 ```
 
-**If warnings exist:**
+**如果存在 errors：**
 ```
-## Warnings
+## 错误
 
-- [W001] STATE.md references phase 5, but only phases 1-3 exist
-  Fix: Run /gsd:health --repair to regenerate
+- [E001] config.json：第 5 行 JSON 解析失败
+  修复：运行 /gsd:health --repair 重置为默认值
 
-- [W005] Phase directory "1-setup" doesn't follow NN-name format
-  Fix: Rename to match pattern (e.g., 01-setup)
-```
-
-**If info exists:**
-```
-## Info
-
-- [I001] 02-implementation/02-01-PLAN.md has no SUMMARY.md
-  Note: May be in progress
+- [E002] 未找到 PROJECT.md
+  修复：运行 /gsd:new-project 创建
 ```
 
-**Footer (if repairable issues exist and --repair was NOT used):**
+**如果存在 warnings：**
+```
+## 警告
+
+- [W001] STATE.md 引用了阶段 5，但磁盘上只有阶段 1-3
+  修复：运行 /gsd:health --repair 重新生成
+
+- [W005] 阶段目录 "1-setup" 不符合 NN-name 命名格式
+  修复：手动重命名为规范格式（例如 01-setup）
+```
+
+**如果存在 info：**
+```
+## 信息
+
+- [I001] 02-implementation/02-01-PLAN.md 还没有 SUMMARY.md
+  说明：可能仍在执行中
+```
+
+**如果存在可修复问题，且本次没有使用 `--repair`：**
 ```
 ---
-N issues can be auto-repaired. Run: /gsd:health --repair
+有 N 个问题可自动修复。运行：/gsd:health --repair
 ```
 </step>
 
 <step name="offer_repair">
-**If repairable issues exist and --repair was NOT used:**
+**如果存在可修复问题，且本次没有使用 `--repair`：**
 
-Ask user if they want to run repairs:
+询问用户是否要自动修复：
 
 ```
-Would you like to run /gsd:health --repair to fix N issues automatically?
+是否要运行 /gsd:health --repair，自动修复 N 个问题？
 ```
 
-If yes, re-run with --repair flag and display results.
+如果用户同意，则带 `--repair` 重新运行并展示结果。
 </step>
 
 <step name="verify_repairs">
-**If repairs were performed:**
+**如果执行过修复：**
 
-Re-run health check without --repair to confirm issues are resolved:
+不带 `--repair` 再运行一次 health check，确认问题已解决：
 
 ```bash
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" validate health
 ```
 
-Report final status.
+然后汇报最终状态。
 </step>
 
 </process>
@@ -124,21 +124,21 @@ Report final status.
 
 | Code | Severity | Description | Repairable |
 |------|----------|-------------|------------|
-| E001 | error | .planning/ directory not found | No |
-| E002 | error | PROJECT.md not found | No |
-| E003 | error | ROADMAP.md not found | No |
-| E004 | error | STATE.md not found | Yes |
-| E005 | error | config.json parse error | Yes |
-| W001 | warning | PROJECT.md missing required section | No |
-| W002 | warning | STATE.md references invalid phase | Yes |
-| W003 | warning | config.json not found | Yes |
-| W004 | warning | config.json invalid field value | No |
-| W005 | warning | Phase directory naming mismatch | No |
-| W006 | warning | Phase in ROADMAP but no directory | No |
-| W007 | warning | Phase on disk but not in ROADMAP | No |
-| W008 | warning | config.json: workflow.nyquist_validation absent (defaults to enabled but agents may skip) | Yes |
-| W009 | warning | Phase has Validation Architecture in RESEARCH.md but no VALIDATION.md | No |
-| I001 | info | Plan without SUMMARY (may be in progress) | No |
+| E001 | error | 未找到 `.planning/` 目录 | No |
+| E002 | error | 未找到 `PROJECT.md` | No |
+| E003 | error | 未找到 `ROADMAP.md` | No |
+| E004 | error | 未找到 `STATE.md` | Yes |
+| E005 | error | `config.json` 解析失败 | Yes |
+| W001 | warning | `PROJECT.md` 缺少必需区块 | No |
+| W002 | warning | `STATE.md` 引用了无效阶段 | Yes |
+| W003 | warning | 未找到 `config.json` | Yes |
+| W004 | warning | `config.json` 中字段值非法 | No |
+| W005 | warning | 阶段目录命名不符合规范 | No |
+| W006 | warning | `ROADMAP` 中有阶段，但磁盘没有对应目录 | No |
+| W007 | warning | 磁盘上有阶段目录，但 `ROADMAP` 中没有 | No |
+| W008 | warning | `config.json` 缺少 `workflow.nyquist_validation`（默认仍视为启用，但 agent 可能跳过） | Yes |
+| W009 | warning | `RESEARCH.md` 含 Validation Architecture，但没有 `VALIDATION.md` | No |
+| I001 | info | 有 PLAN 没有 SUMMARY（可能还在进行） | No |
 
 </error_codes>
 
@@ -146,14 +146,14 @@ Report final status.
 
 | Action | Effect | Risk |
 |--------|--------|------|
-| createConfig | Create config.json with defaults | None |
-| resetConfig | Delete + recreate config.json | Loses custom settings |
-| regenerateState | Create STATE.md from ROADMAP structure | Loses session history |
-| addNyquistKey | Add workflow.nyquist_validation: true to config.json | None — matches existing default |
+| createConfig | 用默认值创建 `config.json` | None |
+| resetConfig | 删除并重建 `config.json` | 会丢失自定义设置 |
+| regenerateState | 按 `ROADMAP` 结构重建 `STATE.md` | 会丢失会话历史 |
+| addNyquistKey | 向 `config.json` 添加 `workflow.nyquist_validation: true` | None，符合现有默认行为 |
 
-**Not repairable (too risky):**
-- PROJECT.md, ROADMAP.md content
-- Phase directory renaming
-- Orphaned plan cleanup
+**以下内容不自动修复（风险太高）：**
+- `PROJECT.md` / `ROADMAP.md` 正文内容
+- 阶段目录重命名
+- 孤儿计划清理
 
 </repair_actions>

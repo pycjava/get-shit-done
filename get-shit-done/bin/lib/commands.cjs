@@ -493,17 +493,17 @@ function cmdScaffold(cwd, type, options, raw) {
   switch (type) {
     case 'context': {
       filePath = path.join(phaseDir, `${padded}-CONTEXT.md`);
-      content = `---\nphase: "${padded}"\nname: "${name || phaseInfo?.phase_name || 'Unnamed'}"\ncreated: ${today}\n---\n\n# Phase ${phase}: ${name || phaseInfo?.phase_name || 'Unnamed'} — Context\n\n## Decisions\n\n_Decisions will be captured during /gsd:discuss-phase ${phase}_\n\n## Discretion Areas\n\n_Areas where the executor can use judgment_\n\n## Deferred Ideas\n\n_Ideas to consider later_\n`;
+      content = `---\nphase: "${padded}"\nname: "${name || phaseInfo?.phase_name || '未命名'}"\ncreated: ${today}\n---\n\n# 阶段 ${phase}: ${name || phaseInfo?.phase_name || '未命名'} - 上下文\n\n## 决策（Decisions）\n\n_将在 /gsd:discuss-phase ${phase} 中记录决策_\n\n## Claude 自主判断（Claude's Discretion）\n\n_执行者可以自行判断的范围_\n\n## 延后想法（Deferred Ideas）\n\n_留到后续再考虑的想法_\n`;
       break;
     }
     case 'uat': {
       filePath = path.join(phaseDir, `${padded}-UAT.md`);
-      content = `---\nphase: "${padded}"\nname: "${name || phaseInfo?.phase_name || 'Unnamed'}"\ncreated: ${today}\nstatus: pending\n---\n\n# Phase ${phase}: ${name || phaseInfo?.phase_name || 'Unnamed'} — User Acceptance Testing\n\n## Test Results\n\n| # | Test | Status | Notes |\n|---|------|--------|-------|\n\n## Summary\n\n_Pending UAT_\n`;
+      content = `---\nphase: "${padded}"\nname: "${name || phaseInfo?.phase_name || '未命名'}"\ncreated: ${today}\nstatus: pending\n---\n\n# 阶段 ${phase}: ${name || phaseInfo?.phase_name || '未命名'} - 用户验收测试\n\n## Tests（测试项）\n\n| # | 测试项 | 预期 | 实际 | 状态 | 备注 |\n|---|--------|------|------|------|------|\n\n## Summary（总结）\n\n_待进行 UAT_\n\n## Gaps（缺口）\n\n\`\`\`yaml\n[]\n\`\`\`\n`;
       break;
     }
     case 'verification': {
       filePath = path.join(phaseDir, `${padded}-VERIFICATION.md`);
-      content = `---\nphase: "${padded}"\nname: "${name || phaseInfo?.phase_name || 'Unnamed'}"\ncreated: ${today}\nstatus: pending\n---\n\n# Phase ${phase}: ${name || phaseInfo?.phase_name || 'Unnamed'} — Verification\n\n## Goal-Backward Verification\n\n**Phase Goal:** [From ROADMAP.md]\n\n## Checks\n\n| # | Requirement | Status | Evidence |\n|---|------------|--------|----------|\n\n## Result\n\n_Pending verification_\n`;
+      content = `---\nphase: "${padded}"\nname: "${name || phaseInfo?.phase_name || '未命名'}"\ncreated: ${today}\nstatus: pending\n---\n\n# 阶段 ${phase}: ${name || phaseInfo?.phase_name || '未命名'} - 验证报告\n\n## Goal-Backward Verification（目标回推验证）\n\n**阶段目标：** [来自 ROADMAP.md]\n\n## Checks（检查项）\n\n| # | 需求 | 状态 | 证据 |\n|---|------|------|------|\n\n## Result（结果）\n\n_待验证_\n`;
       break;
     }
     case 'phase-dir': {

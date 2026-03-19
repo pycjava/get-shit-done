@@ -1,10 +1,10 @@
 ---
 name: gsd:help
-description: Show the operations command reference
+description: 显示这套运维版命令参考
 ---
 
 <objective>
-Display the concise command reference for this operations-focused edition.
+展示当前这套偏运维场景的 GSD 命令速查表。
 </objective>
 
 <execution_context>
@@ -12,5 +12,5 @@ Display the concise command reference for this operations-focused edition.
 </execution_context>
 
 <process>
-Output the workflow content directly.
+直接输出 workflow 内容。
 </process>

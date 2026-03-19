@@ -1,53 +1,53 @@
 <purpose>
-List all pending todos, allow selection, load full context for the selected todo, and route to appropriate action.
+列出所有待处理 todo，让用户选择其中一项，加载完整上下文，并路由到合适的后续动作。
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+开始前先读取调用方 `execution_context` 中引用的全部文件。
 </required_reading>
 
 <process>
 
 <step name="init_context">
-Load todo context:
+加载 todo 上下文：
 
 ```bash
 INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init todos)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Extract from init JSON: `todo_count`, `todos`, `pending_dir`.
+从 init JSON 中提取：`todo_count`、`todos`、`pending_dir`。
 
-If `todo_count` is 0:
+如果 `todo_count` 为 0：
 ```
-No pending todos.
+当前没有待处理 todo。
 
-Todos are captured during work sessions with /gsd:add-todo.
+todo 可以在工作过程中通过 /gsd:add-todo 随时记录。
 
 ---
 
-Would you like to:
+你现在可以：
 
-1. Continue with current phase (/gsd:progress)
-2. Add a todo now (/gsd:add-todo)
+1. 继续当前阶段（/gsd:progress）
+2. 现在新增一个 todo（/gsd:add-todo）
 ```
 
-Exit.
+退出。
 </step>
 
 <step name="parse_filter">
-Check for area filter in arguments:
-- `/gsd:check-todos` → show all
-- `/gsd:check-todos api` → filter to area:api only
+检查参数中是否带有 area 过滤：
+- `/gsd:check-todos` -> 显示全部
+- `/gsd:check-todos api` -> 只显示 `api` area
 </step>
 
 <step name="list_todos">
-Use the `todos` array from init context (already filtered by area if specified).
+使用 init 上下文中的 `todos` 数组（如果指定了 area，则这里已是过滤后的结果）。
 
-Parse and display as numbered list:
+按编号展示：
 
 ```
-Pending Todos:
+待处理 Todos：
 
 1. Add auth token refresh (api, 2d ago)
 2. Fix modal z-index issue (ui, 1d ago)
@@ -55,123 +55,123 @@ Pending Todos:
 
 ---
 
-Reply with a number to view details, or:
-- `/gsd:check-todos [area]` to filter by area
-- `q` to exit
+回复一个编号可查看详情，或者：
+- `/gsd:check-todos [area]` 按 area 过滤
+- `q` 退出
 ```
 
-Format age as relative time from created timestamp.
+创建时间使用相对时间格式展示。
 </step>
 
 <step name="handle_selection">
-Wait for user to reply with a number.
+等待用户回复一个编号。
 
-If valid: load selected todo, proceed.
-If invalid: "Invalid selection. Reply with a number (1-[N]) or `q` to exit."
+如果输入有效：加载对应 todo，继续。
+如果无效：提示 `选择无效。请输入 1-[N] 之间的编号，或输入 \`q\` 退出。`
 </step>
 
 <step name="load_context">
-Read the todo file completely. Display:
+完整读取 todo 文件，并展示：
 
 ```
 ## [title]
 
 **Area:** [area]
-**Created:** [date] ([relative time] ago)
-**Files:** [list or "None"]
+**创建时间：** [date]（[relative time] 前）
+**相关文件：** [list or "None"]
 
-### Problem
+### Problem（问题）
 [problem section content]
 
-### Solution
+### Solution（思路）
 [solution section content]
 ```
 
-If `files` field has entries, read and briefly summarize each.
+如果 `files` 字段中有条目，读取这些文件并做简短总结。
 </step>
 
 <step name="check_roadmap">
-Check for roadmap (can use init progress or directly check file existence):
+检查是否存在 roadmap（可用 `init progress`，也可直接检查文件是否存在）：
 
-If `.planning/ROADMAP.md` exists:
-1. Check if todo's area matches an upcoming phase
-2. Check if todo's files overlap with a phase's scope
-3. Note any match for action options
+如果 `.planning/ROADMAP.md` 存在：
+1. 检查 todo 的 area 是否对应某个后续阶段
+2. 检查 todo 的文件是否与某个阶段范围重叠
+3. 如有匹配，在动作选项中体现出来
 </step>
 
 <step name="offer_actions">
-**If todo maps to a roadmap phase:**
+**如果 todo 能映射到某个 roadmap 阶段：**
 
-Use AskUserQuestion:
-- header: "Action"
-- question: "This todo relates to Phase [N]: [name]. What would you like to do?"
+使用 AskUserQuestion：
+- header: "操作"
+- question: "这个 todo 与阶段 [N]：[name] 有关。你希望怎么处理？"
 - options:
-  - "Work on it now" — move to done, start working
-  - "Add to phase plan" — include when planning Phase [N]
-  - "Brainstorm approach" — think through before deciding
-  - "Put it back" — return to list
+  - "现在处理" - 移到 done，并开始处理
+  - "并入阶段计划" - 规划阶段 [N] 时纳入
+  - "先讨论方案" - 先想清楚再决定
+  - "放回列表" - 返回 todo 列表
 
-**If no roadmap match:**
+**如果没有 roadmap 匹配：**
 
-Use AskUserQuestion:
-- header: "Action"
-- question: "What would you like to do with this todo?"
+使用 AskUserQuestion：
+- header: "操作"
+- question: "你想怎么处理这个 todo？"
 - options:
-  - "Work on it now" — move to done, start working
-  - "Create a phase" — /gsd:add-phase with this scope
-  - "Brainstorm approach" — think through before deciding
-  - "Put it back" — return to list
+  - "现在处理" - 移到 done，并开始处理
+  - "创建新阶段" - 用这个范围调用 `/gsd:add-phase`
+  - "先讨论方案" - 先想清楚再决定
+  - "放回列表" - 返回 todo 列表
 </step>
 
 <step name="execute_action">
-**Work on it now:**
+**现在处理：**
 ```bash
 mv ".planning/todos/pending/[filename]" ".planning/todos/done/"
 ```
-Update STATE.md todo count. Present problem/solution context. Begin work or ask how to proceed.
+更新 `STATE.md` 中的 todo 数量。展示 problem / solution 上下文，然后开始工作，或询问下一步。
 
-**Add to phase plan:**
-Note todo reference in phase planning notes. Keep in pending. Return to list or exit.
+**并入阶段计划：**
+把这个 todo 记入阶段规划备注。保持在 pending 中。返回列表或退出。
 
-**Create a phase:**
-Display: `/gsd:add-phase [description from todo]`
-Keep in pending. User runs command in fresh context.
+**创建新阶段：**
+展示：`/gsd:add-phase [description from todo]`
+保持在 pending 中，由用户在新上下文中执行。
 
-**Brainstorm approach:**
-Keep in pending. Start discussion about problem and approaches.
+**先讨论方案：**
+保持在 pending 中，进入问题与方案讨论。
 
-**Put it back:**
-Return to list_todos step.
+**放回列表：**
+返回 `list_todos` 步骤。
 </step>
 
 <step name="update_state">
-After any action that changes todo count:
+在任何会改变 todo 数量的动作后：
 
-Re-run `init todos` to get updated count, then update STATE.md "### Pending Todos" section if exists.
+重新运行 `init todos` 获取最新数量，然后更新 `STATE.md` 中的“### Pending Todos”区块（如果存在）。
 </step>
 
 <step name="git_commit">
-If todo was moved to done/, commit the change:
+如果 todo 被移动到了 `done/`，提交改动：
 
 ```bash
 git rm --cached .planning/todos/pending/[filename] 2>/dev/null || true
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: start work on todo - [title]" --files .planning/todos/done/[filename] .planning/STATE.md
 ```
 
-Tool respects `commit_docs` config and gitignore automatically.
+该工具会自动遵守 `commit_docs` 配置与 gitignore。
 
-Confirm: "Committed: docs: start work on todo - [title]"
+确认信息：`已提交：docs: start work on todo - [title]`
 </step>
 
 </process>
 
 <success_criteria>
-- [ ] All pending todos listed with title, area, age
-- [ ] Area filter applied if specified
-- [ ] Selected todo's full context loaded
-- [ ] Roadmap context checked for phase match
-- [ ] Appropriate actions offered
-- [ ] Selected action executed
-- [ ] STATE.md updated if todo count changed
-- [ ] Changes committed to git (if todo moved to done/)
+- [ ] 已列出所有待处理 todo，包含标题、area、时间
+- [ ] 如果指定了 area，则已正确过滤
+- [ ] 已加载所选 todo 的完整上下文
+- [ ] 已检查与 roadmap 的关联
+- [ ] 已提供合适的后续动作
+- [ ] 已执行所选动作
+- [ ] 若 todo 数量变化，则已更新 `STATE.md`
+- [ ] 若 todo 移入 done，则已提交 git 变更
 </success_criteria>

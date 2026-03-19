@@ -1,12 +1,12 @@
 ---
 name: gsd:stats
-description: Display project statistics — phases, plans, requirements, git metrics, and timeline
+description: 显示项目统计信息：阶段、计划、需求、git 指标与时间线
 allowed-tools:
   - Read
   - Bash
 ---
 <objective>
-Display comprehensive project statistics including phase progress, plan execution metrics, requirements completion, git history stats, and project timeline.
+展示完整项目统计，包括阶段进度、计划执行指标、需求完成度、git 历史指标和项目时间线。
 </objective>
 
 <execution_context>
@@ -14,5 +14,5 @@ Display comprehensive project statistics including phase progress, plan executio
 </execution_context>
 
 <process>
-Execute the stats workflow from @~/.claude/get-shit-done/workflows/stats.md end-to-end.
+从 `@~/.claude/get-shit-done/workflows/stats.md` 端到端执行 `stats` workflow。
 </process>

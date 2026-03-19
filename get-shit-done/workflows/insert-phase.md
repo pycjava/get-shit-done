@@ -1,107 +1,107 @@
 <purpose>
-Insert a decimal phase for urgent work discovered mid-milestone between existing integer phases. Uses decimal numbering (72.1, 72.2, etc.) to preserve the logical sequence of planned phases while accommodating urgent insertions without renumbering the entire roadmap.
+在里程碑执行过程中，如果中途发现紧急工作，需要在已有整数阶段之间插入一个小数阶段。使用小数编号（如 `72.1`、`72.2`）可以保留原有阶段顺序，而不必重编号整个路线图。
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+开始前先读取调用方 `execution_context` 中引用的全部文件。
 </required_reading>
 
 <process>
 
 <step name="parse_arguments">
-Parse the command arguments:
-- First argument: integer phase number to insert after
-- Remaining arguments: phase description
+解析命令参数：
+- 第一个参数：要插入到哪个整数阶段之后
+- 其余参数：阶段描述
 
-Example: `/gsd:insert-phase 72 Fix critical auth bug`
+示例：`/gsd:insert-phase 72 Fix critical auth bug`
 -> after = 72
 -> description = "Fix critical auth bug"
 
-If arguments missing:
+如果参数不完整：
 
 ```
-ERROR: Both phase number and description required
-Usage: /gsd:insert-phase <after> <description>
-Example: /gsd:insert-phase 72 Fix critical auth bug
+ERROR: 缺少阶段号或描述
+用法：/gsd:insert-phase <after> <description>
+示例：/gsd:insert-phase 72 Fix critical auth bug
 ```
 
-Exit.
+退出。
 
-Validate first argument is an integer.
+第一个参数必须是整数。
 </step>
 
 <step name="init_context">
-Load phase operation context:
+加载阶段操作上下文：
 
 ```bash
 INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op "${after_phase}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Check `roadmap_exists` from init JSON. If false:
+检查 init JSON 中的 `roadmap_exists`。如果为 false：
 ```
-ERROR: No roadmap found (.planning/ROADMAP.md)
+ERROR: 未找到 roadmap（.planning/ROADMAP.md）
 ```
-Exit.
+退出。
 </step>
 
 <step name="insert_phase">
-**Delegate the phase insertion to gsd-tools:**
+**将插入阶段操作交给 `gsd-tools`：**
 
 ```bash
 RESULT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" phase insert "${after_phase}" "${description}")
 ```
 
-The CLI handles:
-- Verifying target phase exists in ROADMAP.md
-- Calculating next decimal phase number (checking existing decimals on disk)
-- Generating slug from description
-- Creating the phase directory (`.planning/phases/{N.M}-{slug}/`)
-- Inserting the phase entry into ROADMAP.md after the target phase with (INSERTED) marker
+CLI 负责：
+- 确认目标阶段在 `ROADMAP.md` 中存在
+- 计算下一个可用的小数阶段号（同时检查磁盘上已有的小数阶段）
+- 由描述生成 slug
+- 创建阶段目录（`.planning/phases/{N.M}-{slug}/`）
+- 在 `ROADMAP.md` 中把新阶段插入到目标阶段之后，并带上 `(INSERTED)` 标记
 
-Extract from result: `phase_number`, `after_phase`, `name`, `slug`, `directory`.
+从结果中提取：`phase_number`、`after_phase`、`name`、`slug`、`directory`。
 </step>
 
 <step name="update_project_state">
-Update STATE.md to reflect the inserted phase:
+更新 `STATE.md` 以反映插入阶段：
 
-1. Read `.planning/STATE.md`
-2. Under "## Accumulated Context" → "### Roadmap Evolution" add entry:
+1. 读取 `.planning/STATE.md`
+2. 在“## Accumulated Context”下的“### Roadmap Evolution”中追加：
    ```
-   - Phase {decimal_phase} inserted after Phase {after_phase}: {description} (URGENT)
+   - 已在阶段 {after_phase} 后插入阶段 {decimal_phase}: {description} (URGENT)
    ```
 
-If "Roadmap Evolution" section doesn't exist, create it.
+如果不存在 “Roadmap Evolution” 区块，则创建它。
 </step>
 
 <step name="completion">
-Present completion summary:
+向用户展示完成摘要：
 
 ```
-Phase {decimal_phase} inserted after Phase {after_phase}:
-- Description: {description}
-- Directory: .planning/phases/{decimal-phase}-{slug}/
-- Status: Not planned yet
-- Marker: (INSERTED) - indicates urgent work
+已在阶段 {after_phase} 后插入阶段 {decimal_phase}：
+- 描述：{description}
+- 目录：.planning/phases/{decimal-phase}-{slug}/
+- 状态：尚未规划
+- 标记：(INSERTED) - 表示中途插入的紧急工作
 
-Roadmap updated: .planning/ROADMAP.md
-Project state updated: .planning/STATE.md
+已更新路线图：.planning/ROADMAP.md
+已更新项目状态：.planning/STATE.md
 
 ---
 
-## Next Up
+## 下一步
 
-**Phase {decimal_phase}: {description}** -- urgent insertion
+**阶段 {decimal_phase}: {description}** -- 紧急插入阶段
 
 `/gsd:plan-phase {decimal_phase}`
 
-<sub>`/clear` first -> fresh context window</sub>
+<sub>建议先 `/clear`，获得更干净的上下文窗口</sub>
 
 ---
 
-**Also available:**
-- Review insertion impact: Check if Phase {next_integer} dependencies still make sense
-- Review roadmap
+**也建议检查：**
+- 插入后的影响：确认阶段 {next_integer} 的依赖关系是否仍然成立
+- 查看路线图
 
 ---
 ```
@@ -111,20 +111,20 @@ Project state updated: .planning/STATE.md
 
 <anti_patterns>
 
-- Don't use this for planned work at end of milestone (use /gsd:add-phase)
-- Don't insert before Phase 1 (decimal 0.1 makes no sense)
-- Don't renumber existing phases
-- Don't modify the target phase content
-- Don't create plans yet (that's /gsd:plan-phase)
-- Don't commit changes (user decides when to commit)
+- 不要把它用于里程碑尾部的常规新增工作（那是 `/gsd:add-phase`）
+- 不要在阶段 1 之前插入（`0.1` 没意义）
+- 不要重编号已有阶段
+- 不要修改目标阶段原有内容
+- 不要在这里创建计划（那是 `/gsd:plan-phase` 的职责）
+- 不要自动提交改动（是否提交由用户决定）
 </anti_patterns>
 
 <success_criteria>
-Phase insertion is complete when:
+阶段插入完成时应满足：
 
-- [ ] `gsd-tools phase insert` executed successfully
-- [ ] Phase directory created
-- [ ] Roadmap updated with new phase entry (includes "(INSERTED)" marker)
-- [ ] STATE.md updated with roadmap evolution note
-- [ ] User informed of next steps and dependency implications
+- [ ] 已成功执行 `gsd-tools phase insert`
+- [ ] 已创建阶段目录
+- [ ] 已在路线图中加入新阶段条目（含 `(INSERTED)` 标记）
+- [ ] 已在 `STATE.md` 中记录 roadmap evolution
+- [ ] 已告知用户下一步和潜在依赖影响
 </success_criteria>

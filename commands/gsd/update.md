@@ -1,21 +1,21 @@
 ---
 name: gsd:update
-description: Update GSD to latest version with changelog display
+description: 更新 GSD 到最新版本，并展示变更说明
 allowed-tools:
   - Bash
   - AskUserQuestion
 ---
 
 <objective>
-Check for GSD updates, install if available, and display what changed.
+检查是否有新的 GSD 版本；如果有，则安装更新并展示发生了哪些变化。
 
-Routes to the update workflow which handles:
-- Version detection (local vs global installation)
-- npm version checking
-- Changelog fetching and display
-- User confirmation with clean install warning
-- Update execution and cache clearing
-- Restart reminder
+它会路由到 `update` workflow，负责：
+- 检测当前版本（本地 / 全局安装）
+- 通过 npm 检查最新版本
+- 拉取并展示 changelog
+- 提示用户确认，并说明 clean install 风险
+- 执行更新并清理缓存
+- 提醒用户重启当前环境
 </objective>
 
 <execution_context>
@@ -23,15 +23,15 @@ Routes to the update workflow which handles:
 </execution_context>
 
 <process>
-**Follow the update workflow** from `@~/.claude/get-shit-done/workflows/update.md`.
+**按 `@~/.claude/get-shit-done/workflows/update.md` 执行 `update` workflow。**
 
-The workflow handles all logic including:
-1. Installed version detection (local/global)
-2. Latest version checking via npm
-3. Version comparison
-4. Changelog fetching and extraction
-5. Clean install warning display
-6. User confirmation
-7. Update execution
-8. Cache clearing
+workflow 会负责：
+1. 检测当前已安装版本（本地 / 全局）
+2. 通过 npm 查询最新版本
+3. 比较版本差异
+4. 抓取并提炼 changelog
+5. 展示 clean install 警告
+6. 获取用户确认
+7. 执行更新
+8. 清理缓存
 </process>

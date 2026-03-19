@@ -1,7 +1,7 @@
 ---
 name: gsd:insert-phase
-description: Insert urgent work as decimal phase (e.g., 72.1) between existing phases
-argument-hint: <after> <description>
+description: 在现有阶段之间插入一个紧急小数阶段（例如 72.1）
+argument-hint: <插入到哪个阶段之后> <阶段描述>
 allowed-tools:
   - Read
   - Write
@@ -9,11 +9,11 @@ allowed-tools:
 ---
 
 <objective>
-Insert a decimal phase for urgent work discovered mid-milestone that must be completed between existing integer phases.
+当里程碑执行到一半发现必须立即处理的紧急工作时，在现有整数阶段之间插入一个小数阶段。
 
-Uses decimal numbering (72.1, 72.2, etc.) to preserve the logical sequence of planned phases while accommodating urgent insertions.
+使用小数编号（如 `72.1`、`72.2`）可以在不整体重排路线图的情况下，保留原有逻辑顺序并插入紧急任务。
 
-Purpose: Handle urgent work discovered during execution without renumbering entire roadmap.
+目的：处理中途出现的紧急工作，而不污染整个 roadmap 的编号结构。
 </objective>
 
 <execution_context>
@@ -21,12 +21,12 @@ Purpose: Handle urgent work discovered during execution without renumbering enti
 </execution_context>
 
 <context>
-Arguments: $ARGUMENTS (format: <after-phase-number> <description>)
+参数：`$ARGUMENTS`，格式为 `<after-phase-number> <description>`
 
-Roadmap and state are resolved in-workflow via `init phase-op` and targeted tool calls.
+roadmap 与 state 会在 workflow 内通过 `init phase-op` 和定向工具调用解析。
 </context>
 
 <process>
-Execute the insert-phase workflow from @~/.claude/get-shit-done/workflows/insert-phase.md end-to-end.
-Preserve all validation gates (argument parsing, phase verification, decimal calculation, roadmap updates).
+端到端执行 `insert-phase` workflow。
+保留所有校验闸门：参数解析、阶段存在性检查、小数编号计算和 roadmap 更新。
 </process>

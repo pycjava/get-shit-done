@@ -1,20 +1,20 @@
 <required_reading>
 
-**Read these files NOW:**
+**现在就读取这些文件：**
 
 1. `.planning/STATE.md`
 2. `.planning/PROJECT.md`
 3. `.planning/ROADMAP.md`
-4. Current phase's plan files (`*-PLAN.md`)
-5. Current phase's summary files (`*-SUMMARY.md`)
+4. 当前阶段的 `*-PLAN.md`
+5. 当前阶段的 `*-SUMMARY.md`
 
 </required_reading>
 
 <purpose>
 
-Mark current phase complete and advance to next. This is the natural point where progress tracking and PROJECT.md evolution happen.
+把当前阶段标记为完成，并推进到下一阶段。这是更新进度跟踪、沉淀阶段学习、演进 `PROJECT.md` 的自然节点。
 
-"Planning next phase" = "current phase is done"
+“规划下一阶段”本质上意味着“当前阶段已经完成”。
 
 </purpose>
 
@@ -22,33 +22,33 @@ Mark current phase complete and advance to next. This is the natural point where
 
 <step name="load_project_state" priority="first">
 
-Before transition, read project state:
+在 transition 开始前，先读取项目状态：
 
 ```bash
 cat .planning/STATE.md 2>/dev/null
 cat .planning/PROJECT.md 2>/dev/null
 ```
 
-Parse current position to verify we're transitioning the right phase.
-Note accumulated context that may need updating after transition.
+解析当前阶段位置，确认本次 transition 针对的是正确阶段。
+同时留意哪些上下文、决策或需求在阶段完成后需要更新。
 
 </step>
 
 <step name="verify_completion">
 
-Check current phase has all plan summaries:
+检查当前阶段的计划是否都已有对应总结：
 
 ```bash
 ls .planning/phases/XX-current/*-PLAN.md 2>/dev/null | sort
 ls .planning/phases/XX-current/*-SUMMARY.md 2>/dev/null | sort
 ```
 
-**Verification logic:**
+**验证逻辑：**
 
-- Count PLAN files
-- Count SUMMARY files
-- If counts match: all plans complete
-- If counts don't match: incomplete
+- 统计 `PLAN` 文件数量
+- 统计 `SUMMARY` 文件数量
+- 数量相等：说明当前阶段的计划都执行完了
+- 数量不等：说明当前阶段仍有未完成计划
 
 <config-check>
 
@@ -58,136 +58,138 @@ cat .planning/config.json 2>/dev/null
 
 </config-check>
 
-**If all plans complete:**
+**如果所有计划都已完成：**
 
 <if mode="yolo">
 
 ```
-⚡ Auto-approved: Transition Phase [X] → Phase [X+1]
-Phase [X] complete — all [Y] plans finished.
+自动批准：阶段 [X] -> 阶段 [X+1]
+阶段 [X] 已完成，全部 [Y] 个计划均已执行。
 
-Proceeding to mark done and advance...
+继续标记完成并推进下一阶段。
 ```
 
-Proceed directly to cleanup_handoff step.
+直接进入 `cleanup_handoff`。
 
 </if>
 
 <if mode="interactive" OR="custom with gates.confirm_transition true">
 
-Ask: "Phase [X] complete — all [Y] plans finished. Ready to mark done and move to Phase [X+1]?"
+提问：
+“阶段 [X] 已完成，全部 [Y] 个计划均已执行。现在把它标记完成并进入阶段 [X+1] 吗？”
 
-Wait for confirmation before proceeding.
+等待用户确认后再继续。
 
 </if>
 
-**If plans incomplete:**
+**如果还有未完成计划：**
 
-**SAFETY RAIL: always_confirm_destructive applies here.**
-Skipping incomplete plans is destructive — ALWAYS prompt regardless of mode.
+**安全护栏：这里始终算 destructive，必须确认。**
 
-Present:
+跳过未完成计划会导致阶段被强行推进，因此无论模式如何都必须询问用户。
+
+展示：
 
 ```
-Phase [X] has incomplete plans:
-- {phase}-01-SUMMARY.md ✓ Complete
-- {phase}-02-SUMMARY.md ✗ Missing
-- {phase}-03-SUMMARY.md ✗ Missing
+阶段 [X] 仍有未完成计划：
+- {phase}-01-SUMMARY.md ✓ 已完成
+- {phase}-02-SUMMARY.md ✗ 缺失
+- {phase}-03-SUMMARY.md ✗ 缺失
 
-⚠️ Safety rail: Skipping plans requires confirmation (destructive action)
+⚠️ 安全护栏：跳过计划属于破坏性动作，必须确认。
 
-Options:
-1. Continue current phase (execute remaining plans)
-2. Mark complete anyway (skip remaining plans)
-3. Review what's left
+可选项：
+1. 继续当前阶段（执行剩余计划）
+2. 仍然标记完成（跳过剩余计划）
+3. 查看剩余工作
 ```
 
-Wait for user decision.
+等待用户选择。
 
 </step>
 
 <step name="cleanup_handoff">
 
-Check for lingering handoffs:
+检查是否存在遗留的 handoff 文件：
 
 ```bash
 ls .planning/phases/XX-current/.continue-here*.md 2>/dev/null
 ```
 
-If found, delete them — phase is complete, handoffs are stale.
+如果存在，删除它们。阶段已经完成，这些 handoff 已经过期。
 
 </step>
 
 <step name="update_roadmap_and_state">
 
-**Delegate ROADMAP.md and STATE.md updates to gsd-tools:**
+**把 `ROADMAP.md` 和 `STATE.md` 的推进更新交给 `gsd-tools`：**
 
 ```bash
 TRANSITION=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" phase complete "${current_phase}")
 ```
 
-The CLI handles:
-- Marking the phase checkbox as `[x]` complete with today's date
-- Updating plan count to final (e.g., "3/3 plans complete")
-- Updating the Progress table (Status → Complete, adding date)
-- Advancing STATE.md to next phase (Current Phase, Status → Ready to plan, Current Plan → Not started)
-- Detecting if this is the last phase in the milestone
+CLI 会负责：
+- 把阶段 checkbox 标记为 `[x]`，并写入今天的完成日期
+- 更新计划完成数，例如 `3/3 plans complete`
+- 更新 Progress 表（状态 -> `Complete`，并补日期）
+- 把 `STATE.md` 推进到下一阶段（`Current Phase`、`Status -> Ready to plan`、`Current Plan -> Not started`）
+- 判断这是不是当前里程碑的最后一个阶段
 
-Extract from result: `completed_phase`, `plans_executed`, `next_phase`, `next_phase_name`, `is_last_phase`.
+从结果中提取：`completed_phase`、`plans_executed`、`next_phase`、`next_phase_name`、`is_last_phase`。
 
 </step>
 
 <step name="archive_prompts">
 
-If prompts were generated for the phase, they stay in place.
-The `completed/` subfolder pattern from create-meta-prompts handles archival.
+如果当前阶段生成过 prompts，就保持原地不动。
+
+`completed/` 子目录的归档逻辑由 create-meta-prompts 负责，这里不重复处理。
 
 </step>
 
 <step name="evolve_project">
 
-Evolve PROJECT.md to reflect learnings from completed phase.
+根据刚完成的阶段，对 `PROJECT.md` 做项目级演进。
 
-**Read phase summaries:**
+**先读阶段总结：**
 
 ```bash
 cat .planning/phases/XX-current/*-SUMMARY.md
 ```
 
-**Assess requirement changes:**
+**重点审查这些问题：**
 
-1. **Requirements validated?**
-   - Any Active requirements shipped in this phase?
-   - Move to Validated with phase reference: `- ✓ [Requirement] — Phase X`
+1. **有没有需求被真正验证？**
+   - 如果某个 Active requirement 已在本阶段落地，移到 `Validated`
+   - 格式：`- ✓ [Requirement] - Phase X`
 
-2. **Requirements invalidated?**
-   - Any Active requirements discovered to be unnecessary or wrong?
-   - Move to Out of Scope with reason: `- [Requirement] — [why invalidated]`
+2. **有没有需求被证明不再需要？**
+   - 如果发现某项原始要求不成立或不值得做，移到 `Out of Scope`
+   - 格式：`- [Requirement] - [不再需要的原因]`
 
-3. **Requirements emerged?**
-   - Any new requirements discovered during building?
-   - Add to Active: `- [ ] [New requirement]`
+3. **有没有新需求在实施中浮现？**
+   - 新发现且后续必须处理的内容，加入 `Active`
+   - 格式：`- [ ] [New requirement]`
 
-4. **Decisions to log?**
-   - Extract decisions from SUMMARY.md files
-   - Add to Key Decisions table with outcome if known
+4. **有没有关键决策需要补录？**
+   - 从 `SUMMARY.md` 提取关键决策
+   - 写入 `PROJECT.md` 的 Key Decisions 表
 
-5. **"What This Is" still accurate?**
-   - If the product has meaningfully changed, update the description
-   - Keep it current and accurate
+5. **“What This Is” 是否仍准确？**
+   - 如果产品定义或定位在本阶段出现变化，需要同步修正
 
-**Update PROJECT.md:**
+**更新 `PROJECT.md`：**
 
-Make the edits inline. Update "Last updated" footer:
+直接在文件内原地修改，并更新页脚：
 
 ```markdown
 ---
 *Last updated: [date] after Phase [X]*
 ```
 
-**Example evolution:**
+**示例：**
 
-Before:
+修改前：
 
 ```markdown
 ### Active
@@ -198,15 +200,15 @@ Before:
 
 ### Out of Scope
 
-- OAuth2 — complexity not needed for v1
+- OAuth2 - complexity not needed for v1
 ```
 
-After (Phase 2 shipped JWT auth, discovered rate limiting needed):
+修改后（假设 Phase 2 完成了 JWT，且发现需要 rate limiting）：
 
 ```markdown
 ### Validated
 
-- ✓ JWT authentication — Phase 2
+- ✓ JWT authentication - Phase 2
 
 ### Active
 
@@ -216,45 +218,45 @@ After (Phase 2 shipped JWT auth, discovered rate limiting needed):
 
 ### Out of Scope
 
-- OAuth2 — complexity not needed for v1
+- OAuth2 - complexity not needed for v1
 ```
 
-**Step complete when:**
+**本步骤完成标准：**
 
-- [ ] Phase summaries reviewed for learnings
-- [ ] Validated requirements moved from Active
-- [ ] Invalidated requirements moved to Out of Scope with reason
-- [ ] Emerged requirements added to Active
-- [ ] New decisions logged with rationale
-- [ ] "What This Is" updated if product changed
-- [ ] "Last updated" footer reflects this transition
+- [ ] 已阅读阶段总结并提取项目层 learnings
+- [ ] 已把真正落地的需求从 `Active` 移到 `Validated`
+- [ ] 已把无效需求移到 `Out of Scope` 并附原因
+- [ ] 已把新浮现需求加入 `Active`
+- [ ] 已补录新增关键决策
+- [ ] 若产品定义变化，已同步更新 “What This Is”
+- [ ] 页脚 `Last updated` 已反映本次 transition
 
 </step>
 
 <step name="update_current_position_after_transition">
 
-**Note:** Basic position updates (Current Phase, Status, Current Plan, Last Activity) were already handled by `gsd-tools phase complete` in the update_roadmap_and_state step.
+**说明：** 基础位置推进（`Current Phase`、`Status`、`Current Plan`、`Last Activity`）已经由上一步的 `gsd-tools phase complete` 完成。
 
-Verify the updates are correct by reading STATE.md. If the progress bar needs updating, use:
+这里要做的是校验写回结果是否正确：
 
 ```bash
 PROGRESS=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" progress bar --raw)
 ```
 
-Update the progress bar line in STATE.md with the result.
+如果 `STATE.md` 里的进度条仍是旧值，就用这个结果覆盖。
 
-**Step complete when:**
+**本步骤完成标准：**
 
-- [ ] Phase number incremented to next phase (done by phase complete)
-- [ ] Plan status reset to "Not started" (done by phase complete)
-- [ ] Status shows "Ready to plan" (done by phase complete)
-- [ ] Progress bar reflects total completed plans
+- [ ] 阶段号已推进到下一阶段（由 `phase complete` 完成）
+- [ ] 当前计划状态已重置为 `Not started`
+- [ ] `Status` 已变成 `Ready to plan`
+- [ ] 进度条与总完成计划数一致
 
 </step>
 
 <step name="update_project_reference">
 
-Update Project Reference section in STATE.md.
+更新 `STATE.md` 中的 Project Reference 区块：
 
 ```markdown
 ## Project Reference
@@ -265,29 +267,29 @@ See: .planning/PROJECT.md (updated [today])
 **Current focus:** [Next phase name]
 ```
 
-Update the date and current focus to reflect the transition.
+刷新日期和 `Current focus`，让它指向新阶段。
 
 </step>
 
 <step name="review_accumulated_context">
 
-Review and update Accumulated Context section in STATE.md.
+回顾并更新 `STATE.md` 中的 Accumulated Context：
 
-**Decisions:**
+**Decisions：**
 
-- Note recent decisions from this phase (3-5 max)
-- Full log lives in PROJECT.md Key Decisions table
+- 记录本阶段新增的 3-5 条关键决策
+- 完整决策日志仍以 `PROJECT.md` 为主
 
-**Blockers/Concerns:**
+**Blockers/Concerns：**
 
-- Review blockers from completed phase
-- If addressed in this phase: Remove from list
-- If still relevant for future: Keep with "Phase X" prefix
-- Add any new concerns from completed phase's summaries
+- 回顾已完成阶段中的 blocker
+- 已解决的，从列表中移除
+- 仍有效的，保留并带上 `[Phase X]` 前缀
+- 如果总结里出现新的风险，也一并加入
 
-**Example:**
+示例：
 
-Before:
+修改前：
 
 ```markdown
 ### Blockers/Concerns
@@ -296,7 +298,7 @@ Before:
 - ⚠️ [Phase 2] WebSocket reconnection behavior on flaky networks unknown
 ```
 
-After (if database indexing was addressed in Phase 2):
+修改后（假设数据库索引问题已在 Phase 2 解决）：
 
 ```markdown
 ### Blockers/Concerns
@@ -304,20 +306,18 @@ After (if database indexing was addressed in Phase 2):
 - ⚠️ [Phase 2] WebSocket reconnection behavior on flaky networks unknown
 ```
 
-**Step complete when:**
+**本步骤完成标准：**
 
-- [ ] Recent decisions noted (full log in PROJECT.md)
-- [ ] Resolved blockers removed from list
-- [ ] Unresolved blockers kept with phase prefix
-- [ ] New concerns from completed phase added
+- [ ] 近期决策已简要记录
+- [ ] 已解决 blocker 已被移除
+- [ ] 未解决 blocker 仍被保留并带阶段前缀
+- [ ] 新风险已从当前阶段总结中补入
 
 </step>
 
 <step name="update_session_continuity_after_transition">
 
-Update Session Continuity section in STATE.md to reflect transition completion.
-
-**Format:**
+更新 `STATE.md` 的 Session Continuity：
 
 ```markdown
 Last session: [today]
@@ -325,133 +325,120 @@ Stopped at: Phase [X] complete, ready to plan Phase [X+1]
 Resume file: None
 ```
 
-**Step complete when:**
+**本步骤完成标准：**
 
-- [ ] Last session timestamp updated to current date and time
-- [ ] Stopped at describes phase completion and next phase
-- [ ] Resume file confirmed as None (transitions don't use resume files)
+- [ ] `Last session` 更新时间已刷新
+- [ ] `Stopped at` 清楚说明阶段已完成、下一阶段待规划
+- [ ] `Resume file` 为 `None`
 
 </step>
 
 <step name="offer_next_phase">
 
-**MANDATORY: Verify milestone status before presenting next steps.**
+**必须先确认里程碑状态，再决定展示什么下一步。**
 
-**Use the transition result from `gsd-tools phase complete`:**
+**优先使用 `gsd-tools phase complete` 的返回结果：**
 
-The `is_last_phase` field from the phase complete result tells you directly:
-- `is_last_phase: false` → More phases remain → Go to **Route A**
-- `is_last_phase: true` → Milestone complete → Go to **Route B**
+- `is_last_phase: false` -> 还有后续阶段 -> 走 **路线 A**
+- `is_last_phase: true` -> 当前里程碑已完成 -> 走 **路线 B**
 
-The `next_phase` and `next_phase_name` fields give you the next phase details.
+`next_phase` 和 `next_phase_name` 直接提供下一阶段信息。
 
-If you need additional context, use:
+如果还需要补充上下文，再调用：
+
 ```bash
 ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
 ```
 
-This returns all phases with goals, disk status, and completion info.
-
 ---
 
-**Route A: More phases remain in milestone**
+**路线 A：里程碑内还有后续阶段**
 
-Read ROADMAP.md to get the next phase's name and goal.
+读取 `ROADMAP.md` 取得下一阶段名称和目标。
 
-**Check if next phase has CONTEXT.md:**
+再检查下一阶段是否已有 `CONTEXT.md`：
 
 ```bash
 ls .planning/phases/*[X+1]*/*-CONTEXT.md 2>/dev/null
 ```
 
-**If next phase exists:**
+**如果下一阶段存在：**
 
 <if mode="yolo">
 
-**If CONTEXT.md exists:**
+**若 `CONTEXT.md` 已存在：**
 
 ```
-Phase [X] marked complete.
+阶段 [X] 已标记完成。
 
-Next: Phase [X+1] — [Name]
+下一步：阶段 [X+1] - [Name]
 
-⚡ Auto-continuing: Plan Phase [X+1] in detail
+自动继续：直接规划阶段 [X+1]
 ```
 
-Exit skill and invoke SlashCommand("/gsd:plan-phase [X+1] --auto")
+退出当前 skill，并调用 `SlashCommand("/gsd:plan-phase [X+1] --auto")`
 
-**If CONTEXT.md does NOT exist:**
+**若 `CONTEXT.md` 不存在：**
 
 ```
-Phase [X] marked complete.
+阶段 [X] 已标记完成。
 
-Next: Phase [X+1] — [Name]
+下一步：阶段 [X+1] - [Name]
 
-⚡ Auto-continuing: Discuss Phase [X+1] first
+自动继续：先讨论阶段 [X+1]
 ```
 
-Exit skill and invoke SlashCommand("/gsd:discuss-phase [X+1] --auto")
+退出当前 skill，并调用 `SlashCommand("/gsd:discuss-phase [X+1] --auto")`
 
 </if>
 
 <if mode="interactive" OR="custom with gates.confirm_transition true">
 
-**If CONTEXT.md does NOT exist:**
+**若 `CONTEXT.md` 不存在：**
 
 ```
-## ✓ Phase [X] Complete
+## Phase [X] Complete
 
----
+## 下一步
 
-## ▶ Next Up
+**Phase [X+1]: [Name]** - [Goal from ROADMAP.md]
 
-**Phase [X+1]: [Name]** — [Goal from ROADMAP.md]
+`/gsd:discuss-phase [X+1]` - 先收集上下文并明确方法
 
-`/gsd:discuss-phase [X+1]` — gather context and clarify approach
+建议先执行 `/clear`，获得新的上下文窗口。
 
-<sub>`/clear` first → fresh context window</sub>
-
----
-
-**Also available:**
-- `/gsd:plan-phase [X+1]` — skip discussion, plan directly
-- `/gsd:research-phase [X+1]` — investigate unknowns
-
----
+也可以使用：
+- `/gsd:plan-phase [X+1]` - 跳过讨论直接规划
+- `/gsd:research-phase [X+1]` - 先研究未知点
 ```
 
-**If CONTEXT.md exists:**
+**若 `CONTEXT.md` 已存在：**
 
 ```
-## ✓ Phase [X] Complete
+## Phase [X] Complete
 
----
+## 下一步
 
-## ▶ Next Up
-
-**Phase [X+1]: [Name]** — [Goal from ROADMAP.md]
-<sub>✓ Context gathered, ready to plan</sub>
+**Phase [X+1]: [Name]** - [Goal from ROADMAP.md]
+上下文已收集，可以直接规划。
 
 `/gsd:plan-phase [X+1]`
 
-<sub>`/clear` first → fresh context window</sub>
+建议先执行 `/clear`，获得新的上下文窗口。
 
----
-
-**Also available:**
-- `/gsd:discuss-phase [X+1]` — revisit context
-- `/gsd:research-phase [X+1]` — investigate unknowns
-
----
+也可以使用：
+- `/gsd:discuss-phase [X+1]` - 重新讨论上下文
+- `/gsd:research-phase [X+1]` - 先研究未知点
 ```
 
 </if>
 
 ---
 
-**Route B: Milestone complete (all phases done)**
+**路线 B：当前里程碑已完成**
 
-**Clear auto-advance chain flag** — milestone boundary is the natural stopping point:
+跨里程碑时应当停止自动链路，因此先清掉 auto-chain 标记：
+
 ```bash
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-set workflow._auto_chain_active false
 ```
@@ -459,40 +446,33 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-set workflow._auto_c
 <if mode="yolo">
 
 ```
-Phase {X} marked complete.
+阶段 {X} 已标记完成。
 
-🎉 Milestone {version} is 100% complete — all {N} phases finished!
+Milestone {version} 已 100% 完成，全部 {N} 个阶段均已结束。
 
-⚡ Auto-continuing: Complete milestone and archive
+自动继续：完成里程碑并归档。
 ```
 
-Exit skill and invoke SlashCommand("/gsd:complete-milestone {version}")
+退出当前 skill，并调用 `SlashCommand("/gsd:complete-milestone {version}")`
 
 </if>
 
 <if mode="interactive" OR="custom with gates.confirm_transition true">
 
 ```
-## ✓ Phase {X}: {Phase Name} Complete
+## Phase {X}: {Phase Name} Complete
 
-🎉 Milestone {version} is 100% complete — all {N} phases finished!
+Milestone {version} 已 100% 完成，全部 {N} 个阶段均已完成。
 
----
+## 下一步
 
-## ▶ Next Up
-
-**Complete Milestone {version}** — archive and prepare for next
+**完成里程碑 {version}** - 归档并准备下一个周期
 
 `/gsd:complete-milestone {version}`
 
-<sub>`/clear` first → fresh context window</sub>
+建议先执行 `/clear`，获得新的上下文窗口。
 
----
-
-**Also available:**
-- Review accomplishments before archiving
-
----
+也可以先回顾本里程碑成果，再决定是否归档。
 ```
 
 </if>
@@ -502,43 +482,43 @@ Exit skill and invoke SlashCommand("/gsd:complete-milestone {version}")
 </process>
 
 <implicit_tracking>
-Progress tracking is IMPLICIT: planning phase N implies phases 1-(N-1) complete. No separate progress step—forward motion IS progress.
+进度跟踪是隐式的：当你开始规划阶段 N，就意味着阶段 1 到阶段 N-1 默认已经完成。无需单独维护“阶段推进”步骤，向前推进本身就是进度。
 </implicit_tracking>
 
 <partial_completion>
 
-If user wants to move on but phase isn't fully complete:
+如果用户明确想继续往后走，但当前阶段并未完全完成：
 
 ```
-Phase [X] has incomplete plans:
-- {phase}-02-PLAN.md (not executed)
-- {phase}-03-PLAN.md (not executed)
+阶段 [X] 仍有未执行计划：
+- {phase}-02-PLAN.md
+- {phase}-03-PLAN.md
 
-Options:
-1. Mark complete anyway (plans weren't needed)
-2. Defer work to later phase
-3. Stay and finish current phase
+可选项：
+1. 仍然标记完成（这些计划不再需要）
+2. 把剩余工作递延到后续阶段
+3. 留在当前阶段，先做完
 ```
 
-Respect user judgment — they know if work matters.
+尊重用户判断。
 
-**If marking complete with incomplete plans:**
+**如果用户坚持在未完成时标记阶段完成：**
 
-- Update ROADMAP: "2/3 plans complete" (not "3/3")
-- Note in transition message which plans were skipped
+- 更新 `ROADMAP.md` 时把计划完成数写成真实值，例如 `2/3 plans complete`
+- 在 transition 输出中注明哪些计划被跳过
 
 </partial_completion>
 
 <success_criteria>
 
-Transition is complete when:
+Transition 完成时，应满足：
 
-- [ ] Current phase plan summaries verified (all exist or user chose to skip)
-- [ ] Any stale handoffs deleted
-- [ ] ROADMAP.md updated with completion status and plan count
-- [ ] PROJECT.md evolved (requirements, decisions, description if needed)
-- [ ] STATE.md updated (position, project reference, context, session)
-- [ ] Progress table updated
-- [ ] User knows next steps
+- [ ] 当前阶段计划总结已核对（要么齐全，要么用户明确选择跳过）
+- [ ] 过期的 handoff 文件已清理
+- [ ] `ROADMAP.md` 已更新阶段完成状态和计划数
+- [ ] `PROJECT.md` 已随阶段结果演进
+- [ ] `STATE.md` 已更新当前位置、项目引用、累计上下文和会话信息
+- [ ] Progress 表已同步
+- [ ] 用户能清楚看到下一步该做什么
 
 </success_criteria>

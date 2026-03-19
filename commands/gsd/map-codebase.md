@@ -1,6 +1,6 @@
 ---
 name: gsd:map-codebase
-description: Map an existing service or codebase before operations planning
+description: 在进入运维规划前，为现有服务或代码库生成结构化映射
 allowed-tools:
   - Read
   - Bash
@@ -9,7 +9,7 @@ allowed-tools:
 ---
 
 <objective>
-Produce a brownfield system map that helps later planning and documentation.
+为一个已有系统生成 brownfield 代码库地图，帮助后续规划与文档沉淀。
 </objective>
 
 <execution_context>
@@ -17,5 +17,5 @@ Produce a brownfield system map that helps later planning and documentation.
 </execution_context>
 
 <process>
-Run the workflow end-to-end. Favor service boundaries, dependencies, runtime behavior, and operational concerns.
+端到端执行该 workflow。重点关注服务边界、依赖关系、运行时行为与运维风险点。
 </process>

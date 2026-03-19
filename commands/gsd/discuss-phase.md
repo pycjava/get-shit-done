@@ -1,7 +1,7 @@
 ---
 name: gsd:discuss-phase
-description: Capture operational decisions for a phase before planning
-argument-hint: "<phase> [--auto]"
+description: 在规划前为某个阶段收集关键决策与上下文
+argument-hint: "<阶段号> [--auto]"
 allowed-tools:
   - Read
   - Write
@@ -13,7 +13,7 @@ allowed-tools:
 ---
 
 <objective>
-Create a phase context that removes guesswork for operational planning.
+为某个阶段创建 `CONTEXT.md`，减少后续规划中的猜测空间。
 </objective>
 
 <execution_context>
@@ -21,5 +21,5 @@ Create a phase context that removes guesswork for operational planning.
 </execution_context>
 
 <process>
-Focus discussion on rollout, alerting, capacity triggers, backup, recovery, ownership, dependencies, and change safety.
+讨论重点应放在：发布方式、告警、容量触发条件、备份、恢复、责任归属、依赖关系与变更安全性。
 </process>

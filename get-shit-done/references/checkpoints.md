@@ -774,3 +774,459 @@ Checkpoints formalize human-in-the-loop points for verification and decisions, n
 - Code correctness (tests and static analysis)
 - Anything automatable via CLI/API
 </summary>
+
+<checkpoint_artifact>
+
+## Checkpoint Artifact（检查点产物）
+
+每个检查点在暂停时生成一个结构化产物，包含：进度快照、质量报告、验证结果、回滚元数据。
+
+**存储位置：** `.planning/phases/{phase-dir}/CHECKPOINT-{plan}.json`
+
+**文件结构：**
+
+```json
+{
+  "id": "cp-{phase}-{plan}-{timestamp}",
+  "phase": "08",
+  "plan": "02",
+  "type": "human-verify|decision|human-action",
+  "created_at": "2024-01-15T10:30:00Z",
+  "status": "pending|approved|rejected|rolled_back",
+  
+  "snapshot": {
+    "completed_tasks": [
+      {
+        "task_num": 1,
+        "name": "Create user schema",
+        "commit": "a1b2c3d",
+        "files_modified": ["prisma/schema.prisma", "src/types/user.ts"]
+      }
+    ],
+    "total_tasks": 5,
+    "progress": "1/5"
+  },
+  
+  "quality_report": {
+    "pyramid": {
+      "exists": { "status": "passed", "details": "All 3 files present" },
+      "substantive": { "status": "passed", "details": "No stub patterns detected" },
+      "wired": { "status": "passed", "details": "All imports resolve" },
+      "functional": { "status": "passed", "details": "npm test passed (8/8)" }
+    },
+    "test_coverage": { "lines": 85, "branches": 72, "functions": 90 },
+    "lint": { "errors": 0, "warnings": 2 },
+    "typecheck": { "errors": 0 },
+    "security": { "vulnerabilities": 0, "warnings": 1 }
+  },
+  
+  "verification_results": {
+    "automated": [
+      { "check": "npm run build", "status": "passed", "output_summary": "Build succeeded in 12s" },
+      { "check": "npm test", "status": "passed", "output_summary": "8 tests passed" }
+    ],
+    "human_required": [
+      { "item": "Visual layout check", "status": "pending" },
+      { "item": "Responsive behavior", "status": "pending" }
+    ],
+    "failures": []
+  },
+  
+  "rollback_metadata": {
+    "anchor_commit": "a1b2c3d",
+    "dependencies_locked": true,
+    "env_snapshot": { "NODE_VERSION": "20.10.0", "PACKAGE_MANAGER": "pnpm@8.14.0" },
+    "git_status_clean": true
+  },
+  
+  "resolution": {
+    "resolved_at": null,
+    "resolved_by": null,
+    "outcome": null,
+    "notes": null
+  }
+}
+```
+
+</checkpoint_artifact>
+
+<quality_report_structure>
+
+## Quality Report Structure（质量报告结构）
+
+质量报告基于验证金字塔（commit-quality-gate.md），在每个检查点自动生成。
+
+### Pyramid Status（金字塔状态）
+
+```json
+{
+  "pyramid": {
+    "exists": {
+      "status": "passed|failed|skipped",
+      "details": "Human-readable summary",
+      "checked_files": ["path/to/file1", "path/to/file2"]
+    },
+    "substantive": {
+      "status": "passed|failed|skipped",
+      "details": "Stub pattern scan results",
+      "patterns_found": []
+    },
+    "wired": {
+      "status": "passed|failed|skipped",
+      "details": "Import and integration check",
+      "unreachable": []
+    },
+    "functional": {
+      "status": "passed|failed|skipped",
+      "details": "Test/build results",
+      "command": "npm test",
+      "exit_code": 0
+    }
+  }
+}
+```
+
+### Test Coverage（测试覆盖率）
+
+```json
+{
+  "test_coverage": {
+    "lines": 85,
+    "branches": 72,
+    "functions": 90,
+    "statements": 88,
+    "uncovered_files": ["src/utils/helper.ts"],
+    "coverage_command": "npm run test:coverage"
+  }
+}
+```
+
+### Static Analysis（静态分析）
+
+```json
+{
+  "lint": {
+    "errors": 0,
+    "warnings": 2,
+    "details": [
+      { "file": "src/api/auth.ts", "line": 42, "rule": "@typescript-eslint/no-explicit-any", "message": "Unexpected any" }
+    ]
+  },
+  "typecheck": {
+    "errors": 0,
+    "details": []
+  }
+}
+```
+
+### Security Scan（安全扫描）
+
+```json
+{
+  "security": {
+    "vulnerabilities": 0,
+    "warnings": 1,
+    "details": [
+      { "package": "lodash@4.17.20", "severity": "moderate", "cve": "CVE-2021-23337" }
+    ]
+  }
+}
+```
+
+### Quality Gate Decision（质量门禁决策）
+
+```json
+{
+  "quality_gate": {
+    "overall": "passed|failed|warning",
+    "blocking_issues": [],
+    "warnings": ["lodash vulnerability in dev dependencies"],
+    "recommendation": "Safe to proceed|Fix before proceeding|Review warnings"
+  }
+}
+```
+
+</quality_report_structure>
+
+<verification_results_model>
+
+## Verification Results Model（验证结果数据模型）
+
+验证结果分为自动验证和人工验证两类。
+
+### Automated Verification（自动验证）
+
+```json
+{
+  "automated": [
+    {
+      "check": "npm run build",
+      "status": "passed|failed|skipped",
+      "exit_code": 0,
+      "duration_ms": 12345,
+      "output_summary": "Build succeeded in 12s",
+      "output_file": ".planning/phases/08-auth/checkpoint-outputs/build.log"
+    },
+    {
+      "check": "npm test",
+      "status": "passed",
+      "exit_code": 0,
+      "duration_ms": 8234,
+      "output_summary": "8 tests passed, 0 failed",
+      "test_results": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "check": "npm run lint",
+      "status": "passed",
+      "exit_code": 0,
+      "output_summary": "0 errors, 2 warnings"
+    }
+  ]
+}
+```
+
+### Human Verification（人工验证）
+
+```json
+{
+  "human_required": [
+    {
+      "id": "hv-1",
+      "item": "Visual layout check",
+      "description": "Verify dashboard layout matches design spec",
+      "status": "pending|approved|rejected",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": null
+    },
+    {
+      "id": "hv-2",
+      "item": "Responsive behavior",
+      "description": "Test mobile/tablet/desktop breakpoints",
+      "status": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": null
+    }
+  ]
+}
+```
+
+### Failure Tracking（失败追踪）
+
+```json
+{
+  "failures": [
+    {
+      "check": "npm test",
+      "status": "failed",
+      "exit_code": 1,
+      "output_summary": "2 tests failed",
+      "failed_tests": [
+        { "name": "should authenticate user", "error": "Expected 200, got 401" },
+        { "name": "should create session", "error": "Timeout exceeded" }
+      ],
+      "attempted_fixes": [
+        { "attempt": 1, "action": "Fixed auth header", "result": "still failing" }
+      ],
+      "requires_escalation": true
+    }
+  ]
+}
+```
+
+</verification_results_model>
+
+<rollback_metadata>
+
+## Rollback Metadata（回滚元数据）
+
+回滚元数据确保检查点可以作为安全的回滚锚点。
+
+### Structure（结构）
+
+```json
+{
+  "rollback_metadata": {
+    "anchor_commit": "a1b2c3d4e5f6",
+    "anchor_message": "feat(08-02): implement user authentication",
+    "anchor_timestamp": "2024-01-15T10:25:00Z",
+    
+    "dependencies": {
+      "locked": true,
+      "lockfile": "pnpm-lock.yaml",
+      "lockfile_hash": "sha256:abc123..."
+    },
+    
+    "environment": {
+      "node_version": "20.10.0",
+      "package_manager": "pnpm@8.14.0",
+      "os": "darwin-arm64"
+    },
+    
+    "git_state": {
+      "branch": "feature/auth",
+      "clean": true,
+      "uncommitted_files": [],
+      "stash_available": false
+    },
+    
+    "database_state": {
+      "migrations_applied": ["20240115_add_users_table", "20240115_add_sessions_table"],
+      "pending_migrations": []
+    }
+  }
+}
+```
+
+### Rollback Procedure（回滚流程）
+
+当需要回滚到此检查点时：
+
+```bash
+# 1. Verify checkpoint exists
+[ -f ".planning/phases/08-auth/CHECKPOINT-02.json" ]
+
+# 2. Reset to anchor commit
+git reset --hard a1b2c3d4e5f6
+
+# 3. Restore dependencies (if needed)
+pnpm install --frozen-lockfile
+
+# 4. Rollback database migrations (if needed)
+npx prisma migrate rollback --to 20240115_add_sessions_table
+
+# 5. Verify state
+npm test
+npm run build
+```
+
+### Rollback Decision Matrix（回滚决策矩阵）
+
+| 场景 | 回滚到 | 条件 |
+|------|--------|------|
+| 验证失败 | 上一个检查点 | 自动验证失败，修复成本 > 重做成本 |
+| 架构决策变更 | 决策检查点 | 用户选择不同方案 |
+| 环境问题 | 最近检查点 | 依赖冲突、配置错误 |
+| 质量门禁失败 | 当前检查点 | 安全漏洞、严重 bug |
+
+</rollback_metadata>
+
+<checkpoint_lifecycle>
+
+## Checkpoint Lifecycle（检查点生命周期）
+
+### Creation（创建）
+
+检查点在遇到 `type="checkpoint:*"` 时自动创建：
+
+```bash
+# Executor creates checkpoint artifact
+node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" checkpoint create \
+  --phase "${PHASE}" \
+  --plan "${PLAN}" \
+  --type "${CHECKPOINT_TYPE}" \
+  --snapshot "$(cat snapshot.json)" \
+  --quality-report "$(cat quality.json)" \
+  --verification "$(cat verify.json)"
+```
+
+### Resolution（解决）
+
+用户响应后更新检查点状态：
+
+```bash
+# Update checkpoint with resolution
+node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" checkpoint resolve \
+  --id "cp-08-02-1705315800" \
+  --status "approved|rejected|rolled_back" \
+  --notes "User feedback or reason"
+```
+
+### Rollback（回滚）
+
+需要回滚时执行：
+
+```bash
+# Rollback to checkpoint
+node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" checkpoint rollback \
+  --id "cp-08-02-1705315800" \
+  --reason "Architecture decision changed"
+```
+
+### Cleanup（清理）
+
+阶段完成后清理检查点文件：
+
+```bash
+# Archive checkpoints after phase completion
+node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" checkpoint archive \
+  --phase "${PHASE}"
+```
+
+</checkpoint_lifecycle>
+
+<checkpoint_return_format_enhanced>
+
+## Enhanced Checkpoint Return Format（增强版检查点返回格式）
+
+当遇到检查点时，返回以下增强格式：
+
+```markdown
+## CHECKPOINT REACHED（已到达检查点）
+
+**ID:** cp-08-02-1705315800
+**类型:** human-verify
+**计划:** 08-02
+**进度:** 已完成 3/5 个任务
+
+### Quality Gate（质量门禁）
+
+| 检查项 | 状态 | 详情 |
+|--------|------|------|
+| Exists | ✅ PASSED | 3/3 文件存在 |
+| Substantive | ✅ PASSED | 无 stub 模式 |
+| Wired | ✅ PASSED | 所有导入可解析 |
+| Functional | ✅ PASSED | npm test: 8/8 通过 |
+
+**测试覆盖率:** 85% lines, 72% branches
+**Lint:** 0 errors, 2 warnings
+**安全:** 0 vulnerabilities
+
+### Completed Tasks（已完成任务）
+
+| Task | Name | Commit | Files |
+|------|------|--------|-------|
+| 1 | Create user schema | a1b2c3d | prisma/schema.prisma |
+| 2 | Create auth API | b2c3d4e | src/api/auth.ts |
+| 3 | Create login UI | c3d4e5f | src/app/login/page.tsx |
+
+### Rollback Anchor（回滚锚点）
+
+**Commit:** c3d4e5f - feat(08-02): create login UI
+**Clean state:** ✅ 可安全回滚
+
+### Current Task（当前任务）
+
+**任务 4:** Verify authentication flow
+**状态:** awaiting verification
+
+### Checkpoint Details（检查点详情）
+
+[Type-specific content as before]
+
+### Awaiting（等待项）
+
+[用户需要执行或提供的内容]
+
+---
+
+**检查点文件:** `.planning/phases/08-auth/CHECKPOINT-02.json`
+```
+
+</checkpoint_return_format_enhanced>

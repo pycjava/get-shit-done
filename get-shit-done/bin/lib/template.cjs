@@ -1,10 +1,18 @@
 /**
- * Template — Template selection and fill operations
+ * Template - Template selection and fill operations
  */
 
 const fs = require('fs');
 const path = require('path');
-const { normalizePhaseName, findPhaseInternal, generateSlugInternal, normalizeMd, toPosixPath, output, error } = require('./core.cjs');
+const {
+  normalizePhaseName,
+  findPhaseInternal,
+  generateSlugInternal,
+  normalizeMd,
+  toPosixPath,
+  output,
+  error,
+} = require('./core.cjs');
 const { reconstructFrontmatter } = require('./frontmatter.cjs');
 
 function cmdTemplateSelect(cwd, planPath, raw) {
@@ -16,14 +24,13 @@ function cmdTemplateSelect(cwd, planPath, raw) {
     const fullPath = path.join(cwd, planPath);
     const content = fs.readFileSync(fullPath, 'utf-8');
 
-    // Simple heuristics
-    const taskMatch = content.match(/###\s*Task\s*\d+/g) || [];
+    // Support both English and Chinese task headings.
+    const taskMatch = content.match(/###\s*(?:Task|任务)\s*\d+/g) || [];
     const taskCount = taskMatch.length;
 
-    const decisionMatch = content.match(/decision/gi) || [];
+    const decisionMatch = content.match(/decision|决策/gi) || [];
     const hasDecisions = decisionMatch.length > 0;
 
-    // Count file mentions
     const fileMentions = new Set();
     const filePattern = /`([^`]+\.[a-zA-Z]+)`/g;
     let m;
@@ -48,34 +55,46 @@ function cmdTemplateSelect(cwd, planPath, raw) {
     const result = { template, type, taskCount, fileCount, hasDecisions };
     output(result, raw, template);
   } catch (e) {
-    // Fallback to standard
-    output({ template: 'templates/summary-standard.md', type: 'standard', error: e.message }, raw, 'templates/summary-standard.md');
+    output(
+      { template: 'templates/summary-standard.md', type: 'standard', error: e.message },
+      raw,
+      'templates/summary-standard.md'
+    );
   }
 }
 
 function cmdTemplateFill(cwd, templateType, options, raw) {
-  if (!templateType) { error('template type required: summary, plan, or verification'); }
-  if (!options.phase) { error('--phase required'); }
+  if (!templateType) {
+    error('template type required: summary, plan, or verification');
+  }
+  if (!options.phase) {
+    error('--phase required');
+  }
 
   const phaseInfo = findPhaseInternal(cwd, options.phase);
-  if (!phaseInfo || !phaseInfo.found) { output({ error: 'Phase not found', phase: options.phase }, raw); return; }
+  if (!phaseInfo || !phaseInfo.found) {
+    output({ error: 'Phase not found', phase: options.phase }, raw);
+    return;
+  }
 
   const padded = normalizePhaseName(options.phase);
   const today = new Date().toISOString().split('T')[0];
-  const phaseName = options.name || phaseInfo.phase_name || 'Unnamed';
+  const phaseName = options.name || phaseInfo.phase_name || '未命名';
   const phaseSlug = phaseInfo.phase_slug || generateSlugInternal(phaseName);
   const phaseId = `${padded}-${phaseSlug}`;
   const planNum = (options.plan || '01').padStart(2, '0');
   const fields = options.fields || {};
 
-  let frontmatter, body, fileName;
+  let frontmatter;
+  let body;
+  let fileName;
 
   switch (templateType) {
     case 'summary': {
       frontmatter = {
         phase: phaseId,
         plan: planNum,
-        subsystem: '[primary category]',
+        subsystem: '[主要类别]',
         tags: [],
         provides: [],
         affects: [],
@@ -88,37 +107,37 @@ function cmdTemplateFill(cwd, templateType, options, raw) {
         ...fields,
       };
       body = [
-        `# Phase ${options.phase}: ${phaseName} Summary`,
+        `# 阶段 ${options.phase}: ${phaseName} 总结`,
         '',
-        '**[Substantive one-liner describing outcome]**',
+        '**[用一句有信息量的话概括本次产出]**',
         '',
-        '## Performance',
-        '- **Duration:** [time]',
-        '- **Tasks:** [count completed]',
-        '- **Files modified:** [count]',
+        '## 执行概况',
+        '- **耗时：** [time]',
+        '- **完成任务：** [count completed]',
+        '- **修改文件：** [count]',
         '',
-        '## Accomplishments',
-        '- [Key outcome 1]',
-        '- [Key outcome 2]',
+        '## 主要成果',
+        '- [关键成果 1]',
+        '- [关键成果 2]',
         '',
-        '## Task Commits',
-        '1. **Task 1: [task name]** - `hash`',
+        '## 任务提交记录',
+        '1. **任务 1：[任务名称]** - `hash`',
         '',
-        '## Files Created/Modified',
-        '- `path/to/file.ts` - What it does',
+        '## 创建/修改的文件',
+        '- `path/to/file.ts` - 文件作用',
         '',
-        '## Decisions & Deviations',
-        '[Key decisions or "None - followed plan as specified"]',
+        '## 决策与偏差',
+        '[关键决策，或“无——按计划执行”]',
         '',
-        '## Next Phase Readiness',
-        '[What\'s ready for next phase]',
+        '## 下一阶段准备情况',
+        '[下一阶段已经具备的条件]',
       ].join('\n');
       fileName = `${padded}-${planNum}-SUMMARY.md`;
       break;
     }
     case 'plan': {
       const planType = options.type || 'execute';
-      const wave = parseInt(options.wave) || 1;
+      const wave = parseInt(options.wave, 10) || 1;
       frontmatter = {
         phase: phaseId,
         plan: planNum,
@@ -132,34 +151,34 @@ function cmdTemplateFill(cwd, templateType, options, raw) {
         ...fields,
       };
       body = [
-        `# Phase ${options.phase} Plan ${planNum}: [Title]`,
+        `# 阶段 ${options.phase} 计划 ${planNum}: [标题]`,
         '',
-        '## Objective',
-        '- **What:** [What this plan builds]',
-        '- **Why:** [Why it matters for the phase goal]',
-        '- **Output:** [Concrete deliverable]',
+        '## 目标',
+        '- **做什么：** [本计划要构建的内容]',
+        '- **为什么：** [它为什么对阶段目标重要]',
+        '- **产出：** [具体交付物]',
         '',
-        '## Context',
+        '## 上下文',
         '@.planning/PROJECT.md',
         '@.planning/ROADMAP.md',
         '@.planning/STATE.md',
         '',
-        '## Tasks',
+        '## 任务',
         '',
         '<task type="code">',
-        '  <name>[Task name]</name>',
-        '  <files>[file paths]</files>',
-        '  <action>[What to do]</action>',
-        '  <verify>[How to verify]</verify>',
-        '  <done>[Definition of done]</done>',
+        '  <name>[任务名称]</name>',
+        '  <files>[文件路径]</files>',
+        '  <action>[要做什么]</action>',
+        '  <verify>[如何验证]</verify>',
+        '  <done>[完成标准]</done>',
         '</task>',
         '',
-        '## Verification',
-        '[How to verify this plan achieved its objective]',
+        '## 验证',
+        '[如何验证该计划已达成目标]',
         '',
-        '## Success Criteria',
-        '- [ ] [Criterion 1]',
-        '- [ ] [Criterion 2]',
+        '## 成功标准',
+        '- [ ] [标准 1]',
+        '- [ ] [标准 2]',
       ].join('\n');
       fileName = `${padded}-${planNum}-PLAN.md`;
       break;
@@ -169,34 +188,34 @@ function cmdTemplateFill(cwd, templateType, options, raw) {
         phase: phaseId,
         verified: new Date().toISOString(),
         status: 'pending',
-        score: '0/0 must-haves verified',
+        score: '0/0 个必备项已验证',
         ...fields,
       };
       body = [
-        `# Phase ${options.phase}: ${phaseName} — Verification`,
+        `# 阶段 ${options.phase}: ${phaseName} - 验证报告`,
         '',
-        '## Observable Truths',
-        '| # | Truth | Status | Evidence |',
-        '|---|-------|--------|----------|',
-        '| 1 | [Truth] | pending | |',
+        '## 可观察事实',
+        '| # | 事实 | 状态 | 证据 |',
+        '|---|------|------|------|',
+        '| 1 | [事实] | pending | |',
         '',
-        '## Required Artifacts',
-        '| Artifact | Expected | Status | Details |',
-        '|----------|----------|--------|---------|',
+        '## 必需产物',
+        '| 产物 | 预期 | 状态 | 详情 |',
+        '|------|------|------|------|',
         '| [path] | [what] | pending | |',
         '',
-        '## Key Link Verification',
-        '| From | To | Via | Status | Details |',
-        '|------|----|----|--------|---------|',
+        '## 关键连接验证',
+        '| 从 | 到 | 方式 | 状态 | 详情 |',
+        '|----|----|------|------|------|',
         '| [source] | [target] | [connection] | pending | |',
         '',
-        '## Requirements Coverage',
-        '| Requirement | Status | Blocking Issue |',
-        '|-------------|--------|----------------|',
+        '## 需求覆盖',
+        '| 需求 | 状态 | 阻塞问题 |',
+        '|------|------|----------|',
         '| [req] | pending | |',
         '',
-        '## Result',
-        '[Pending verification]',
+        '## 结果',
+        '[待验证]',
       ].join('\n');
       fileName = `${padded}-VERIFICATION.md`;
       break;

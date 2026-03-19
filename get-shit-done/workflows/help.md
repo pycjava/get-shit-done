@@ -1,12 +1,11 @@
 <purpose>
-展示运维导向的 GSD 命令参考。仅输出参考正文。
+展示面向运维工作流的 GSD 命令参考。这里只输出参考正文。
 </purpose>
 
 <reference>
 # GSD 命令参考
 
 ## 核心流程
-
 1. `/gsd:map-codebase`
 2. `/gsd:new-project`
 3. `/gsd:autonomous`
@@ -18,21 +17,18 @@
 9. `/gsd:ops-audit`
 
 ## 里程碑
-
 - `/gsd:audit-milestone`
 - `/gsd:complete-milestone`
 - `/gsd:new-milestone`
 - `/gsd:plan-milestone-gaps`
 
 ## 阶段工具
-
 - `/gsd:add-phase`
 - `/gsd:insert-phase`
 - `/gsd:remove-phase`
 - `/gsd:list-phase-assumptions`
 
-## 运行时工具
-
+## 运行期工具
 - `/gsd:progress`
 - `/gsd:resume-work`
 - `/gsd:pause-work`
@@ -42,7 +38,6 @@
 - `/gsd:update`
 
 ## 支持命令
-
 - `/gsd:debug`
 - `/gsd:quick`
 - `/gsd:do`

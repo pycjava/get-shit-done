@@ -7,6 +7,7 @@ commands.html
 
 # Local test installs
 .claude/
+.codex/
 
 # Build artifacts (committed to npm, not git)
 hooks/dist/
@@ -17,6 +18,7 @@ coverage/
 # Animation assets
 animation/
 *.gif
+skills/
 
 # Internal planning documents
 reports/

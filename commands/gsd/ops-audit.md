@@ -1,7 +1,7 @@
 ---
 name: gsd:ops-audit
-description: Audit existing operations documentation and infrastructure for gaps and improvements
-argument-hint: "[optional: specific doc to audit, e.g., 'deployment' or 'all']"
+description: 审计现有运维文档与基础设施，找出缺口和改进项
+argument-hint: "[可选：要审计的具体文档，例如 deployment 或 all]"
 allowed-tools:
   - Read
   - Bash
@@ -11,7 +11,7 @@ allowed-tools:
 ---
 
 <objective>
-Audit existing operations documentation for a project. Identifies missing documents, incomplete sections, outdated information, capacity planning gaps, and provides actionable recommendations.
+审计项目现有的运维文档，识别缺失文档、不完整区块、过期信息、容量规划缺口，并给出可执行建议。
 </objective>
 
 <execution_context>
@@ -19,51 +19,51 @@ Audit existing operations documentation for a project. Identifies missing docume
 </execution_context>
 
 <context>
-Argument: $ARGUMENTS (optional - specific doc or "all")
+参数：`$ARGUMENTS`（可选，可指定单份文档或 `all`）
 
-**Load project state if exists:**
-Check for .planning/STATE.md - loads context if project already initialized
+**如项目已初始化，则先读取项目状态：**
+检查 `.planning/STATE.md`
 
-**This command can run:**
-- After /gsd:ops-runbook (audit generated docs)
-- Before /gsd:complete-milestone (ensure ops readiness)
-- Quarterly for maintenance
-- After infrastructure changes
+**这个命令适合在这些时机运行：**
+- `/gsd:ops-runbook` 之后，审计刚生成的运维文档
+- `/gsd:complete-milestone` 之前，检查运维就绪度
+- 季度运维回顾
+- 基础设施变更后
 </context>
 
 <when_to_use>
 
-**Use ops-audit for:**
-- Reviewing operations readiness before production
-- Quarterly operations maintenance
-- After infrastructure or team changes
-- Before compliance audits
-- Taking over an existing project
+**适合使用 ops-audit 的场景：**
+- 上生产前复核运维准备度
+- 做季度运维维护
+- 基础设施或团队变化后复盘
+- 合规审计前检查
+- 接手一个已有项目时快速摸底
 
-**Skip ops-audit for:**
-- Early stage projects with no operations yet
-- Projects without .planning directory
+**不适合使用 ops-audit 的场景：**
+- 项目仍处于很早期，几乎没有运维内容
+- 项目还没有 `.planning` 目录
 
 </when_to_use>
 
 <process>
-1. Check for .planning directory existence
-2. Assess project context (type, scale, compliance)
-3. Check which operations documents exist
-4. Audit each existing document for completeness
-5. Identify gaps (missing docs, incomplete sections)
-6. Check for outdated information
-7. Calculate audit score
-8. Provide recommendations
-9. Offer actions (generate missing, update existing, save report)
+1. 检查 `.planning` 是否存在
+2. 评估项目上下文（类型、规模、合规要求）
+3. 检查现有运维文档有哪些
+4. 审计每份文档的完整性
+5. 找出缺口（缺文档、不完整区块等）
+6. 标记过期信息
+7. 计算审计得分
+8. 给出建议
+9. 提供下一步动作（生成缺失文档、更新现有文档、保存报告）
 </process>
 
 <success_criteria>
-- [ ] Project context assessed
-- [ ] Document existence checked
-- [ ] Existing docs audited for completeness
-- [ ] Missing docs identified
-- [ ] Outdated info flagged
-- [ ] Recommendations provided
-- [ ] User offered next steps
+- [ ] 已评估项目上下文
+- [ ] 已检查文档存在性
+- [ ] 已审计现有文档完整性
+- [ ] 已识别缺失文档
+- [ ] 已标记过期信息
+- [ ] 已给出建议
+- [ ] 用户已获得明确下一步
 </success_criteria>

@@ -1,7 +1,7 @@
 ---
 name: gsd:complete-milestone
-description: Archive a completed operations milestone
-argument-hint: "[version]"
+description: 归档一个已完成的里程碑
+argument-hint: "[版本号]"
 allowed-tools:
   - Read
   - Bash
@@ -11,7 +11,7 @@ allowed-tools:
 ---
 
 <objective>
-Close out the milestone, archive artifacts, and prepare the workspace for the next iteration.
+收尾当前里程碑、归档相关产物，并为下一轮迭代整理工作区。
 </objective>
 
 <execution_context>
@@ -19,5 +19,5 @@ Close out the milestone, archive artifacts, and prepare the workspace for the ne
 </execution_context>
 
 <process>
-Run the workflow end-to-end and archive the milestone only when operational verification is complete.
+端到端执行该 workflow。只有在当前里程碑的验证与审计都完成后，才允许归档。
 </process>

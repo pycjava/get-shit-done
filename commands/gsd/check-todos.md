@@ -1,7 +1,7 @@
 ---
 name: gsd:check-todos
-description: List pending todos and select one to work on
-argument-hint: [area filter]
+description: 列出待办事项，并选择一个继续推进
+argument-hint: [area 过滤条件]
 allowed-tools:
   - Read
   - Write
@@ -10,14 +10,14 @@ allowed-tools:
 ---
 
 <objective>
-List all pending todos, allow selection, load full context for the selected todo, and route to appropriate action.
+列出所有待处理 todo，允许用户挑选其中一项，加载其完整上下文，并路由到后续动作。
 
-Routes to the check-todos workflow which handles:
-- Todo counting and listing with area filtering
-- Interactive selection with full context loading
-- Roadmap correlation checking
-- Action routing (work now, add to phase, brainstorm, create phase)
-- STATE.md updates and git commits
+它会路由到 `check-todos` workflow，负责：
+- 统计并列出 todo，可按 area 过滤
+- 交互式选择某个 todo，并加载完整上下文
+- 检查与 roadmap 的关联关系
+- 根据情况路由（立即处理、加入阶段、头脑风暴、创建新阶段）
+- 更新 `STATE.md` 并提交
 </objective>
 
 <execution_context>
@@ -25,21 +25,21 @@ Routes to the check-todos workflow which handles:
 </execution_context>
 
 <context>
-Arguments: $ARGUMENTS (optional area filter)
+参数：`$ARGUMENTS`（可选，用于 area 过滤）
 
-Todo state and roadmap correlation are loaded in-workflow using `init todos` and targeted reads.
+todo 状态与 roadmap 关联会在 workflow 内通过 `init todos` 和定向读取加载。
 </context>
 
 <process>
-**Follow the check-todos workflow** from `@~/.claude/get-shit-done/workflows/check-todos.md`.
+**按 `@~/.claude/get-shit-done/workflows/check-todos.md` 执行 `check-todos` workflow。**
 
-The workflow handles all logic including:
-1. Todo existence checking
-2. Area filtering
-3. Interactive listing and selection
-4. Full context loading with file summaries
-5. Roadmap correlation checking
-6. Action offering and execution
-7. STATE.md updates
-8. Git commits
+workflow 会负责：
+1. 检查是否存在 todo
+2. 按 area 过滤
+3. 交互式列出并选择
+4. 加载完整上下文与文件摘要
+5. 检查与 roadmap 的关联
+6. 给出并执行动作选项
+7. 更新 `STATE.md`
+8. Git 提交
 </process>

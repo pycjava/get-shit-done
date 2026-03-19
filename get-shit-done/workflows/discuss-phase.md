@@ -1,22 +1,22 @@
 <purpose>
-Capture the phase decisions that planners and executors must not guess.
+收集一个阶段中 planner 和 executor 不能靠猜来决定的关键决策。
 </purpose>
 
 <process>
 
-1. Load phase context through `init phase-op`.
-2. Read `PROJECT.md`, `REQUIREMENTS.md`, `ROADMAP.md`, `STATE.md`, and prior `CONTEXT.md` files.
-3. Identify unresolved operational gray areas such as:
-- rollout path
-- rollback conditions
-- alert thresholds
-- capacity limits and scale triggers
-- backup and restore behavior
-- ownership and escalation
-- dependency readiness
+1. 通过 `init phase-op` 加载阶段上下文。
+2. 读取 `PROJECT.md`、`REQUIREMENTS.md`、`ROADMAP.md`、`STATE.md`，以及之前阶段的 `CONTEXT.md`。
+3. 找出仍未确定的灰区决策，例如：
+- 发布路径
+- 回滚条件
+- 告警阈值
+- 容量上限与扩容触发条件
+- 备份与恢复策略
+- 负责人和升级路径
+- 依赖准备情况
 
-4. Ask only the questions needed to lock those decisions.
-5. Write `{phase}-CONTEXT.md`.
-6. Offer `/gsd:plan-phase {phase}` as the default next step.
+4. 只提出那些为锁定决策所必需的问题。
+5. 写入 `{phase}-CONTEXT.md`。
+6. 默认给出 `/gsd:plan-phase {phase}` 作为下一步。
 
 </process>

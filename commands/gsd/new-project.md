@@ -1,6 +1,6 @@
 ---
 name: gsd:new-project
-description: Initialize an operations-focused planning workspace
+description: 初始化一个新的规划工作区
 argument-hint: "[--auto]"
 allowed-tools:
   - Read
@@ -11,9 +11,9 @@ allowed-tools:
 ---
 
 <objective>
-Initialize a project for operations work while keeping the standard GSD artifact chain.
+初始化一个新项目，并保留标准 GSD 产物链。
 
-Create:
+会创建：
 - `.planning/PROJECT.md`
 - `.planning/REQUIREMENTS.md`
 - `.planning/ROADMAP.md`
@@ -26,6 +26,6 @@ Create:
 </execution_context>
 
 <process>
-Run the workflow end-to-end.
-Favor operational context: environments, dependencies, deployment model, monitoring, capacity limits, backup, security, and incident ownership.
+端到端执行该 workflow。
+优先收集与真实落地相关的上下文：环境、依赖、部署模型、监控、容量限制、备份、安全与事故责任归属。
 </process>

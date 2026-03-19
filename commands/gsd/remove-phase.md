@@ -1,7 +1,7 @@
 ---
 name: gsd:remove-phase
-description: Remove a future phase from roadmap and renumber subsequent phases
-argument-hint: <phase-number>
+description: 从路线图中移除一个未来阶段，并重编号后续阶段
+argument-hint: <阶段号>
 allowed-tools:
   - Read
   - Write
@@ -9,10 +9,10 @@ allowed-tools:
   - Glob
 ---
 <objective>
-Remove an unstarted future phase from the roadmap and renumber all subsequent phases to maintain a clean, linear sequence.
+从路线图中移除一个尚未开始的未来阶段，并把后续阶段重新编号，保持整体编号干净线性。
 
-Purpose: Clean removal of work you've decided not to do, without polluting context with cancelled/deferred markers.
-Output: Phase deleted, all subsequent phases renumbered, git commit as historical record.
+目的：干净地删掉已经决定不做的工作，而不是在上下文里长期留下 cancelled / deferred 污染。
+输出：目标阶段被删除、后续阶段已重编号，并生成一条 git 提交作为历史记录。
 </objective>
 
 <execution_context>
@@ -20,12 +20,12 @@ Output: Phase deleted, all subsequent phases renumbered, git commit as historica
 </execution_context>
 
 <context>
-Phase: $ARGUMENTS
+阶段：`$ARGUMENTS`
 
-Roadmap and state are resolved in-workflow via `init phase-op` and targeted reads.
+roadmap 与 state 会在 workflow 内通过 `init phase-op` 和定向读取解析。
 </context>
 
 <process>
-Execute the remove-phase workflow from @~/.claude/get-shit-done/workflows/remove-phase.md end-to-end.
-Preserve all validation gates (future phase check, work check), renumbering logic, and commit.
+从 `@~/.claude/get-shit-done/workflows/remove-phase.md` 端到端执行。
+保留所有校验闸门（未来阶段校验、已有工作校验）、重编号逻辑与提交流程。
 </process>

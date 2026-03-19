@@ -1,6 +1,6 @@
 ---
 name: gsd:pause-work
-description: Create context handoff when pausing work mid-phase
+description: 在阶段中途暂停时创建上下文交接文件
 allowed-tools:
   - Read
   - Write
@@ -8,14 +8,14 @@ allowed-tools:
 ---
 
 <objective>
-Create `.continue-here.md` handoff file to preserve complete work state across sessions.
+创建 `.continue-here.md` 交接文件，把当前工作状态完整保留下来，方便跨会话续接。
 
-Routes to the pause-work workflow which handles:
-- Current phase detection from recent files
-- Complete state gathering (position, completed work, remaining work, decisions, blockers)
-- Handoff file creation with all context sections
-- Git commit as WIP
-- Resume instructions
+它会路由到 `pause-work` workflow，负责：
+- 从最近文件识别当前阶段
+- 收集完整状态（位置、已完成、未完成、决策、blocker）
+- 写入 handoff 文件
+- 生成 WIP 提交
+- 给出恢复说明
 </objective>
 
 <execution_context>
@@ -23,16 +23,16 @@ Routes to the pause-work workflow which handles:
 </execution_context>
 
 <context>
-State and phase progress are gathered in-workflow with targeted reads.
+状态与阶段进度都在 workflow 内通过定向读取收集。
 </context>
 
 <process>
-**Follow the pause-work workflow** from `@~/.claude/get-shit-done/workflows/pause-work.md`.
+**按 `@~/.claude/get-shit-done/workflows/pause-work.md` 执行 `pause-work` workflow。**
 
-The workflow handles all logic including:
-1. Phase directory detection
-2. State gathering with user clarifications
-3. Handoff file writing with timestamp
-4. Git commit
-5. Confirmation with resume instructions
+workflow 会负责：
+1. 识别阶段目录
+2. 在必要时向用户补充询问，再收集状态
+3. 带时间戳写入 handoff 文件
+4. 执行 Git 提交
+5. 向用户确认并给出恢复说明
 </process>

@@ -18,31 +18,31 @@ duration: Xmin
 completed: YYYY-MM-DD
 ---
 
-# Phase [X]: [Name] Summary
+# 阶段 [X]: [Name] 总结
 
-**[Substantive one-liner describing outcome]**
+**[用一句有信息量的话概括本次产出]**
 
-## Performance
-- **Duration:** [time]
-- **Tasks:** [count completed]
-- **Files modified:** [count]
+## 执行概况
+- **耗时：** [time]
+- **完成任务：** [count completed]
+- **修改文件：** [count]
 
-## Accomplishments
-- [Key outcome 1]
-- [Key outcome 2]
+## 主要成果
+- [关键成果 1]
+- [关键成果 2]
 
-## Task Commits
-1. **Task 1: [task name]** - `hash`
-2. **Task 2: [task name]** - `hash`
-3. **Task 3: [task name]** - `hash`
+## 任务提交记录
+1. **任务 1：[任务名称]** - `hash`
+2. **任务 2：[任务名称]** - `hash`
+3. **任务 3：[任务名称]** - `hash`
 
-## Files Created/Modified
-- `path/to/file.ts` - What it does
-- `path/to/another.ts` - What it does
+## 创建/修改的文件
+- `path/to/file.ts` - 文件作用
+- `path/to/another.ts` - 文件作用
 
-## Decisions & Deviations
-[Key decisions or "None - followed plan as specified"]
-[Minor deviations if any, or "None"]
+## 决策与偏差
+[关键决策，或“无——按计划执行”]
+[如有轻微偏差可写在这里，否则写“无”]
 
-## Next Phase Readiness
-[What's ready for next phase]
+## 下一阶段准备情况
+[下一阶段已经具备的条件]

@@ -1,320 +1,180 @@
 <purpose>
-Check for GSD updates via npm, display changelog for versions between installed and latest, obtain user confirmation, and execute clean installation with cache clearing.
+通过 npm 检查 GSD 是否有更新，展示当前版本到最新版本之间的 changelog，获得用户确认后执行干净安装，并清理更新缓存。
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+开始前先读取调用方 `execution_context` 中引用的全部文件。
 </required_reading>
 
 <process>
 
 <step name="get_installed_version">
-Detect whether GSD is installed locally or globally by checking both locations and validating install integrity.
+同时检查本地安装和全局安装，判断 GSD 安装位置并校验完整性。
 
-First, derive `PREFERRED_RUNTIME` from the invoking prompt's `execution_context` path:
-- Path contains `/.codex/` -> `codex`
-- Path contains `/.gemini/` -> `gemini`
-- Path contains `/.config/opencode/` or `/.opencode/` -> `opencode`
-- Otherwise -> `claude`
+首先从 `execution_context` 推导 `PREFERRED_RUNTIME`：
+- 路径包含 `/.codex/` -> `codex`
+- 路径包含 `/.gemini/` -> `gemini`
+- 路径包含 `/.config/opencode/` 或 `/.opencode/` -> `opencode`
+- 否则 -> `claude`
 
-Use `PREFERRED_RUNTIME` as the first runtime checked so `/gsd:update` targets the runtime that invoked it.
+然后优先检查对应 runtime 的安装位置。
 
-```bash
-# Runtime candidates: "<runtime>:<config-dir>"
-RUNTIME_DIRS="claude:.claude opencode:.config/opencode opencode:.opencode gemini:.gemini codex:.codex"
+结果需要确定：
+- 已安装版本
+- 安装范围：`LOCAL` / `GLOBAL` / `UNKNOWN`
+- 目标 runtime：`claude` / `opencode` / `gemini` / `codex`
 
-# PREFERRED_RUNTIME should be set from execution_context before running this block.
-# If not set, infer from runtime env vars; fallback to claude.
-if [ -z "$PREFERRED_RUNTIME" ]; then
-  if [ -n "$CODEX_HOME" ]; then
-    PREFERRED_RUNTIME="codex"
-  elif [ -n "$GEMINI_CONFIG_DIR" ]; then
-    PREFERRED_RUNTIME="gemini"
-  elif [ -n "$OPENCODE_CONFIG_DIR" ] || [ -n "$OPENCODE_CONFIG" ]; then
-    PREFERRED_RUNTIME="opencode"
-  elif [ -n "$CLAUDE_CONFIG_DIR" ]; then
-    PREFERRED_RUNTIME="claude"
-  else
-    PREFERRED_RUNTIME="claude"
-  fi
-fi
+如果多个 runtime 都安装了，但无法从 `execution_context` 确认当前调用来源，则先询问用户要更新哪一个。
 
-# Reorder entries so preferred runtime is checked first.
-ORDERED_RUNTIME_DIRS=""
-for entry in $RUNTIME_DIRS; do
-  runtime="${entry%%:*}"
-  if [ "$runtime" = "$PREFERRED_RUNTIME" ]; then
-    ORDERED_RUNTIME_DIRS="$ORDERED_RUNTIME_DIRS $entry"
-  fi
-done
-for entry in $RUNTIME_DIRS; do
-  runtime="${entry%%:*}"
-  if [ "$runtime" != "$PREFERRED_RUNTIME" ]; then
-    ORDERED_RUNTIME_DIRS="$ORDERED_RUNTIME_DIRS $entry"
-  fi
-done
+**如果缺少 VERSION 文件：**
+展示：
+```
+## GSD 更新
 
-# Check local first (takes priority only if valid and distinct from global)
-LOCAL_VERSION_FILE="" LOCAL_MARKER_FILE="" LOCAL_DIR="" LOCAL_RUNTIME=""
-for entry in $ORDERED_RUNTIME_DIRS; do
-  runtime="${entry%%:*}"
-  dir="${entry#*:}"
-  if [ -f "./$dir/get-shit-done/VERSION" ] || [ -f "./$dir/get-shit-done/workflows/update.md" ]; then
-    LOCAL_RUNTIME="$runtime"
-    LOCAL_VERSION_FILE="./$dir/get-shit-done/VERSION"
-    LOCAL_MARKER_FILE="./$dir/get-shit-done/workflows/update.md"
-    LOCAL_DIR="$(cd "./$dir" 2>/dev/null && pwd)"
-    break
-  fi
-done
+**当前版本：** Unknown
 
-GLOBAL_VERSION_FILE="" GLOBAL_MARKER_FILE="" GLOBAL_DIR="" GLOBAL_RUNTIME=""
-for entry in $ORDERED_RUNTIME_DIRS; do
-  runtime="${entry%%:*}"
-  dir="${entry#*:}"
-  if [ -f "$HOME/$dir/get-shit-done/VERSION" ] || [ -f "$HOME/$dir/get-shit-done/workflows/update.md" ]; then
-    GLOBAL_RUNTIME="$runtime"
-    GLOBAL_VERSION_FILE="$HOME/$dir/get-shit-done/VERSION"
-    GLOBAL_MARKER_FILE="$HOME/$dir/get-shit-done/workflows/update.md"
-    GLOBAL_DIR="$(cd "$HOME/$dir" 2>/dev/null && pwd)"
-    break
-  fi
-done
-
-# Only treat as LOCAL if the resolved paths differ (prevents misdetection when CWD=$HOME)
-IS_LOCAL=false
-if [ -n "$LOCAL_VERSION_FILE" ] && [ -f "$LOCAL_VERSION_FILE" ] && [ -f "$LOCAL_MARKER_FILE" ] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+' "$LOCAL_VERSION_FILE"; then
-  if [ -z "$GLOBAL_DIR" ] || [ "$LOCAL_DIR" != "$GLOBAL_DIR" ]; then
-    IS_LOCAL=true
-  fi
-fi
-
-if [ "$IS_LOCAL" = true ]; then
-  INSTALLED_VERSION="$(cat "$LOCAL_VERSION_FILE")"
-  INSTALL_SCOPE="LOCAL"
-  TARGET_RUNTIME="$LOCAL_RUNTIME"
-elif [ -n "$GLOBAL_VERSION_FILE" ] && [ -f "$GLOBAL_VERSION_FILE" ] && [ -f "$GLOBAL_MARKER_FILE" ] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+' "$GLOBAL_VERSION_FILE"; then
-  INSTALLED_VERSION="$(cat "$GLOBAL_VERSION_FILE")"
-  INSTALL_SCOPE="GLOBAL"
-  TARGET_RUNTIME="$GLOBAL_RUNTIME"
-elif [ -n "$LOCAL_RUNTIME" ] && [ -f "$LOCAL_MARKER_FILE" ]; then
-  # Runtime detected but VERSION missing/corrupt: treat as unknown version, keep runtime target
-  INSTALLED_VERSION="0.0.0"
-  INSTALL_SCOPE="LOCAL"
-  TARGET_RUNTIME="$LOCAL_RUNTIME"
-elif [ -n "$GLOBAL_RUNTIME" ] && [ -f "$GLOBAL_MARKER_FILE" ]; then
-  INSTALLED_VERSION="0.0.0"
-  INSTALL_SCOPE="GLOBAL"
-  TARGET_RUNTIME="$GLOBAL_RUNTIME"
-else
-  INSTALLED_VERSION="0.0.0"
-  INSTALL_SCOPE="UNKNOWN"
-  TARGET_RUNTIME="claude"
-fi
-
-echo "$INSTALLED_VERSION"
-echo "$INSTALL_SCOPE"
-echo "$TARGET_RUNTIME"
+当前安装没有版本跟踪信息。
+将按全新安装方式继续。
 ```
 
-Parse output:
-- Line 1 = installed version (`0.0.0` means unknown version)
-- Line 2 = install scope (`LOCAL`, `GLOBAL`, or `UNKNOWN`)
-- Line 3 = target runtime (`claude`, `opencode`, `gemini`, or `codex`)
-- If scope is `UNKNOWN`, proceed to install step using `--claude --global` fallback.
-
-If multiple runtime installs are detected and the invoking runtime cannot be determined from execution_context, ask the user which runtime to update before running install.
-
-**If VERSION file missing:**
-```
-## GSD Update
-
-**Installed version:** Unknown
-
-Your installation doesn't include version tracking.
-
-Running fresh install...
-```
-
-Proceed to install step (treat as version 0.0.0 for comparison).
+此时把版本视作 `0.0.0` 继续。
 </step>
 
 <step name="check_latest_version">
-Check npm for latest version:
+检查 npm 上的最新版本：
 
 ```bash
 npm view get-shit-done-cc version 2>/dev/null
 ```
 
-**If npm check fails:**
+如果 npm 查询失败：
 ```
-Couldn't check for updates (offline or npm unavailable).
+无法检查更新（可能离线或 npm 不可用）。
 
-To update manually: `npx get-shit-done-cc --global`
+手动更新可执行：`npx get-shit-done-cc --global`
 ```
 
-Exit.
+退出。
 </step>
 
 <step name="compare_versions">
-Compare installed vs latest:
+比较当前版本和最新版本：
 
-**If installed == latest:**
+**如果已是最新：**
 ```
-## GSD Update
+## GSD 更新
 
-**Installed:** X.Y.Z
-**Latest:** X.Y.Z
+**当前版本：** X.Y.Z
+**最新版本：** X.Y.Z
 
-You're already on the latest version.
-```
-
-Exit.
-
-**If installed > latest:**
-```
-## GSD Update
-
-**Installed:** X.Y.Z
-**Latest:** A.B.C
-
-You're ahead of the latest release (development version?).
+你已经在使用最新版本。
 ```
 
-Exit.
+退出。
+
+**如果当前版本比最新版本还高：**
+```
+## GSD 更新
+
+**当前版本：** X.Y.Z
+**最新版本：** A.B.C
+
+你当前使用的是高于正式发布版的版本（可能是开发版）。
+```
+
+退出。
 </step>
 
 <step name="show_changes_and_confirm">
-**If update available**, fetch and show what's new BEFORE updating:
+**如果发现可更新版本：**
 
-1. Fetch changelog from GitHub raw URL
-2. Extract entries between installed and latest versions
-3. Display preview and ask for confirmation:
+先获取并展示 changelog，再询问是否继续：
 
-```
-## GSD Update Available
+展示内容包括：
+- 当前版本
+- 最新版本
+- 两者之间的新增 / 修复内容
+- 干净安装会覆盖哪些 GSD 自带目录
+- 哪些自定义文件不会受影响
+- 如果用户曾直接修改 GSD 文件，安装器会先备份到 `gsd-local-patches/`
 
-**Installed:** 1.5.10
-**Latest:** 1.5.15
+然后使用 AskUserQuestion 询问：
+- “是，现在更新”
+- “否，取消”
 
-### What's New
-────────────────────────────────────────────────────────────
-
-## [1.5.15] - 2026-01-20
-
-### Added
-- Feature X
-
-## [1.5.14] - 2026-01-18
-
-### Fixed
-- Bug fix Y
-
-────────────────────────────────────────────────────────────
-
-⚠️  **Note:** The installer performs a clean install of GSD folders:
-- `commands/gsd/` will be wiped and replaced
-- `get-shit-done/` will be wiped and replaced
-- `agents/gsd-*` files will be replaced
-
-(Paths are relative to detected runtime install location:
-global: `~/.claude/`, `~/.config/opencode/`, `~/.opencode/`, `~/.gemini/`, or `~/.codex/`
-local: `./.claude/`, `./.config/opencode/`, `./.opencode/`, `./.gemini/`, or `./.codex/`)
-
-Your custom files in other locations are preserved:
-- Custom commands not in `commands/gsd/` ✓
-- Custom agents not prefixed with `gsd-` ✓
-- Custom hooks ✓
-- Your CLAUDE.md files ✓
-
-If you've modified any GSD files directly, they'll be automatically backed up to `gsd-local-patches/` and can be reapplied with `/gsd:reapply-patches` after the update.
-```
-
-Use AskUserQuestion:
-- Question: "Proceed with update?"
-- Options:
-  - "Yes, update now"
-  - "No, cancel"
-
-**If user cancels:** Exit.
+如果用户取消：退出。
 </step>
 
 <step name="run_update">
-Run the update using the install type detected in step 1:
+根据第 1 步识别出的安装类型执行更新：
 
-Build runtime flag from step 1:
 ```bash
 RUNTIME_FLAG="--$TARGET_RUNTIME"
 ```
 
-**If LOCAL install:**
+**LOCAL 安装：**
 ```bash
 npx -y get-shit-done-cc@latest "$RUNTIME_FLAG" --local
 ```
 
-**If GLOBAL install:**
+**GLOBAL 安装：**
 ```bash
 npx -y get-shit-done-cc@latest "$RUNTIME_FLAG" --global
 ```
 
-**If UNKNOWN install:**
+**UNKNOWN 安装：**
 ```bash
 npx -y get-shit-done-cc@latest --claude --global
 ```
 
-Capture output. If install fails, show error and exit.
+如果安装失败，则展示错误并退出。
 
-Clear the update cache so statusline indicator disappears:
+安装后清理更新缓存，避免状态栏继续显示旧的更新提示：
 
 ```bash
-# Clear update cache across all runtime directories
 for dir in .claude .config/opencode .opencode .gemini .codex; do
   rm -f "./$dir/cache/gsd-update-check.json"
   rm -f "$HOME/$dir/cache/gsd-update-check.json"
 done
 ```
-
-The SessionStart hook (`gsd-check-update.js`) writes to the detected runtime's cache directory, so all paths must be cleared to prevent stale update indicators.
 </step>
 
 <step name="display_result">
-Format completion message (changelog was already shown in confirmation step):
+展示更新完成信息：
 
 ```
-╔═══════════════════════════════════════════════════════════╗
-║  GSD Updated: v1.5.10 → v1.5.15                           ║
-╚═══════════════════════════════════════════════════════════╝
+GSD 已更新：v1.5.10 -> v1.5.15
 
-⚠️  Restart your runtime to pick up the new commands.
+请重启当前 runtime，以加载新命令。
 
-[View full changelog](https://github.com/glittercowboy/get-shit-done/blob/main/CHANGELOG.md)
+完整变更日志：
+https://github.com/glittercowboy/get-shit-done/blob/main/CHANGELOG.md
 ```
 </step>
-
 
 <step name="check_local_patches">
-After update completes, check if the installer detected and backed up any locally modified files:
+更新完成后，检查安装器是否备份了本地修改：
 
-Check for gsd-local-patches/backup-meta.json in the config directory.
+查看配置目录中的 `gsd-local-patches/backup-meta.json`。
 
-**If patches found:**
-
+如果存在：
 ```
-Local patches were backed up before the update.
-Run /gsd:reapply-patches to merge your modifications into the new version.
+检测到本地 patch 已在更新前备份。
+运行 /gsd:reapply-patches 可把你的修改重新合并到新版本中。
 ```
 
-**If no patches:** Continue normally.
+如果不存在，则正常结束。
 </step>
+
 </process>
 
 <success_criteria>
-- [ ] Installed version read correctly
-- [ ] Latest version checked via npm
-- [ ] Update skipped if already current
-- [ ] Changelog fetched and displayed BEFORE update
-- [ ] Clean install warning shown
-- [ ] User confirmation obtained
-- [ ] Update executed successfully
-- [ ] Restart reminder shown
+- [ ] 已正确识别当前安装版本
+- [ ] 已通过 npm 检查最新版本
+- [ ] 若已是最新，则正确跳过更新
+- [ ] 已在更新前展示 changelog
+- [ ] 已展示干净安装覆盖范围
+- [ ] 已取得用户确认
+- [ ] 已成功执行更新
+- [ ] 已提醒用户重启 runtime
 </success_criteria>

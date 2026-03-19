@@ -1,17 +1,17 @@
 <purpose>
-Archive a milestone only after operational verification and documentation are in a good state.
+只在运行验证和文档状态都达标后才归档一个里程碑。
 </purpose>
 
 <process>
 
-1. Read milestone status, roadmap, requirements, and verification artifacts.
-2. Confirm the milestone is ready to archive.
-3. Archive milestone documents and phase artifacts.
-4. Update milestone tracking files.
-5. Prepare the workspace for `/gsd:new-milestone`.
+1. 读取里程碑状态、路线图、需求和验证产物。
+2. 确认该里程碑已经满足归档条件。
+3. 归档里程碑文档和阶段产物。
+4. 更新里程碑跟踪文件。
+5. 为 `/gsd:new-milestone` 准备干净的工作区。
 
 </process>
 
 <notes>
-This edition does not archive UI-specific artifacts.
+当前版本不会归档 UI 专用产物。
 </notes>

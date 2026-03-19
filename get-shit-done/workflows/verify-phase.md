@@ -1,20 +1,20 @@
 <purpose>
-Verify phase goal achievement through goal-backward analysis. Check that the codebase delivers what the phase promised, not just that tasks completed.
+通过“目标回推”方式验证阶段目标是否真的达成。重点检查代码库是否兑现了该阶段承诺的结果，而不是只看任务是否勾完。
 
-Executed by a verification subagent spawned from execute-phase.md.
+这个 workflow 由 `execute-phase.md` 拉起的验证子 agent 执行。
 </purpose>
 
 <core_principle>
-**Task completion ≠ Goal achievement**
+**任务完成 ≠ 目标达成**
 
-A task "create chat component" can be marked complete when the component is a placeholder. The task was done — but the goal "working chat interface" was not achieved.
+例如一个“创建聊天组件”的任务，即使只是做了占位组件，也可能被标记完成；但阶段目标“聊天界面可用”其实并没有达成。
 
-Goal-backward verification:
-1. What must be TRUE for the goal to be achieved?
-2. What must EXIST for those truths to hold?
-3. What must be WIRED for those artifacts to function?
+目标回推验证的思路：
+1. 如果目标达成，哪些事实必须为真？
+2. 为了让这些事实成立，哪些产物必须存在？
+3. 为了让这些产物真正工作，哪些连接必须接通？
 
-Then verify each level against the actual codebase.
+然后逐层对照真实代码库验证。
 </core_principle>
 
 <required_reading>
@@ -25,29 +25,29 @@ Then verify each level against the actual codebase.
 <process>
 
 <step name="load_context" priority="first">
-Load phase operation context:
+加载阶段操作上下文：
 
 ```bash
 INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Extract from init JSON: `phase_dir`, `phase_number`, `phase_name`, `has_plans`, `plan_count`.
+从 init JSON 中提取：`phase_dir`、`phase_number`、`phase_name`、`has_plans`、`plan_count`。
 
-Then load phase details and list plans/summaries:
+然后加载阶段详情，并列出 plans / summaries：
 ```bash
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "${phase_number}"
 grep -E "^| ${phase_number}" .planning/REQUIREMENTS.md 2>/dev/null
 ls "$phase_dir"/*-SUMMARY.md "$phase_dir"/*-PLAN.md 2>/dev/null
 ```
 
-Extract **phase goal** from ROADMAP.md (the outcome to verify, not tasks) and **requirements** from REQUIREMENTS.md if it exists.
+从 `ROADMAP.md` 中提取**阶段目标**（要验证的结果，而不是任务列表），如果存在 `REQUIREMENTS.md`，也提取对应需求。
 </step>
 
 <step name="establish_must_haves">
-**Option A: Must-haves in PLAN frontmatter**
+**方案 A：从 PLAN frontmatter 中读取 must_haves**
 
-Use gsd-tools to extract must_haves from each PLAN:
+对每个 PLAN，用 gsd-tools 提取 `must_haves`：
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
@@ -56,48 +56,55 @@ for plan in "$PHASE_DIR"/*-PLAN.md; do
 done
 ```
 
-Returns JSON: `{ truths: [...], artifacts: [...], key_links: [...] }`
+返回 JSON：`{ truths: [...], artifacts: [...], key_links: [...] }`
 
-Aggregate all must_haves across plans for phase-level verification.
+把该阶段下所有 PLAN 的 `must_haves` 汇总，用于阶段级验证。
 
-**Option B: Use Success Criteria from ROADMAP.md**
+**方案 B：使用 ROADMAP.md 中的 Success Criteria**
 
-If no must_haves in frontmatter (MUST_HAVES returns error or empty), check for Success Criteria:
+如果 frontmatter 中没有 `must_haves`（返回报错或为空），就检查 Success Criteria：
 
 ```bash
 PHASE_DATA=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "${phase_number}" --raw)
 ```
 
-Parse the `success_criteria` array from the JSON output. If non-empty:
-1. Use each Success Criterion directly as a **truth** (they are already written as observable, testable behaviors)
-2. Derive **artifacts** (concrete file paths for each truth)
-3. Derive **key links** (critical wiring where stubs hide)
-4. Document the must-haves before proceeding
+解析 JSON 中的 `success_criteria` 数组。如果非空：
+1. 将每条 Success Criterion 直接作为一个 **truth**（它们本来就是可观察、可测试的行为）
+2. 推导 **artifacts**（支撑这些 truth 的具体文件路径）
+3. 推导 **key links**（最容易藏 stub 的关键连接）
+4. 在继续之前，先把 must-haves 明确下来
 
-Success Criteria from ROADMAP.md are the contract — they override PLAN-level must_haves when both exist.
+`ROADMAP.md` 里的 Success Criteria 是合同级约束；如果它和 PLAN 里的 must_haves 同时存在，以 Success Criteria 为准。
 
-**Option C: Derive from phase goal (fallback)**
+**方案 C：从阶段目标反推（兜底）**
 
-If no must_haves in frontmatter AND no Success Criteria in ROADMAP:
-1. State the goal from ROADMAP.md
-2. Derive **truths** (3-7 observable behaviors, each testable)
-3. Derive **artifacts** (concrete file paths for each truth)
-4. Derive **key links** (critical wiring where stubs hide)
-5. Document derived must-haves before proceeding
+如果 PLAN frontmatter 没有 `must_haves`，同时 ROADMAP 里也没有 Success Criteria：
+1. 先陈述 ROADMAP 里的阶段目标
+2. 推导 **truths**（3-7 条可观察、可测试的行为）
+3. 推导 **artifacts**（对应的具体文件路径）
+4. 推导 **key links**（关键连接点）
+5. 在继续前明确记录这些派生出来的 must-haves
 </step>
 
 <step name="verify_truths">
-For each observable truth, determine if the codebase enables it.
+对每条可观察 truth，判断代码库是否真的支持它。
 
-**Status:** ✓ VERIFIED (all supporting artifacts pass) | ✗ FAILED (artifact missing/stub/unwired) | ? UNCERTAIN (needs human)
+**状态：**
+- `VERIFIED`：所有支撑该 truth 的产物都通过
+- `FAILED`：存在缺失 / stub / 未接线
+- `UNCERTAIN`：无法可靠自动判断，需要人工验证
 
-For each truth: identify supporting artifacts → check artifact status → check wiring → determine truth status.
+对每条 truth 的流程：
+识别支撑产物 -> 检查产物状态 -> 检查接线状态 -> 给出 truth 状态。
 
-**Example:** Truth "User can see existing messages" depends on Chat.tsx (renders), /api/chat GET (provides), Message model (schema). If Chat.tsx is a stub or API returns hardcoded [] → FAILED. If all exist, are substantive, and connected → VERIFIED.
+**示例：**
+truth “用户能看到已有消息” 依赖 `Chat.tsx`（负责渲染）、`/api/chat` 的 GET（提供数据）、`Message` model（定义结构）。
+如果 `Chat.tsx` 只是 stub，或者 API 返回硬编码空数组 -> `FAILED`。
+如果这些都真实存在、实现完整、且已经接好 -> `VERIFIED`。
 </step>
 
 <step name="verify_artifacts">
-Use gsd-tools for artifact verification against must_haves in each PLAN:
+对每个 PLAN，用 gsd-tools 验证 artifacts：
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
@@ -106,41 +113,42 @@ for plan in "$PHASE_DIR"/*-PLAN.md; do
 done
 ```
 
-Parse JSON result: `{ all_passed, passed, total, artifacts: [{path, exists, issues, passed}] }`
+解析 JSON：`{ all_passed, passed, total, artifacts: [{path, exists, issues, passed}] }`
 
-**Artifact status from result:**
-- `exists=false` → MISSING
-- `issues` not empty → STUB (check issues for "Only N lines" or "Missing pattern")
-- `passed=true` → VERIFIED (Levels 1-2 pass)
+**根据结果映射 artifact 状态：**
+- `exists=false` -> `MISSING`
+- `issues` 非空 -> `STUB`（重点看 `"Only N lines"` 或 `"Missing pattern"`）
+- `passed=true` -> `VERIFIED`（通过了 Level 1-2）
 
-**Level 3 — Wired (manual check for artifacts that pass Levels 1-2):**
+**Level 3：Wired（对通过 Level 1-2 的 artifact 做手工接线检查）**
 ```bash
 grep -r "import.*$artifact_name" src/ --include="*.ts" --include="*.tsx"  # IMPORTED
 grep -r "$artifact_name" src/ --include="*.ts" --include="*.tsx" | grep -v "import"  # USED
 ```
-WIRED = imported AND used. ORPHANED = exists but not imported/used.
+
+`WIRED` = 被导入且被实际使用。
+`ORPHANED` = 文件存在，但没被导入 / 使用。
 
 | Exists | Substantive | Wired | Status |
 |--------|-------------|-------|--------|
-| ✓ | ✓ | ✓ | ✓ VERIFIED |
-| ✓ | ✓ | ✗ | ⚠️ ORPHANED |
-| ✓ | ✗ | - | ✗ STUB |
-| ✗ | - | - | ✗ MISSING |
+| yes | yes | yes | VERIFIED |
+| yes | yes | no | ORPHANED |
+| yes | no | - | STUB |
+| no | - | - | MISSING |
 
-**Export-level spot check (WARNING severity):**
+**导出级 spot check（WARNING 级别）：**
 
-For artifacts that pass Level 3, spot-check individual exports:
-- Extract key exported symbols (functions, constants, classes — skip types/interfaces)
-- For each, grep for usage outside the defining file
-- Flag exports with zero external call sites as "exported but unused"
+对已经通过 Level 3 的 artifact，抽查其导出项：
+- 提取关键导出符号（函数、常量、类；跳过 types / interfaces）
+- 对每个导出项，grep 它是否在定义文件之外被使用
+- 如果导出项在外部没有任何调用点，则标记为“exported but unused”
 
-This catches dead stores like `setPlan()` that exist in a wired file but are
-never actually called. Report as WARNING — may indicate incomplete cross-plan
-wiring or leftover code from plan revisions.
+这类检查能发现死存储，例如某个 `setPlan()` 存在于已接线文件中，但实际上从未被调用。
+报告为 `WARNING`，因为它通常意味着跨计划接线不完整，或计划迭代后遗留了死代码。
 </step>
 
 <step name="verify_wiring">
-Use gsd-tools for key link verification against must_haves in each PLAN:
+对每个 PLAN，用 gsd-tools 验证 key links：
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
@@ -149,73 +157,87 @@ for plan in "$PHASE_DIR"/*-PLAN.md; do
 done
 ```
 
-Parse JSON result: `{ all_verified, verified, total, links: [{from, to, via, verified, detail}] }`
+解析 JSON：`{ all_verified, verified, total, links: [{from, to, via, verified, detail}] }`
 
-**Link status from result:**
-- `verified=true` → WIRED
-- `verified=false` with "not found" → NOT_WIRED
-- `verified=false` with "Pattern not found" → PARTIAL
+**根据结果映射 link 状态：**
+- `verified=true` -> `WIRED`
+- `verified=false` 且 detail 含 `"not found"` -> `NOT_WIRED`
+- `verified=false` 且 detail 含 `"Pattern not found"` -> `PARTIAL`
 
-**Fallback patterns (if key_links not in must_haves):**
+**兜底模式（当 must_haves 中没有 key_links 时）：**
 
 | Pattern | Check | Status |
 |---------|-------|--------|
-| Component → API | fetch/axios call to API path, response used (await/.then/setState) | WIRED / PARTIAL (call but unused response) / NOT_WIRED |
-| API → Database | Prisma/DB query on model, result returned via res.json() | WIRED / PARTIAL (query but not returned) / NOT_WIRED |
-| Form → Handler | onSubmit with real implementation (fetch/axios/mutate/dispatch), not console.log/empty | WIRED / STUB (log-only/empty) / NOT_WIRED |
-| State → Render | useState variable appears in JSX (`{stateVar}` or `{stateVar.property}`) | WIRED / NOT_WIRED |
+| Component -> API | 是否调用 fetch / axios 命中 API 路径，且响应有被消费（await / .then / setState） | WIRED / PARTIAL / NOT_WIRED |
+| API -> Database | 是否有 Prisma / DB 查询，且结果通过 `res.json()` 返回 | WIRED / PARTIAL / NOT_WIRED |
+| Form -> Handler | `onSubmit` 是否接了真实实现（fetch / axios / mutate / dispatch），而不是 console.log / 空函数 | WIRED / STUB / NOT_WIRED |
+| State -> Render | `useState` 变量是否出现在 JSX 中 | WIRED / NOT_WIRED |
 
-Record status and evidence for each key link.
+为每条 key link 记录状态和证据。
 </step>
 
 <step name="verify_requirements">
-If REQUIREMENTS.md exists:
+如果存在 `REQUIREMENTS.md`：
 ```bash
 grep -E "Phase ${PHASE_NUM}" .planning/REQUIREMENTS.md 2>/dev/null
 ```
 
-For each requirement: parse description → identify supporting truths/artifacts → status: ✓ SATISFIED / ✗ BLOCKED / ? NEEDS HUMAN.
+对每条 requirement：
+解析描述 -> 找到对应支撑的 truths / artifacts -> 给出状态：
+`SATISFIED` / `BLOCKED` / `NEEDS HUMAN`
 </step>
 
 <step name="scan_antipatterns">
-Extract files modified in this phase from SUMMARY.md, scan each:
+从 `SUMMARY.md` 提取本阶段改动过的文件，对每个文件做扫描：
 
-| Pattern | Search | Severity |
-|---------|--------|----------|
-| TODO/FIXME/XXX/HACK | `grep -n -E "TODO\|FIXME\|XXX\|HACK"` | ⚠️ Warning |
-| Placeholder content | `grep -n -iE "placeholder\|coming soon\|will be here"` | 🛑 Blocker |
-| Empty returns | `grep -n -E "return null\|return \{\}\|return \[\]\|=> \{\}"` | ⚠️ Warning |
-| Log-only functions | Functions containing only console.log | ⚠️ Warning |
+| 模式 | 搜索方式 | 严重性 |
+|------|----------|--------|
+| TODO/FIXME/XXX/HACK | `grep -n -E "TODO\|FIXME\|XXX\|HACK"` | Warning |
+| Placeholder 内容 | `grep -n -iE "placeholder\|coming soon\|will be here"` | Blocker |
+| 空返回 | `grep -n -E "return null\|return \{\}\|return \[\]\|=> \{\}"` | Warning |
+| 只有 console.log 的函数 | 函数体中只有 `console.log` | Warning |
 
-Categorize: 🛑 Blocker (prevents goal) | ⚠️ Warning (incomplete) | ℹ️ Info (notable).
+归类为：`Blocker`（阻止目标达成）/ `Warning`（实现不完整）/ `Info`（值得注意）
 </step>
 
 <step name="identify_human_verification">
-**Always needs human:** Visual appearance, user flow completion, real-time behavior (WebSocket/SSE), external service integration, performance feel, error message clarity.
+**始终需要人工验证的内容：**
+视觉表现、完整用户流程、实时行为（WebSocket / SSE）、外部服务集成、体感性能、错误提示清晰度。
 
-**Needs human if uncertain:** Complex wiring grep can't trace, dynamic state-dependent behavior, edge cases.
+**不确定时需要人工验证的内容：**
+grep 无法稳定追踪的复杂接线、依赖动态状态的行为、边界场景。
 
-Format each as: Test Name → What to do → Expected result → Why can't verify programmatically.
+每条都要写成：测试名称 -> 如何操作 -> 预期结果 -> 为什么不能自动验证。
 </step>
 
 <step name="determine_status">
-**passed:** All truths VERIFIED, all artifacts pass levels 1-3, all key links WIRED, no blocker anti-patterns.
+**passed：**
+所有 truths 都是 `VERIFIED`，所有 artifacts 通过 1-3 级检查，所有 key links 都是 `WIRED`，且不存在 blocker 级反模式。
 
-**gaps_found:** Any truth FAILED, artifact MISSING/STUB, key link NOT_WIRED, or blocker found.
+**gaps_found：**
+任何 truth 为 `FAILED`，任何 artifact 为 `MISSING` / `STUB`，任何 key link 为 `NOT_WIRED`，或发现 blocker。
 
-**human_needed:** All automated checks pass but human verification items remain.
+**human_needed：**
+自动化检查全部通过，但还有人工验证项。
 
-**Score:** `verified_truths / total_truths`
+**Score：**
+`verified_truths / total_truths`
 </step>
 
 <step name="generate_fix_plans">
-If gaps_found:
+如果 `gaps_found`：
 
-1. **Cluster related gaps:** API stub + component unwired → "Wire frontend to backend". Multiple missing → "Complete core implementation". Wiring only → "Connect existing components".
+1. **把相关缺口聚类：**
+API 是 stub + 组件未接线 -> “打通前后端”
+多个关键实现缺失 -> “补完核心实现”
+只差接线 -> “连接现有组件”
 
-2. **Generate plan per cluster:** Objective, 2-3 tasks (files/action/verify each), re-verify step. Keep focused: single concern per plan.
+2. **为每个 cluster 生成一个修复计划：**
+包含 objective、2-3 个任务（每个任务写明 files / action / verify），以及 re-verify 步骤。
+每个计划只聚焦一个 concern。
 
-3. **Order by dependency:** Fix missing → fix stubs → fix wiring → verify.
+3. **按依赖顺序排序：**
+先修缺失 -> 再修 stub -> 再修接线 -> 最后复验。
 </step>
 
 <step name="create_report">
@@ -223,32 +245,39 @@ If gaps_found:
 REPORT_PATH="$PHASE_DIR/${PHASE_NUM}-VERIFICATION.md"
 ```
 
-Fill template sections: frontmatter (phase/timestamp/status/score), goal achievement, artifact table, wiring table, requirements coverage, anti-patterns, human verification, gaps summary, fix plans (if gaps_found), metadata.
+填充模板中的以下部分：
+frontmatter（phase / timestamp / status / score）、goal achievement、artifact table、wiring table、requirements coverage、anti-patterns、human verification、gaps summary、fix plans（如果 `gaps_found`）、metadata。
 
-See ~/.claude/get-shit-done/templates/verification-report.md for complete template.
+完整模板见 `~/.claude/get-shit-done/templates/verification-report.md`。
 </step>
 
 <step name="return_to_orchestrator">
-Return status (`passed` | `gaps_found` | `human_needed`), score (N/M must-haves), report path.
+返回：
+- 状态：`passed` | `gaps_found` | `human_needed`
+- 得分：`N/M must-haves`
+- 报告路径
 
-If gaps_found: list gaps + recommended fix plan names.
-If human_needed: list items requiring human testing.
+如果 `gaps_found`：列出缺口摘要和推荐修复计划名。
+如果 `human_needed`：列出需要人工测试的项目。
 
-Orchestrator routes: `passed` → update_roadmap | `gaps_found` → create/execute fixes, re-verify | `human_needed` → present to user.
+orchestrator 的路由：
+- `passed` -> `update_roadmap`
+- `gaps_found` -> 创建并执行修复，再重新验证
+- `human_needed` -> 向用户展示并等待人工验证
 </step>
 
 </process>
 
 <success_criteria>
-- [ ] Must-haves established (from frontmatter or derived)
-- [ ] All truths verified with status and evidence
-- [ ] All artifacts checked at all three levels
-- [ ] All key links verified
-- [ ] Requirements coverage assessed (if applicable)
-- [ ] Anti-patterns scanned and categorized
-- [ ] Human verification items identified
-- [ ] Overall status determined
-- [ ] Fix plans generated (if gaps_found)
-- [ ] VERIFICATION.md created with complete report
-- [ ] Results returned to orchestrator
+- [ ] 已建立 must-haves（来自 frontmatter 或推导）
+- [ ] 已为所有 truths 给出状态与证据
+- [ ] 已对所有 artifacts 完成三层检查
+- [ ] 已验证所有 key links
+- [ ] 已评估 requirements coverage（如适用）
+- [ ] 已扫描并归类 anti-patterns
+- [ ] 已识别人工验证项
+- [ ] 已得出整体状态
+- [ ] 若存在 `gaps_found`，已生成 fix plans
+- [ ] 已创建完整的 `VERIFICATION.md`
+- [ ] 已把结果返回给 orchestrator
 </success_criteria>

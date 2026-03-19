@@ -1,352 +1,173 @@
 <purpose>
-Audit existing operations documentation and infrastructure for a project. Identifies gaps, outdated information, and provides recommendations for improvement.
+审计项目现有的运维文档和基础设施，识别缺口、过期信息，并给出改进建议。
 </purpose>
 
 <required_reading>
-
-1. `.planning/PROJECT.md` — Project context
-2. `.planning/ROADMAP.md` — Project roadmap
-3. `.planning/config.json` — Project configuration
-4. `.planning/operations/OPERATIONS.md` — Operations overview (if exists)
-5. `.planning/operations/DEPLOYMENT.md` — Deployment procedures (if exists)
-6. `.planning/operations/MONITORING.md` — Monitoring configuration (if exists)
-7. `.planning/operations/RUNBOOK.md` — Incident response (if exists)
-8. `.planning/operations/BACKUP.md` — Backup procedures (if exists)
-9. `.planning/operations/SECURITY-OPS.md` — Security operations (if exists)
-10. `.planning/operations/CAPACITY.md` — Capacity planning (if exists)
-
+1. `.planning/PROJECT.md`
+2. `.planning/ROADMAP.md`
+3. `.planning/config.json`
+4. `.planning/operations/OPERATIONS.md`（如果存在）
+5. `.planning/operations/DEPLOYMENT.md`（如果存在）
+6. `.planning/operations/MONITORING.md`（如果存在）
+7. `.planning/operations/RUNBOOK.md`（如果存在）
+8. `.planning/operations/BACKUP.md`（如果存在）
+9. `.planning/operations/SECURITY-OPS.md`（如果存在）
+10. `.planning/operations/CAPACITY.md`（如果存在）
 </required_reading>
 
 <process>
 
-## 0. Parse Arguments
+## 0. 解析参数
 
-**Parse `$ARGUMENTS` before anything else:**
+优先解析 `$ARGUMENTS`：
 
-```
-argument = trim($ARGUMENTS)
-```
-
-| Argument value | Behavior |
+| 参数值 | 行为 |
 |---|---|
-| empty / `"all"` | Audit all existing operations documents |
-| `"deployment"` / `"runbook"` / etc. | Audit only the named document (case-insensitive filename match) |
+| 空 / `"all"` | 审计所有已有运维文档 |
+| `"deployment"` / `"runbook"` 等 | 只审计指定文档 |
 
-Store as `target_doc` (null = all). Use throughout the workflow to filter which document(s) to audit.
+保存为 `target_doc`，后续都用它过滤审计范围。
 
-## 1. Setup
-
-**MANDATORY FIRST STEP — Execute:**
+## 1. 初始化
 
 ```bash
 INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init ops-audit)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Parse JSON for: `project_name`, `project_stage`, `ops_dir`, `existing_docs` (array of `{name, mtime}`), `has_operations`, `planning_exists`, `ops_weights`.
+解析：`project_name`、`project_stage`、`ops_dir`、`existing_docs`、`has_operations`、`planning_exists`、`ops_weights`。
 
-**If `planning_exists` is false:** Error — No .planning directory found. Run `/gsd:new-project` first.
+如果 `planning_exists` 为 false：直接报错，提示先运行 `/gsd:new-project`。
 
-**If `target_doc` is set:** Filter `existing_docs` to only the matching document before proceeding.
+如果设置了 `target_doc`：先过滤 `existing_docs`，然后再继续。
 
-## 2. Assess Project Context
+## 2. 评估项目上下文
 
-Read PROJECT.md to understand:
+读取 `PROJECT.md`，判断：
+- 项目类型
+- 当前规模
+- 数据敏感性
+- 合规要求
+- 团队规模
+- 部署目标
 
-| Aspect | What to Look For |
-|--------|-----------------|
-| Project Type | Web app, API, CLI, mobile, etc. |
-| Scale | MVP, growth, enterprise |
-| Data Sensitivity | None, user data, financial, health |
-| Compliance | None, GDPR, SOC2, HIPAA, PCI-DSS |
-| Team Size | Solo, small team, large team |
-| Deployment Target | Local, cloud, hybrid |
+这会决定哪些运维文档是必需的，哪些是可选的。
 
-This context determines which operations docs are essential vs optional.
-
-## 3. Check Document Existence
+## 3. 检查文档存在性
 
 ```bash
 ls -la .planning/operations/ 2>/dev/null || echo "No operations directory"
 ```
 
-Document status matrix:
+输出一个文档状态矩阵：
+- 是否存在
+- 最近更新时间
 
-| Document | Status | Last Updated |
-|----------|--------|--------------|
-| OPERATIONS.md | Exists/Missing | [date if exists] |
-| DEPLOYMENT.md | Exists/Missing | [date if exists] |
-| MONITORING.md | Exists/Missing | [date if exists] |
-| CAPACITY.md | Exists/Missing | [date if exists] |
-| RUNBOOK.md | Exists/Missing | [date if exists] |
-| BACKUP.md | Exists/Missing | [date if exists] |
-| SECURITY-OPS.md | Exists/Missing | [date if exists] |
+## 4. 审计已有文档
 
-## 4. Audit Existing Documents
+对每份已有文档检查完整度：
+- `OPERATIONS.md`：运维目标、环境、责任分工、升级路径等
+- `DEPLOYMENT.md`：部署策略、发布步骤、回滚、迁移、发布后检查
+- `MONITORING.md`：可观测栈、关键指标、阈值、告警路由、SLO/SLI
+- `CAPACITY.md`：基线、峰值、瓶颈、扩容路径、触发条件、复查周期
+- `RUNBOOK.md`：故障等级、联系人、常见问题、处理步骤、复盘模板
+- `BACKUP.md`：备份策略、RTO/RPO、恢复流程、保留策略、演练计划
+- `SECURITY-OPS.md`：鉴权方式、RBAC、密钥管理、漏洞扫描、事件响应、合规映射
 
-For each existing document, check completeness:
+## 5. 识别缺口
 
-### OPERATIONS.md Audit Checklist
+### 缺失文档
 
-- [ ] Operations strategy defined
-- [ ] Core objectives with measurable targets
-- [ ] Environment configuration documented
-- [ ] CI/CD pipeline overview
-- [ ] Team responsibilities clear
-- [ ] On-call rotation defined
-- [ ] Escalation path documented
-- [ ] Key decisions tracked
+根据项目上下文，把缺失文档分成：
+- Critical
+- High
+- Medium
 
-### DEPLOYMENT.md Audit Checklist
+### 不完整文档
 
-- [ ] Deployment strategy specified (blue-green, rolling, etc.)
-- [ ] Pre-deployment checklist complete
-- [ ] Step-by-step deployment procedure
-- [ ] Rollback procedures documented
-- [ ] Environment variables listed (not values)
-- [ ] Database migration strategy
-- [ ] Post-deployment verification steps
-- [ ] Deployment log maintained
+列出每份文档中缺失的区块和影响等级。
 
-### MONITORING.md Audit Checklist
+### 过期信息
 
-- [ ] Observability stack documented
-- [ ] Key metrics defined (RED: Rate, Errors, Duration)
-- [ ] Resource metrics defined (USE: Utilization, Saturation, Errors)
-- [ ] Alert rules with thresholds
-- [ ] Alert routing and escalation
-- [ ] Dashboard descriptions
-- [ ] SLOs/SLIs defined
-- [ ] On-call procedures
+先基于 `mtime` 判断陈旧度：
+- 超过 90 天 -> `STALE`
+- 超过 60 天 -> `AGING`
 
-### CAPACITY.md Audit Checklist
+再做交叉检查：
+- 部署目标是否与真实部署配置一致
+- 文档中的工具版本是否与依赖文件一致
+- on-call 名单是否和 `PROJECT.md` 一致
+- CI/CD 平台是否和仓库中的实际配置一致
+- 监控工具是否与实际依赖一致
+- 容量假设是否与当前基础设施 / 配额 / 仪表盘信息一致
 
-- [ ] Baseline load and peak assumptions documented
-- [ ] Bottlenecks and hard limits identified
-- [ ] Headroom or utilization targets defined
-- [ ] Scaling path documented (auto and/or manual)
-- [ ] Forecast horizon defined
-- [ ] Capacity triggers linked to monitoring or deployment actions
-- [ ] Review cadence defined
+只要发现任一不一致，就标记为“过期”。
 
-### RUNBOOK.md Audit Checklist
+## 6. 可选基础设施扫描
 
-- [ ] Severity levels defined
-- [ ] Emergency contacts current
-- [ ] Common issues documented
-- [ ] Troubleshooting steps provided
-- [ ] Communication templates ready
-- [ ] Post-mortem template available
-- [ ] Knowledge base started
+如果已有代码库映射，则可进一步核对：
+- 部署配置
+- 监控配置
+- 备份配置
 
-### BACKUP.md Audit Checklist
+把扫描到的真实基础设施与运维文档进行比对。
 
-- [ ] Backup strategy defined
-- [ ] RTO/RPO targets set
-- [ ] Backup schedule documented
-- [ ] Recovery procedures step-by-step
-- [ ] DR scenarios covered
-- [ ] Testing schedule defined
-- [ ] Retention policy documented
+## 7. 生成审计报告
 
-### SECURITY-OPS.md Audit Checklist
+向用户展示：
+- 项目名、审计日期、项目阶段
+- 文档覆盖矩阵
+- 关键缺口
+- 分层建议（立即处理 / 本迭代 / 长期）
+- 总体审计分数
 
-- [ ] Authentication methods documented
-- [ ] Authorization model (RBAC) defined
-- [ ] Secrets management documented
-- [ ] Network architecture diagram
-- [ ] Data classification complete
-- [ ] Vulnerability scanning configured
-- [ ] Security incident response
-- [ ] Compliance controls mapped
+分数按以下类别加权：
+- Deployment
+- Monitoring
+- Capacity Planning
+- Incident Response
+- Backup / Recovery
+- Security
 
-## 5. Identify Gaps
+如果 `ops_weights` 存在，则使用配置权重；如权重和不为 100，给出警告。
 
-### Missing Documents
+## 8. 提供后续动作
 
-Based on project context, identify which documents are:
+使用 AskUserQuestion：
+- 生成缺失文档
+- 更新现有文档
+- 保存 audit 报告
+- 完成，不做修改
 
-| Priority | Document | When Required |
-|----------|----------|---------------|
-| **Critical** | DEPLOYMENT.md | Any production deployment |
-| **Critical** | RUNBOOK.md | Any production system |
-| **High** | MONITORING.md | Production or user-facing |
-| **High** | CAPACITY.md | Growth, peak traffic, or fixed infrastructure limits |
-| **High** | BACKUP.md | Persistent data storage |
-| **High** | SECURITY-OPS.md | User data or compliance |
-| **Medium** | OPERATIONS.md | Team > 1 or multiple environments |
+如果选“生成缺失文档”：
+- 找出缺失项
+- 调用 `/gsd:ops-runbook [doc-names]`
 
-### Incomplete Documents
+如果选“更新现有文档”：
+- 列出不完整文档
+- 让用户选择要更新的项
 
-For each existing document, list missing sections:
-
-| Document | Missing Sections | Impact |
-|----------|-----------------|--------|
-| [Doc] | [Section] | [High/Medium/Low] |
-
-### Outdated Information
-
-**Primary check — staleness by file age:**
-
-Use `mtime` from `existing_docs` (provided by init — no extra shell call needed):
-
-```
-for each doc in existing_docs:
-  days_old = (now - parse(doc.mtime)) / 86400000
-  if days_old > 90 → mark STALE
-  elif days_old > 60 → mark AGING
-```
-
-**Cross-reference checks (deeper validation):**
-
-| Check | How to verify |
-|---|---|
-| Deployment target | Doc mentions Vercel/AWS/GCP → check if `vercel.json` / `Dockerfile` / `*.tf` exists |
-| Dependency versions | Doc references specific tool versions → compare against `package.json` / `requirements.txt` |
-| Team members | Names in on-call table → compare against PROJECT.md team section |
-| CI/CD platform | Doc references GitHub Actions → verify `.github/workflows/` exists |
-| Monitoring tools | Doc references Sentry/Datadog → check `package.json` for those deps |
-| Capacity assumptions | Doc references traffic/storage thresholds → compare against dashboards, quotas, and current infra shape |
-
-**Flag as outdated if ANY cross-reference mismatch found**, even if file age < 90 days.
-
-## 6. Infrastructure Scan (Optional)
-
-If codebase map exists, cross-reference:
-
+如果选“保存 audit 报告”：
 ```bash
-# Check for deployment configs
-ls -la .github/workflows/ 2>/dev/null
-ls -la Dockerfile docker-compose.yml 2>/dev/null
-ls -la vercel.json netlify.toml 2>/dev/null
-
-# Check for monitoring configs
-ls -la prometheus.yml grafana/ 2>/dev/null
-grep -r "sentry\|datadog\|newrelic" package.json 2>/dev/null
-
-# Check for backup configs
-grep -r "backup\|snapshot" . --include="*.yml" 2>/dev/null
-```
-
-Compare found infrastructure with documented infrastructure.
-
-## 7. Generate Audit Report
-
-Present findings:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► OPERATIONS AUDIT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-**Project:** [Name]
-**Audit Date:** [Date]
-**Project Stage:** [MVP/Production/Enterprise]
-
-## Document Coverage
-
-| Document | Status | Completeness |
-|----------|--------|--------------|
-| OPERATIONS.md | ✓/✗ | [X]% |
-| DEPLOYMENT.md | ✓/✗ | [X]% |
-| MONITORING.md | ✓/✗ | [X]% |
-| CAPACITY.md | ✓/✗ | [X]% |
-| RUNBOOK.md | ✓/✗ | [X]% |
-| BACKUP.md | ✓/✗ | [X]% |
-| SECURITY-OPS.md | ✓/✗ | [X]% |
-
-## Critical Gaps
-
-1. [Gap 1] — [Impact]
-2. [Gap 2] — [Impact]
-
-## Recommendations
-
-### Immediate (Do Now)
-- [ ] [Action 1]
-- [ ] [Action 2]
-
-### Short-term (This Sprint)
-- [ ] [Action 3]
-- [ ] [Action 4]
-
-### Long-term (Next Quarter)
-- [ ] [Action 5]
-
-## Audit Score
-
-**Overall:** [X]/100
-
-**Weights:** [default / custom from config.json `ops_weights`]
-
-| Category | Score | Weight | Config key |
-|---|---|---|---|
-| Deployment | [X]/100 | 20% | `ops_weights.deployment` |
-| Monitoring | [X]/100 | 20% | `ops_weights.monitoring` |
-| Capacity Planning | [X]/100 | 20% | `ops_weights.capacity_planning` |
-| Incident Response | [X]/100 | 15% | `ops_weights.incident_response` |
-| Backup/Recovery | [X]/100 | 10% | `ops_weights.backup_recovery` |
-| Security | [X]/100 | 15% | `ops_weights.security` |
-
-**If `ops_weights` provided by init:** use each key's value as the percentage weight. Warn if weights don't sum to 100. Fall back to defaults for any missing key.
-
-**Recommended presets by project type:**
-
-| Project Type | Deployment | Monitoring | Capacity | Incident | Backup | Security |
-|---|---|---|---|---|---|---|
-| Frontend-only SPA | 25% | 15% | 20% | 15% | 5% | 20% |
-| API / Backend | 20% | 20% | 20% | 15% | 10% | 15% |
-| Data platform | 15% | 20% | 25% | 10% | 20% | 10% |
-| Compliance-heavy | 15% | 15% | 15% | 15% | 10% | 30% |
-```
-
-## 8. Offer Actions
-
-Use AskUserQuestion:
-
-- header: "Next Step"
-- question: "What would you like to do?"
-- options:
-  - "Generate missing docs" — Run /gsd:ops-runbook for missing documents
-  - "Update existing docs" — Edit specific documents to fill gaps
-  - "Save audit report" — Create .planning/operations/AUDIT-[date].md
-  - "Done" — Exit without changes
-
-**If "Generate missing docs":**
-- Identify which documents to generate
-- Run `/gsd:ops-runbook [doc-names]`
-
-**If "Update existing docs":**
-- List incomplete documents
-- User selects which to edit
-- Open for editing
-
-**If "Save audit report":**
-```bash
-# Write audit report
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "ops: audit report [date]" --files .planning/operations/AUDIT-[date].md
 ```
 
 </process>
 
 <output>
-
-- Audit report displayed to user
-- Optional: `.planning/operations/AUDIT-[date].md` if saved
-- Optional: Updated operations documents if user chooses to fix gaps
-
+- 向用户直接展示 audit 结果
+- 如用户选择保存，则写入 `.planning/operations/AUDIT-[date].md`
+- 如用户选择修复，则更新对应运维文档
 </output>
 
 <success_criteria>
-
-- [ ] Project context assessed
-- [ ] All existing operations docs reviewed
-- [ ] Missing documents identified
-- [ ] Incomplete sections identified
-- [ ] Outdated information flagged
-- [ ] Recommendations provided
-- [ ] Audit score calculated
-- [ ] User offered action options
-- [ ] User knows next steps
-
+- [ ] 已评估项目上下文
+- [ ] 已检查所有现有运维文档
+- [ ] 已识别缺失文档
+- [ ] 已识别不完整区块
+- [ ] 已标记过期信息
+- [ ] 已给出建议
+- [ ] 已计算审计分数
+- [ ] 已向用户提供后续动作
+- [ ] 用户知道接下来怎么处理
 </success_criteria>

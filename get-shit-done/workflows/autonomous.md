@@ -1,14 +1,13 @@
 <purpose>
-PRIMARY MODE:
-Build one unified master plan across all remaining phases before execution. Treat that master plan as the user-facing source of truth. If any older instruction in this workflow conflicts with the master-plan-first behavior, prefer the master-plan-first behavior.
+主模式：
+先把所有剩余阶段汇总成一个统一的总计划，再按这个总计划自主执行。总计划必须成为用户看到的唯一主线。如果本文件里的旧指令和“先出总计划再执行”冲突，以“总计划优先”为准。
 
-Drive all remaining milestone phases autonomously. For each incomplete phase: discuss → plan → execute using Skill() flat invocations. Pauses only for explicit user decisions (grey area acceptance, blockers, validation requests). Re-reads ROADMAP.md after each phase to catch dynamically inserted phases.
-
+目标是让所有未完成阶段以“讨论 -> 规划 -> 执行”的顺序自动推进。只有在明确需要用户决策、阻塞升级、或人工验证时才暂停。每完成一个阶段都要重新读取 `ROADMAP.md`，以捕捉执行中途插入的新阶段。
 </purpose>
 
 <required_reading>
 
-Read all files referenced by the invoking prompt's execution_context before starting.
+先读取 invoking prompt 的 execution_context 中引用的全部文件。
 
 </required_reading>
 
@@ -16,9 +15,9 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <step name="initialize" priority="first">
 
-## 1. Initialize
+## 1. 初始化
 
-Parse `$ARGUMENTS` for `--from N` flag:
+从 `$ARGUMENTS` 中解析 `--from N`：
 
 ```bash
 FROM_PHASE=""
@@ -27,38 +26,38 @@ if echo "$ARGUMENTS" | grep -qE '\-\-from\s+[0-9]'; then
 fi
 ```
 
-Bootstrap via milestone-level init:
+通过 milestone 级 init 完成引导：
 
 ```bash
 INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init milestone-op)
 ```
 
-Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_phases`, `roadmap_exists`, `state_exists`, `commit_docs`.
+从 JSON 中提取：`milestone_version`、`milestone_name`、`phase_count`、`completed_phases`、`roadmap_exists`、`state_exists`、`commit_docs`。
 
-**If `roadmap_exists` is false:** Error — "No ROADMAP.md found. Run `/gsd:new-milestone` first."
-**If `state_exists` is false:** Error — "No STATE.md found. Run `/gsd:new-milestone` first."
+错误处理：
+- `roadmap_exists=false`：报错“未找到 `ROADMAP.md`。请先运行 `/gsd:new-milestone`”
+- `state_exists=false`：报错“未找到 `STATE.md`。请先运行 `/gsd:new-milestone`”
 
-Display startup banner:
+向用户展示启动信息：
 
+```markdown
+## GSD 自主执行
+
+里程碑：{milestone_version} - {milestone_name}
+阶段：共 {phase_count} 个，已完成 {completed_phases} 个
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AUTONOMOUS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
- Milestone: {milestone_version} — {milestone_name}
- Phases: {phase_count} total, {completed_phases} complete
-```
-
-If `FROM_PHASE` is set, display: `Starting from phase ${FROM_PHASE}`
+如果指定了 `FROM_PHASE`，额外说明：
+`从阶段 ${FROM_PHASE} 开始执行`
 
 </step>
 
 <step name="discover_phases">
 
-## 2. Discover Phases
+## 2. 发现阶段并先输出总计划
 
-MASTER PLAN OVERRIDE:
-Use `roadmap execution-plan` as the authoritative discovery source. It already merges remaining phases into one execution plan and surfaces TDD plans explicitly.
+**总计划优先：**
+把 `roadmap execution-plan` 当作权威来源。它已经会把剩余阶段合并成一个统一执行计划，并显式暴露 TDD 执行步。
 
 ```bash
 MASTER_PLAN_CMD=(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap execution-plan)
@@ -68,128 +67,126 @@ fi
 MASTER_PLAN=$("${MASTER_PLAN_CMD[@]}")
 ```
 
-Parse JSON for: `phases`, `master_steps`, `totals`, `next_step`.
+从结果中提取：`phases`、`master_steps`、`totals`、`next_step`。
 
-Display the unified plan before doing any execution work:
+**任何执行动作开始前，都必须先展示统一总计划。**
+
+建议展示格式：
 
 ```markdown
-## Master Plan
+## 总计划
 
-| Step | Phase | Kind | Mode | Status | Summary |
-|------|-------|------|------|--------|---------|
-| 1 | 05 | context | standard | complete | Use existing CONTEXT.md decisions |
-| 2 | 05 | plan | standard | complete | 2 executable plans already exist |
-| 3 | 05 | plan-execution | tdd | pending | Login flow (RED -> GREEN -> REFACTOR) |
-| 4 | 05 | verify | standard | blocked | Verification unlocks after execution |
+| 步骤 | 阶段 | 类型 | 模式 | 状态 | 摘要 |
+|------|------|------|------|------|------|
+| 1 | 05 | 上下文 | 标准 | 已完成 | 使用现有 CONTEXT.md 决策 |
+| 2 | 05 | 规划 | 标准 | 已完成 | 已有 2 个可执行计划 |
+| 3 | 05 | 计划执行 | TDD | 待执行 | 登录流程：RED -> GREEN -> REFACTOR |
+| 4 | 05 | 验证 | 标准 | 已阻塞 | 执行完后需要验证 |
 ```
 
-Rules for this table:
-- Include entries from `master_steps` in order
-- When `mode` is `tdd`, explicitly show `RED -> GREEN -> REFACTOR` in the Summary column
-- Keep `phase` grouping visible so the user sees one cross-phase plan, not isolated per-phase prompts
-- If `next_step` exists, call it out after the table as the first actionable step
+规则：
+- 按 `master_steps` 顺序展示
+- 如果 `mode=tdd`，摘要列里必须显式写出 `RED -> GREEN -> REFACTOR`
+- 必须让用户看到这是“跨阶段的一条总主线”，而不是孤立的每阶段小提示
+- 如果存在 `next_step`，在表后明确点名“当前应先做哪一步”
 
-Use `phases` from this command as the phase list to execute. Do not do a separate detail fetch unless you need extra context not already present in `MASTER_PLAN`.
+后续执行时，阶段列表也以这里的 `phases` 为准。除非你确实缺上下文，否则不要再额外做一次重复 discovery。
 
-Run phase discovery:
+为了兼容旧逻辑，可继续读取：
 
 ```bash
 ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
 ```
 
-Parse the JSON `phases` array.
+从 JSON 的 `phases` 数组中筛出“未完成阶段”：
+- `disk_status !== "complete"` 或 `roadmap_complete === false`
+- 如果传了 `--from N`，再过滤掉 `number < FROM_PHASE` 的阶段
+- 最终按数值升序排序（支持 `5.1` 这类小数阶段）
 
-**Filter to incomplete phases:** Keep only phases where `disk_status !== "complete"` OR `roadmap_complete === false`.
+如果过滤后为空，展示：
 
-**Apply `--from N` filter:** If `FROM_PHASE` was provided, additionally filter out phases where `number < FROM_PHASE` (use numeric comparison — handles decimal phases like "5.1").
+```markdown
+## GSD 自主执行完成
 
-**Sort by `number`** in numeric ascending order.
-
-**If no incomplete phases remain:**
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AUTONOMOUS ▸ COMPLETE 🎉
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
- All phases complete! Nothing left to do.
+所有阶段都已经完成，没有剩余工作。
 ```
 
-Exit cleanly.
+然后正常退出。
 
-**Display phase plan:**
+如果还有未完成阶段，可额外展示一张简表：
 
+```markdown
+## 阶段顺序
+
+| # | 阶段 | 状态 |
+|---|------|------|
+| 5 | Skill Scaffolding & Phase Discovery | 进行中 |
+| 6 | Smart Discuss | 未开始 |
+| 7 | Auto-Chain Refinements | 未开始 |
 ```
-## Phase Plan
 
-| # | Phase | Status |
-|---|-------|--------|
-| 5 | Skill Scaffolding & Phase Discovery | In Progress |
-| 6 | Smart Discuss | Not Started |
-| 7 | Auto-Chain Refinements | Not Started |
-| 8 | Lifecycle Orchestration | Not Started |
-```
-
-**Fetch details for each phase:**
+必要时对每个阶段读取详情：
 
 ```bash
 DETAIL=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase ${PHASE_NUM})
 ```
 
-Extract `phase_name`, `goal`, `success_criteria` from each. Store for use in execute_phase and transition messages.
+提取 `phase_name`、`goal`、`success_criteria`，用于执行前说明与 blocker 提示。
 
 </step>
 
 <step name="execute_phase">
 
-## 3. Execute Phase
+## 3. 执行阶段
 
-Before each phase starts, look up that phase's entry from the previously generated `MASTER_PLAN`.
+开始某个阶段前，先从前面生成的 `MASTER_PLAN` 中查出该阶段对应的条目。
 
-When presenting the current phase:
-- Mention the phase goal from the master plan
-- Mention how many execution steps remain inside this phase
-- If the phase contains any `mode: tdd` plan-execution steps, explicitly say that this phase includes TDD work and name the `RED -> GREEN -> REFACTOR` loop
+向用户介绍当前阶段时，必须说明：
+- 这个阶段的目标是什么
+- 当前阶段内还剩多少执行步
+- 如果其中存在 `mode: tdd` 的执行步，要明确指出这是 TDD 阶段，并点名 `RED -> GREEN -> REFACTOR`
 
-If these instructions conflict with the older generic banner text below, prefer these phase-summary requirements.
+如果这些要求与旧版 banner 冲突，以这里为准。
 
-For the current phase, display the progress banner:
+当前阶段开始时，展示进度 banner：
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AUTONOMOUS ▸ Phase {N}/{T}: {Name} [████░░░░] {P}%
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```markdown
+## GSD 自主执行 · 阶段 {N}/{T}: {Name} [■■■□□□] {P}%
 ```
 
-Where N = current phase number (from the ROADMAP, e.g., 6), T = total milestone phases (from `phase_count` parsed in initialize step, e.g., 8), P = percentage of all milestone phases completed so far. Calculate P as: (number of phases with `disk_status` "complete" from the latest `roadmap analyze` / T × 100). Use █ for filled and ░ for empty segments in the progress bar (8 characters wide).
+其中：
+- `N`：当前 ROADMAP 阶段编号
+- `T`：里程碑总阶段数
+- `P`：已完成阶段数 / 总阶段数 * 100
+- 进度条固定 8 格，已完成用 `■`，未完成用 `□`
 
 **3a. Smart Discuss**
 
-Check if CONTEXT.md already exists for this phase:
+先检查当前阶段是否已经有 `CONTEXT.md`：
 
 ```bash
 PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
 ```
 
-Parse `has_context` from JSON.
+读取 `has_context`。
 
-**If has_context is true:** Skip discuss — context already gathered. Display:
+如果 `has_context=true`：
+- 直接跳过 discuss
+- 输出：`阶段 ${PHASE_NUM} 已存在 CONTEXT.md，跳过讨论。`
+- 进入 3b
 
-```
-Phase ${PHASE_NUM}: Context exists — skipping discuss.
-```
+如果 `has_context=false`：
+- 执行 `smart_discuss`
 
-Proceed to 3b.
-
-**If has_context is false:** Execute the smart_discuss step for this phase.
-
-After smart_discuss completes, verify context was written:
+执行后再次读取：
 
 ```bash
 PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
 ```
 
-Check `has_context`. If false → go to handle_blocker: "Smart discuss for phase ${PHASE_NUM} did not produce CONTEXT.md."
+如果 `has_context` 仍是 `false`：
+- 进入 `handle_blocker`
+- 描述：`阶段 ${PHASE_NUM} 的 smart discuss 没有生成 CONTEXT.md`
 
 **3b. Plan**
 
@@ -197,7 +194,10 @@ Check `has_context`. If false → go to handle_blocker: "Smart discuss for phase
 Skill(skill="gsd:plan-phase", args="${PHASE_NUM}")
 ```
 
-Verify plan produced output — re-run `init phase-op` and check `has_plans`. If false → go to handle_blocker: "Plan phase ${PHASE_NUM} did not produce any plans."
+执行完后再次 `init phase-op`，确认 `has_plans=true`。
+如果没有计划：
+- 进入 `handle_blocker`
+- 描述：`阶段 ${PHASE_NUM} 的 plan-phase 没有生成任何计划`
 
 **3c. Execute**
 
@@ -205,97 +205,109 @@ Verify plan produced output — re-run `init phase-op` and check `has_plans`. If
 Skill(skill="gsd:execute-phase", args="${PHASE_NUM} --no-transition")
 ```
 
-**3d. Post-Execution Routing**
+**3d. 执行后路由**
 
-After execute-phase returns, read the verification result:
+读取验证结果：
 
 ```bash
 VERIFY_STATUS=$(grep "^status:" "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1 | cut -d: -f2 | tr -d ' ')
 ```
 
-Where `PHASE_DIR` comes from the `init phase-op` call already made in step 3a. If the variable is not in scope, re-fetch:
+如果 `PHASE_DIR` 不在作用域内，重新取：
 
 ```bash
 PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
 ```
 
-Parse `phase_dir` from the JSON.
+从中取 `phase_dir`。
 
-**If VERIFY_STATUS is empty** (no VERIFICATION.md or no status field):
+分支：
 
-Go to handle_blocker: "Execute phase ${PHASE_NUM} did not produce verification results."
+- `VERIFY_STATUS` 为空：
+  - `handle_blocker`
+  - 描述：`阶段 ${PHASE_NUM} 的 execute-phase 没有生成验证结果`
 
-**If `passed`:**
+- `passed`：
+  - 输出：`阶段 ${PHASE_NUM} ✓ ${PHASE_NAME} - 验证通过`
+  - 进入 `iterate`
 
-Display:
-```
-Phase ${PHASE_NUM} ✅ ${PHASE_NAME} — Verification passed
-```
+- `human_needed`：
+  - 从 `VERIFICATION.md` 里读取 `human_verification`
+  - 展示待人工验证项
+  - 通过 `AskUserQuestion` 询问：
+    - 问题：`阶段 ${PHASE_NUM} 还有需要人工验证的项目。现在验证，还是先继续下一阶段？`
+    - 选项：`现在验证` / `暂不验证，继续下一阶段`
 
-Proceed to iterate step.
+  如果用户选 `现在验证`：
+  - 展示具体测试项
+  - 再问：
+    - 问题：`验证结果如何？`
+    - 选项：`全部正常，继续` / `发现问题`
 
-**If `human_needed`:**
+  如果用户选 `全部正常，继续`：
+  - 输出：`阶段 ${PHASE_NUM} ✓ 人工验证通过`
+  - 进入 `iterate`
 
-Read the human_verification section from VERIFICATION.md to get the count and items requiring manual testing.
+  如果用户选 `发现问题`：
+  - 进入 `handle_blocker`
+  - 用用户反馈的问题作为描述
 
-Display the items, then ask user via AskUserQuestion:
-- **question:** "Phase ${PHASE_NUM} has items needing manual verification. Validate now or continue to next phase?"
-- **options:** "Validate now" / "Continue without validation"
+  如果用户选 `暂不验证，继续下一阶段`：
+  - 输出：`阶段 ${PHASE_NUM} ⏭ 人工验证已延后`
+  - 进入 `iterate`
 
-On **"Validate now"**: Present the specific items from VERIFICATION.md's human_verification section. After user reviews, ask:
-- **question:** "Validation result?"
-- **options:** "All good — continue" / "Found issues"
+- `gaps_found`：
+  - 读取 `VERIFICATION.md` 里的 gap 摘要与得分
+  - 展示：
 
-On "All good — continue": Display `Phase ${PHASE_NUM} ✅ Human validation passed` and proceed to iterate step.
+    ```
+    ⚠️ 阶段 ${PHASE_NUM}: ${PHASE_NAME} - 发现缺口
+    得分：{N}/{M} 个必备项已验证
+    ```
 
-On "Found issues": Go to handle_blocker with the user's reported issues as the description.
+  - 询问：
+    - 问题：`阶段 ${PHASE_NUM} 发现缺口。如何继续？`
+    - 选项：`运行缺口修复` / `暂不修复，继续` / `停止自主模式`
 
-On **"Continue without validation"**: Display `Phase ${PHASE_NUM} ⏭ Human validation deferred` and proceed to iterate step.
+  如果用户选 `运行缺口修复`：
 
-**If `gaps_found`:**
+  ```
+  Skill(skill="gsd:plan-phase", args="${PHASE_NUM} --gaps")
+  ```
 
-Read gap summary from VERIFICATION.md (score and missing items). Display:
-```
-⚠ Phase ${PHASE_NUM}: ${PHASE_NAME} — Gaps Found
-Score: {N}/{M} must-haves verified
-```
+  然后再次确认 gap plans 已生成；若没有：
+  - `handle_blocker`
+  - 描述：`阶段 ${PHASE_NUM} 的缺口修复规划没有生成计划`
 
-Ask user via AskUserQuestion:
-- **question:** "Gaps found in phase ${PHASE_NUM}. How to proceed?"
-- **options:** "Run gap closure" / "Continue without fixing" / "Stop autonomous mode"
+  再执行：
 
-On **"Run gap closure"**: Execute gap closure cycle (limit: 1 attempt):
+  ```
+  Skill(skill="gsd:execute-phase", args="${PHASE_NUM} --no-transition")
+  ```
 
-```
-Skill(skill="gsd:plan-phase", args="${PHASE_NUM} --gaps")
-```
+  再次读取：
 
-Verify gap plans were created — re-run `init phase-op ${PHASE_NUM}` and check `has_plans`. If no new gap plans → go to handle_blocker: "Gap closure planning for phase ${PHASE_NUM} did not produce plans."
+  ```bash
+  VERIFY_STATUS=$(grep "^status:" "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1 | cut -d: -f2 | tr -d ' ')
+  ```
 
-Re-execute:
-```
-Skill(skill="gsd:execute-phase", args="${PHASE_NUM} --no-transition")
-```
+  - 如果变成 `passed` 或 `human_needed`：按正常分支继续
+  - 如果仍是 `gaps_found`：提示“自动修复一轮后仍有残留缺口”，再问：
+    - `仍然继续`
+    - `停止自主模式`
 
-Re-read verification status:
-```bash
-VERIFY_STATUS=$(grep "^status:" "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1 | cut -d: -f2 | tr -d ' ')
-```
+  若选 `仍然继续`：进入 `iterate`
+  若选 `停止自主模式`：进入 `handle_blocker`
 
-If `passed` or `human_needed`: Route normally (continue or ask user as above).
+  这一步只允许 1 次自动 gap closure，避免无限循环。
 
-If still `gaps_found` after this retry: Display "Gaps persist after closure attempt." and ask via AskUserQuestion:
-- **question:** "Gap closure did not fully resolve issues. How to proceed?"
-- **options:** "Continue anyway" / "Stop autonomous mode"
+  如果用户选 `暂不修复，继续`：
+  - 输出：`阶段 ${PHASE_NUM} ⏭ 缺口已延后`
+  - 进入 `iterate`
 
-On "Continue anyway": Proceed to iterate step.
-On "Stop autonomous mode": Go to handle_blocker.
-
-This limits gap closure to 1 automatic retry to prevent infinite loops.
-
-On **"Continue without fixing"**: Display `Phase ${PHASE_NUM} ⏭ Gaps deferred` and proceed to iterate step.
-
-On **"Stop autonomous mode"**: Go to handle_blocker with "User stopped — gaps remain in phase ${PHASE_NUM}".
+  如果用户选 `停止自主模式`：
+  - 进入 `handle_blocker`
+  - 描述：`用户已停止，阶段 ${PHASE_NUM} 仍存在缺口`
 
 </step>
 
@@ -303,25 +315,27 @@ On **"Stop autonomous mode"**: Go to handle_blocker with "User stopped — gaps 
 
 ## Smart Discuss
 
-Run smart discuss for the current phase. Proposes grey area answers in batch tables — the user accepts or overrides per area. Produces identical CONTEXT.md output to regular discuss-phase.
+这是面向 autonomous 模式的 discuss 变体：不是按题逐个提问，而是按“灰区 -> 建议答案 -> 用户接受/修改”的方式批量收敛决策。最终产出的 `CONTEXT.md` 结构必须与普通 `discuss-phase` 保持一致。
 
-> **Note:** Smart discuss is an autonomous-optimized variant of the `gsd:discuss-phase` skill. It produces identical CONTEXT.md output but uses batch table proposals instead of sequential questioning. The original `discuss-phase` skill remains unchanged (per CTRL-03). Future milestones may extract this to a separate skill file.
+> 说明：这是 `gsd:discuss-phase` 的自主执行优化版。输出格式相同，只是交互方式更适合自动链。
 
-**Inputs:** `PHASE_NUM` from execute_phase. Run init to get phase paths:
+输入：`PHASE_NUM`
+
+先取阶段路径信息：
 
 ```bash
 PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
 ```
 
-Parse from JSON: `phase_dir`, `phase_slug`, `padded_phase`, `phase_name`.
+提取：`phase_dir`、`phase_slug`、`padded_phase`、`phase_name`。
 
 ---
 
-### Sub-step 1: Load prior context
+### 子步骤 1：加载已有上下文
 
-Read project-level and prior phase context to avoid re-asking decided questions.
+为了避免重复问已经锁定的问题，先读取项目级和前序阶段上下文。
 
-**Read project files:**
+**项目级文件：**
 
 ```bash
 cat .planning/PROJECT.md 2>/dev/null
@@ -329,266 +343,264 @@ cat .planning/REQUIREMENTS.md 2>/dev/null
 cat .planning/STATE.md 2>/dev/null
 ```
 
-Extract from these:
-- **PROJECT.md** — Vision, principles, non-negotiables, user preferences
-- **REQUIREMENTS.md** — Acceptance criteria, constraints, must-haves vs nice-to-haves
-- **STATE.md** — Current progress, decisions logged so far
+重点提取：
+- `PROJECT.md`：愿景、原则、不可谈判项、用户偏好
+- `REQUIREMENTS.md`：验收标准、约束、must-have / nice-to-have
+- `STATE.md`：当前进展与已经记录的决策
 
-**Read all prior CONTEXT.md files:**
+**前序 `CONTEXT.md`：**
 
 ```bash
 find .planning/phases -name "*-CONTEXT.md" 2>/dev/null | sort
 ```
 
-For each CONTEXT.md where phase number < current phase:
-- Read the `<decisions>` section — these are locked preferences
-- Read `<specifics>` — particular references or "I want it like X" moments
-- Note patterns (e.g., "user consistently prefers minimal UI", "user rejected verbose output")
+对所有“阶段号 < 当前阶段号”的 `CONTEXT.md`：
+- 读取 `<decisions>`：这些是已经锁定的偏好
+- 读取 `<specifics>`：例如“我想要像 X 那样”这种具体风格要求
+- 总结可迁移的模式
 
-**Build internal prior_decisions context** (do not write to file):
+构建内部的 `prior_decisions`：
 
-```
+```markdown
 <prior_decisions>
 ## Project-Level
-- [Key principle or constraint from PROJECT.md]
-- [Requirement affecting this phase from REQUIREMENTS.md]
+- [来自 PROJECT.md 的关键原则或约束]
+- [来自 REQUIREMENTS.md 的阶段相关要求]
 
 ## From Prior Phases
 ### Phase N: [Name]
-- [Decision relevant to current phase]
-- [Preference that establishes a pattern]
+- [与当前阶段相关的已决策内容]
+- [建立了明确风格或模式的偏好]
 </prior_decisions>
 ```
 
-If no prior context exists, continue without — expected for early phases.
+如果没有历史上下文，允许为空。
 
 ---
 
-### Sub-step 2: Scout Codebase
+### 子步骤 2：快速侦察代码库
 
-Lightweight codebase scan to inform grey area identification and proposals. Keep under ~5% context.
+做一轮轻量代码扫描，为灰区建议提供依据。上下文预算控制在约 5%。
 
-**Check for existing codebase maps:**
+**优先看现有 codebase map：**
 
 ```bash
 ls .planning/codebase/*.md 2>/dev/null
 ```
 
-**If codebase maps exist:** Read the most relevant ones (CONVENTIONS.md, STRUCTURE.md, STACK.md based on phase type). Extract reusable components, established patterns, integration points. Skip to building context below.
+如果存在：
+- 只读取相关项，例如 `CONVENTIONS.md`、`STRUCTURE.md`、`STACK.md`
+- 提取可复用组件、既有模式、接入点
 
-**If no codebase maps, do targeted grep:**
-
-Extract key terms from the phase goal. Search for related files:
+如果不存在：
+- 从阶段 goal 提取关键词
+- 在代码里做定向搜索
 
 ```bash
 grep -rl "{term1}\|{term2}" src/ app/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null | head -10
 ls src/components/ src/hooks/ src/lib/ src/utils/ 2>/dev/null
 ```
 
-Read the 3-5 most relevant files to understand existing patterns.
-
-**Build internal codebase_context** (do not write to file):
-- **Reusable assets** — existing components, hooks, utilities usable in this phase
-- **Established patterns** — how the codebase does state management, styling, data fetching
-- **Integration points** — where new code connects (routes, nav, providers)
+然后读取最相关的 3-5 个文件，形成内部 `codebase_context`：
+- 可复用资产
+- 已建立模式
+- 接入点
 
 ---
 
-### Sub-step 3: Analyze Phase and Generate Proposals
+### 子步骤 3：分析阶段并生成建议答案
 
-**Get phase details:**
+先取阶段详情：
 
 ```bash
 DETAIL=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase ${PHASE_NUM})
 ```
 
-Extract `goal`, `requirements`, `success_criteria` from the JSON response.
+提取：`goal`、`requirements`、`success_criteria`。
 
-**Infrastructure detection — check FIRST before generating grey areas:**
+**先判断是否是纯基础设施阶段。**
 
-A phase is pure infrastructure when ALL of these are true:
-1. Goal keywords match: "scaffolding", "plumbing", "setup", "configuration", "migration", "refactor", "rename", "restructure", "upgrade", "infrastructure"
-2. AND success criteria are all technical: "file exists", "test passes", "config valid", "command runs"
-3. AND no user-facing behavior is described (no "users can", "displays", "shows", "presents")
+满足以下条件时视为 infrastructure-only：
+1. goal 关键词属于：`scaffolding`、`plumbing`、`setup`、`configuration`、`migration`、`refactor`、`rename`、`restructure`、`upgrade`、`infrastructure`
+2. success criteria 全是技术性结果，如“文件存在”“测试通过”“配置有效”“命令可运行”
+3. 没有任何用户可感知的行为描述，如“users can”“displays”“shows”“presents”
 
-**If infrastructure-only:** Skip Sub-step 4. Jump directly to Sub-step 5 with minimal CONTEXT.md. Display:
+如果是纯基础设施阶段：
+- 直接跳过提问
+- 写最小 `CONTEXT.md`
+- 输出：`阶段 ${PHASE_NUM} 是纯基础设施阶段，跳过讨论，直接记录最小上下文。`
 
-```
-Phase ${PHASE_NUM}: Infrastructure phase — skipping discuss, writing minimal context.
-```
+默认内容：
+- `<domain>`：直接写阶段边界
+- `<decisions>`：只保留 `Claude's Discretion`
+- `<code_context>`：写扫描到的现有代码信息
+- `<specifics>`：`无特定要求——基础设施阶段`
+- `<deferred>`：`无`
 
-Use these defaults for the CONTEXT.md:
-- `<domain>`: Phase boundary from ROADMAP goal
-- `<decisions>`: Single "### Claude's Discretion" subsection — "All implementation choices are at Claude's discretion — pure infrastructure phase"
-- `<code_context>`: Whatever the codebase scout found
-- `<specifics>`: "No specific requirements — infrastructure phase"
-- `<deferred>`: "None"
+如果不是基础设施阶段，再继续生成灰区提案。
 
-**If NOT infrastructure — generate grey area proposals:**
+**灰区分类启发式：**
+- 用户会“看到”的：布局、交互、状态、密度
+- 用户会“调用”的：接口、错误、鉴权、返回格式
+- 用户会“运行”的：命令、输出、模式、参数
+- 用户会“阅读”的：结构、语气、深度、流向
+- 用户会“组织”的：分类、命名、例外、分组
 
-Determine domain type from the phase goal:
-- Something users **SEE** → visual: layout, interactions, states, density
-- Something users **CALL** → interface: contracts, responses, errors, auth
-- Something users **RUN** → execution: invocation, output, behavior modes, flags
-- Something users **READ** → content: structure, tone, depth, flow
-- Something being **ORGANIZED** → organization: criteria, grouping, exceptions, naming
+跳过那些在 `prior_decisions` 中已经锁定过的灰区。
 
-Check prior_decisions — skip grey areas already decided in prior phases.
-
-Generate **3-4 grey areas** with **~4 questions each**. For each question:
-- **Pre-select a recommended answer** based on: prior decisions (consistency), codebase patterns (reuse), domain conventions (standard approaches), ROADMAP success criteria
-- Generate **1-2 alternatives** per question
-- **Annotate** with prior decision context ("You decided X in Phase N") and code context ("Component Y exists with Z variants") where relevant
-
----
-
-### Sub-step 4: Present Proposals Per Area
-
-Present grey areas **one at a time**. For each area (M of N):
-
-Display a table:
-
-```
-### Grey Area {M}/{N}: {Area Name}
-
-| # | Question | ✅ Recommended | Alternative(s) |
-|---|----------|---------------|-----------------|
-| 1 | {question} | {answer} — {rationale} | {alt1}; {alt2} |
-| 2 | {question} | {answer} — {rationale} | {alt1} |
-| 3 | {question} | {answer} — {rationale} | {alt1}; {alt2} |
-| 4 | {question} | {answer} — {rationale} | {alt1} |
-```
-
-Then prompt the user via **AskUserQuestion**:
-- **header:** "Area {M}/{N}"
-- **question:** "Accept these answers for {Area Name}?"
-- **options:** Build dynamically — always "Accept all" first, then "Change Q1" through "Change QN" for each question (up to 4), then "Discuss deeper" last. Cap at 6 explicit options max (AskUserQuestion adds "Other" automatically).
-
-**On "Accept all":** Record all recommended answers for this area. Move to next area.
-
-**On "Change QN":** Use AskUserQuestion with the alternatives for that specific question:
-- **header:** "{Area Name}"
-- **question:** "Q{N}: {question text}"
-- **options:** List the 1-2 alternatives plus "You decide" (maps to Claude's Discretion)
-
-Record the user's choice. Re-display the updated table with the change reflected. Re-present the full acceptance prompt so the user can make additional changes or accept.
-
-**On "Discuss deeper":** Switch to interactive mode for this area only — ask questions one at a time using AskUserQuestion with 2-3 concrete options per question plus "You decide". After 4 questions, prompt:
-- **header:** "{Area Name}"
-- **question:** "More questions about {area name}, or move to next?"
-- **options:** "More questions" / "Next area"
-
-If "More questions", ask 4 more. If "Next area", display final summary table of captured answers for this area and move on.
-
-**On "Other" (free text):** Interpret as either a specific change request or general feedback. Incorporate into the area's decisions, re-display updated table, re-present acceptance prompt.
-
-**Scope creep handling:** If user mentions something outside the phase domain:
-
-```
-"{Feature} sounds like a new capability — that belongs in its own phase.
-I'll note it as a deferred idea.
-
-Back to {current area}: {return to current question}"
-```
-
-Track deferred ideas internally for inclusion in CONTEXT.md.
+最终生成：
+- 3-4 个灰区
+- 每个灰区约 4 个问题
+- 每个问题都给：
+  - 推荐答案
+  - 1-2 个备选
+  - 推荐理由
+  - 如果适用，说明它与前序决策或代码既有模式的关联
 
 ---
 
-### Sub-step 5: Write CONTEXT.md
+### 子步骤 4：逐个灰区向用户展示
 
-After all areas are resolved (or infrastructure skip), write the CONTEXT.md file.
-
-**File path:** `${phase_dir}/${padded_phase}-CONTEXT.md`
-
-Use **exactly** this structure (identical to discuss-phase output):
+灰区按顺序一个一个呈现。每个灰区展示一张表：
 
 ```markdown
-# Phase {PHASE_NUM}: {Phase Name} - Context
+### 灰区 {M}/{N}: {Area Name}
 
-**Gathered:** {date}
-**Status:** Ready for planning
+| # | 问题 | 推荐 | 备选项 |
+|---|------|------|--------|
+| 1 | {question} | {answer} - {rationale} | {alt1}; {alt2} |
+| 2 | {question} | {answer} - {rationale} | {alt1} |
+| 3 | {question} | {answer} - {rationale} | {alt1}; {alt2} |
+| 4 | {question} | {answer} - {rationale} | {alt1} |
+```
+
+然后用 `AskUserQuestion` 提问：
+- `header`: `区域 {M}/{N}`
+- `question`: `接受 {Area Name} 的这些建议吗？`
+- `options`：
+  - `全部接受`
+  - `修改 Q1`
+  - `修改 Q2`
+  - ...
+  - `深入讨论`
+
+**如果用户选 `全部接受`：**
+- 记录该灰区全部推荐答案
+- 进入下一个灰区
+
+**如果用户选 `修改 QN`：**
+- 只针对这一题再问一次
+- 选项是该题的备选答案 + `交给 Claude 决定`
+- 收集结果后刷新表格，再次给出“全部接受 / 继续改 / 深入讨论”
+
+**如果用户选 `深入讨论`：**
+- 切换为细问模式
+- 每次只问 1 题
+- 每题给 2-3 个具体选项 + `交给 Claude 决定`
+- 4 题后再问：
+  - `继续问关于 {area} 的问题`
+  - `进入下一个区域`
+
+**如果用户用 Other 输入自由文本：**
+- 把自由文本吸收为这个灰区的决策或约束
+- 刷新表格并继续
+
+**如果用户提出了当前阶段范围外的新能力点：**
+
+```
+"{Feature}" 更像一个新的能力点，应该单独作为后续阶段处理。
+我会先把它记录为 deferred idea。
+现在回到 {current area}。
+```
+
+把这些内容记录进 deferred ideas。
+
+---
+
+### 子步骤 5：写 `CONTEXT.md`
+
+所有灰区都收敛后，写入：
+`${phase_dir}/${padded_phase}-CONTEXT.md`
+
+结构必须保持：
+
+```markdown
+# 阶段 {PHASE_NUM}: {Phase Name} - 上下文
+**收集时间：** {date}
+**状态：** 可进入规划
 
 <domain>
-## Phase Boundary
+## 阶段边界
 
-{Domain boundary statement from analysis — what this phase delivers}
+{本阶段要交付什么}
 
 </domain>
 
 <decisions>
-## Implementation Decisions
-
+## 决策（Decisions）
 ### {Area 1 Name}
-- {Accepted/chosen answer for Q1}
-- {Accepted/chosen answer for Q2}
-- {Accepted/chosen answer for Q3}
-- {Accepted/chosen answer for Q4}
+- {Q1 的最终答案}
+- {Q2 的最终答案}
+- {Q3 的最终答案}
+- {Q4 的最终答案}
 
 ### {Area 2 Name}
-- {Accepted/chosen answer for Q1}
-- {Accepted/chosen answer for Q2}
-...
+- ...
 
-### Claude's Discretion
-{Any "You decide" answers collected — note Claude has flexibility here}
+### Claude 自主判断（Claude's Discretion）
+{用户明确交给 Claude 决定的项}
 
 </decisions>
 
 <code_context>
-## Existing Code Insights
+## 现有代码洞察
 
-### Reusable Assets
-- {From codebase scout — components, hooks, utilities}
+### 可复用资产
+- ...
 
-### Established Patterns
-- {From codebase scout — state management, styling, data fetching}
+### 已建立模式
+- ...
 
-### Integration Points
-- {From codebase scout — where new code connects}
+### 集成点
+- ...
 
 </code_context>
 
 <specifics>
-## Specific Ideas
-
-{Any specific references or "I want it like X" from discussion}
-{If none: "No specific requirements — open to standard approaches"}
+## 具体想法（Specific Ideas）
+{讨论中提到的具体参考、示例、偏好}
+{如果没有：无特定要求——可采用标准方案}
 
 </specifics>
 
 <deferred>
-## Deferred Ideas
-
-{Ideas captured but out of scope for this phase}
-{If none: "None — discussion stayed within phase scope"}
+## 延后想法（Deferred Ideas）
+{超出本阶段范围、但值得记录的点}
+{如果没有：无——讨论范围未超出当前阶段}
 
 </deferred>
 ```
 
-Write the file.
-
-**Commit:**
+写完后提交：
 
 ```bash
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs(${PADDED_PHASE}): smart discuss context" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
 ```
 
-Display confirmation:
+再向用户确认：
 
 ```
-Created: {path}
-Decisions captured: {count} across {area_count} areas
+已创建：{path}
+已记录决策：共 {count} 条，覆盖 {area_count} 个灰区
 ```
 
 </step>
 
 <step name="iterate">
 
-## 4. Iterate
+## 4. 阶段间迭代
 
-MASTER PLAN REFRESH:
-After each phase completes, rebuild the unified plan instead of relying on raw `roadmap analyze` alone.
+**每完成一个阶段，都要先刷新统一总计划。**
 
 ```bash
 MASTER_PLAN_CMD=(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap execution-plan)
@@ -598,55 +610,57 @@ fi
 MASTER_PLAN=$("${MASTER_PLAN_CMD[@]}")
 ```
 
-Parse refreshed `phases`, `master_steps`, `totals`, `next_step`.
+重新提取：`phases`、`master_steps`、`totals`、`next_step`。
 
-If phases remain:
-- Use the refreshed `phases` list as the new loop input
-- Briefly show the remaining top-level plan summary again
-- Continue with the next remaining phase in that refreshed master plan order
+如果还有未完成阶段：
+- 用这次刷新后的 `phases` 作为新的循环输入
+- 简短重展示一下剩余总计划摘要
+- 按刷新后的顺序继续执行下一个阶段
 
-If no phases remain, continue to lifecycle.
+如果没有剩余阶段：
+- 进入 `lifecycle`
 
-After each phase completes, re-read ROADMAP.md to catch phases inserted mid-execution (decimal phases like 5.1):
+为了兼容旧逻辑，也重新执行一次：
 
 ```bash
 ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
 ```
 
-Re-filter incomplete phases using the same logic as discover_phases:
-- Keep phases where `disk_status !== "complete"` OR `roadmap_complete === false`
-- Apply `--from N` filter if originally provided
-- Sort by number ascending
+重新过滤未完成阶段：
+- `disk_status !== "complete"` 或 `roadmap_complete === false`
+- 应用 `--from`
+- 数值升序排序
 
-Read STATE.md fresh:
+然后刷新 `STATE.md`：
 
 ```bash
 cat .planning/STATE.md
 ```
 
-Check for blockers in the Blockers/Concerns section. If blockers are found, go to handle_blocker with the blocker description.
+如果 `Blockers/Concerns` 区块中出现 blocker：
+- 进入 `handle_blocker`
 
-If incomplete phases remain: proceed to next phase, loop back to execute_phase.
+如果仍有阶段待执行：
+- 回到 `execute_phase`
 
-If all phases complete, proceed to lifecycle step.
+如果全部完成：
+- 进入 `lifecycle`
 
 </step>
 
 <step name="lifecycle">
 
-## 5. Lifecycle
+## 5. 生命周期收尾
 
-After all phases complete, run the milestone lifecycle sequence: audit → complete → cleanup.
+当所有阶段都完成后，必须自动进入：`audit -> complete -> cleanup`
 
-Display lifecycle transition banner:
+向用户展示转场：
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AUTONOMOUS ▸ LIFECYCLE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```markdown
+## GSD 自主执行 · 生命周期
 
- All phases complete → Starting lifecycle: audit → complete → cleanup
- Milestone: {milestone_version} — {milestone_name}
+所有阶段已完成 -> 开始生命周期流程：audit -> complete -> cleanup
+里程碑：{milestone_version} - {milestone_name}
 ```
 
 **5a. Audit**
@@ -655,55 +669,48 @@ Display lifecycle transition banner:
 Skill(skill="gsd:audit-milestone")
 ```
 
-After audit completes, detect the result:
+执行后读取：
 
 ```bash
 AUDIT_FILE=".planning/v${milestone_version}-MILESTONE-AUDIT.md"
 AUDIT_STATUS=$(grep "^status:" "${AUDIT_FILE}" 2>/dev/null | head -1 | cut -d: -f2 | tr -d ' ')
 ```
 
-**If AUDIT_STATUS is empty** (no audit file or no status field):
+如果 `AUDIT_STATUS` 为空：
+- 进入 `handle_blocker`
+- 描述：`审计没有产出有效结果——审计文件缺失或格式不正确`
 
-Go to handle_blocker: "Audit did not produce results — audit file missing or malformed."
+如果 `AUDIT_STATUS=passed`：
+- 输出：`审计 ✓ 已通过 - 继续完成里程碑`
+- 直接进入 5b
 
-**If `passed`:**
+如果 `AUDIT_STATUS=gaps_found`：
+- 读取 gap 摘要
+- 问用户：
+  - `继续，接受这些缺口`
+  - `停止，先手动修复缺口`
 
-Display:
-```
-Audit ✅ passed — proceeding to complete milestone
-```
+若选 `继续，接受这些缺口`：
+- 输出：`审计 ⏭ 已接受缺口 - 继续完成里程碑`
+- 进入 5b
 
-Proceed to 5b (no user pause — per CTRL-01).
+若选 `停止，先手动修复缺口`：
+- `handle_blocker`
+- 描述：`用户已停止——审计缺口仍未处理。请先运行 /gsd:audit-milestone 查看，再在准备好后运行 /gsd:complete-milestone`
 
-**If `gaps_found`:**
+如果 `AUDIT_STATUS=tech_debt`：
+- 读取 tech debt 摘要
+- 问用户：
+  - `带着技术债继续`
+  - `停止，先处理技术债`
 
-Read the gaps summary from the audit file. Display:
-```
-⚠ Audit: Gaps Found
-```
+若选 `带着技术债继续`：
+- 输出：`审计 ⏭ 已确认技术债 - 继续完成里程碑`
+- 进入 5b
 
-Ask user via AskUserQuestion:
-- **question:** "Milestone audit found gaps. How to proceed?"
-- **options:** "Continue anyway — accept gaps" / "Stop — fix gaps manually"
-
-On **"Continue anyway"**: Display `Audit ⏭ Gaps accepted — proceeding to complete milestone` and proceed to 5b.
-
-On **"Stop"**: Go to handle_blocker with "User stopped — audit gaps remain. Run /gsd:audit-milestone to review, then /gsd:complete-milestone when ready."
-
-**If `tech_debt`:**
-
-Read the tech debt summary from the audit file. Display:
-```
-⚠ Audit: Tech Debt Identified
-```
-
-Show the summary, then ask user via AskUserQuestion:
-- **question:** "Milestone audit found tech debt. How to proceed?"
-- **options:** "Continue with tech debt" / "Stop — address debt first"
-
-On **"Continue with tech debt"**: Display `Audit ⏭ Tech debt acknowledged — proceeding to complete milestone` and proceed to 5b.
-
-On **"Stop"**: Go to handle_blocker with "User stopped — tech debt to address. Run /gsd:audit-milestone to review details."
+若选 `停止，先处理技术债`：
+- `handle_blocker`
+- 描述：`用户已停止——仍有技术债需要处理。请先运行 /gsd:audit-milestone 查看详情`
 
 **5b. Complete Milestone**
 
@@ -711,13 +718,15 @@ On **"Stop"**: Go to handle_blocker with "User stopped — tech debt to address.
 Skill(skill="gsd:complete-milestone", args="${milestone_version}")
 ```
 
-After complete-milestone returns, verify it produced output:
+完成后验证归档产物：
 
 ```bash
 ls .planning/milestones/v${milestone_version}-ROADMAP.md 2>/dev/null
 ```
 
-If the archive file does not exist, go to handle_blocker: "Complete milestone did not produce expected archive files."
+若归档文件不存在：
+- `handle_blocker`
+- 描述：`complete-milestone 没有生成预期归档文件`
 
 **5c. Cleanup**
 
@@ -725,55 +734,55 @@ If the archive file does not exist, go to handle_blocker: "Complete milestone di
 Skill(skill="gsd:cleanup")
 ```
 
-Cleanup shows its own dry-run and asks user for approval internally — this is an acceptable pause per CTRL-01 since it's an explicit decision about file deletion.
+cleanup 自带 dry-run 和用户确认，这个暂停是允许的。
 
-**5d. Final Completion**
+**5d. 最终完成提示**
 
-Display final completion banner:
+```markdown
+## GSD 自主执行完成
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AUTONOMOUS ▸ COMPLETE 🎉
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
- Milestone: {milestone_version} — {milestone_name}
- Status: Complete ✅
- Lifecycle: audit ✅ → complete ✅ → cleanup ✅
-
- Ship it! 🚀
+里程碑：{milestone_version} - {milestone_name}
+状态：已完成 ✓
+生命周期：audit ✓ -> complete ✓ -> cleanup ✓
+可以发布。
 ```
 
 </step>
 
 <step name="handle_blocker">
 
-## 6. Handle Blocker
+## 6. 处理阻塞
 
-When any phase operation fails or a blocker is detected, present 3 options via AskUserQuestion:
+任何阶段或生命周期动作失败时，都通过 `AskUserQuestion` 给用户 3 个选项。
 
-**Prompt:** "Phase {N} ({Name}) encountered an issue: {description}"
+**提示：**
+`阶段 {N}（{Name}）遇到问题：{description}`
 
-**Options:**
-1. **"Fix and retry"** — Re-run the failed step (discuss, plan, or execute) for this phase
-2. **"Skip this phase"** — Mark phase as skipped, continue to the next incomplete phase
-3. **"Stop autonomous mode"** — Display summary of progress so far and exit cleanly
+**选项：**
+1. `修复并重试` - 重新执行当前阶段的失败步骤
+2. `跳过此阶段` - 记为跳过，继续下一个未完成阶段
+3. `停止自主模式` - 输出进度摘要并正常退出
 
-**On "Fix and retry":** Loop back to the failed step within execute_phase. If the same step fails again after retry, re-present these options.
+**如果用户选 `修复并重试`：**
+- 回到 `execute_phase` 中失败的那个步骤
+- 如果再次失败，重复给出这 3 个选项
 
-**On "Skip this phase":** Log `Phase {N} ⏭ {Name} — Skipped by user` and proceed to iterate.
+**如果用户选 `跳过此阶段`：**
+- 记录：`阶段 {N} ⏭ {Name} - 用户已跳过`
+- 进入 `iterate`
 
-**On "Stop autonomous mode":** Display progress summary:
+**如果用户选 `停止自主模式`：**
+- 输出摘要：
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AUTONOMOUS ▸ STOPPED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```markdown
+## GSD 自主执行已停止
 
- Completed: {list of completed phases}
- Skipped: {list of skipped phases}
- Remaining: {list of remaining phases}
+已完成：{completed phases}
+已跳过：{skipped phases}
+剩余：{remaining phases}
 
- Resume with: /gsd:autonomous --from {next_phase}
+继续执行：
+/gsd:autonomous --from {next_phase}
 ```
 
 </step>
@@ -781,32 +790,21 @@ When any phase operation fails or a blocker is detected, present 3 options via A
 </process>
 
 <success_criteria>
-- [ ] All incomplete phases executed in order (smart discuss → plan → execute each)
-- [ ] Smart discuss proposes grey area answers in tables, user accepts or overrides per area
-- [ ] Progress banners displayed between phases
-- [ ] Execute-phase invoked with --no-transition (autonomous manages transitions)
-- [ ] Post-execution verification reads VERIFICATION.md and routes on status
-- [ ] Passed verification → automatic continue to next phase
-- [ ] Human-needed verification → user prompted to validate or skip
-- [ ] Gaps-found → user offered gap closure, continue, or stop
-- [ ] Gap closure limited to 1 retry (prevents infinite loops)
-- [ ] Plan-phase and execute-phase failures route to handle_blocker
-- [ ] ROADMAP.md re-read after each phase (catches inserted phases)
-- [ ] STATE.md checked for blockers before each phase
-- [ ] Blockers handled via user choice (retry / skip / stop)
-- [ ] Final completion or stop summary displayed
-- [ ] After all phases complete, lifecycle step is invoked (not manual suggestion)
-- [ ] Lifecycle transition banner displayed before audit
-- [ ] Audit invoked via Skill(skill="gsd:audit-milestone")
-- [ ] Audit result routing: passed → auto-continue, gaps_found → user decides, tech_debt → user decides
-- [ ] Audit technical failure (no file/no status) routes to handle_blocker
-- [ ] Complete-milestone invoked via Skill() with ${milestone_version} arg
-- [ ] Cleanup invoked via Skill() — internal confirmation is acceptable (CTRL-01)
-- [ ] Final completion banner displayed after lifecycle
-- [ ] Progress bar uses phase number / total milestone phases (not position among incomplete)
-- [ ] Smart discuss documents relationship to discuss-phase with CTRL-03 note
-- [ ] A unified master plan is displayed before execution starts
-- [ ] The master plan comes from `gsd-tools.cjs roadmap execution-plan`
-- [ ] TDD plans are shown explicitly as `RED -> GREEN -> REFACTOR` in the master plan
-- [ ] The master plan is refreshed after each phase before deciding what to run next
+- [ ] 所有未完成阶段都按顺序执行
+- [ ] 开始执行前先展示统一总计划
+- [ ] 总计划来自 `gsd-tools.cjs roadmap execution-plan`
+- [ ] TDD 阶段在总计划中明确显示 `RED -> GREEN -> REFACTOR`
+- [ ] 每个阶段按 smart discuss -> plan -> execute 顺序推进
+- [ ] `execute-phase` 始终带 `--no-transition`，由 autonomous 自己负责阶段间路由
+- [ ] 每个阶段结束后读取 `VERIFICATION.md` 并按状态路由
+- [ ] `passed` 自动继续
+- [ ] `human_needed` 时提示用户人工验证或延后
+- [ ] `gaps_found` 时提供补洞、继续、停止三种选择
+- [ ] gap closure 自动重试至多 1 次
+- [ ] 计划失败或执行失败都能进入 blocker 路由
+- [ ] 每完成一阶段都刷新统一总计划，再决定下一步
+- [ ] 仍保留 `ROADMAP.md` 重读，能识别中途插入的小数阶段
+- [ ] 生命周期阶段会自动执行 `audit -> complete -> cleanup`
+- [ ] 审计结果按 `passed / gaps_found / tech_debt` 正确路由
+- [ ] 最终给出清晰完成或停止摘要
 </success_criteria>
