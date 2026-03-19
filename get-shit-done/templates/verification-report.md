@@ -4,7 +4,7 @@
 
 要求：
 - frontmatter 键名与状态值保持英文，便于工具读取
-- 面向人的标题、表头、正文使用中文
+- 面向人的标题、表头和正文使用中文
 - frontmatter 中的 `gaps` 与 `human_verification` 必须结构化，供后续流程读取
 
 ---
@@ -28,7 +28,6 @@ score: N/M 个必备项已验证
 ## 目标达成情况
 
 ### 可观察事实
-
 | # | 事实 | 状态 | 证据 |
 |---|------|------|------|
 | 1 | {truth} | ✅ 已验证 | {evidence} |
@@ -41,7 +40,7 @@ score: N/M 个必备项已验证
 
 | 产物 | 预期 | 状态 | 详情 |
 |------|------|------|------|
-| `src/components/Chat.tsx` | 消息列表组件 | ✅ 存在且有效 | 导出 ChatList，渲染 Message[]，无占位桩代码 |
+| `src/components/Chat.tsx` | 消息列表组件 | ✅ 存在且有效 | 导出 ChatList，渲染 `Message[]`，无占位桩代码 |
 
 ### 关键连接验证
 
@@ -50,7 +49,6 @@ score: N/M 个必备项已验证
 | Chat.tsx | /api/chat | useEffect 中 fetch | ✅ 已接通 | 第 23 行调用了 `fetch('/api/chat')` |
 
 ### 需求覆盖
-
 | 需求 | 状态 | 阻塞问题 |
 |------|------|----------|
 | {REQ-01}: {description} | ✅ 满足 | - |
@@ -63,7 +61,6 @@ score: N/M 个必备项已验证
 | src/app/api/chat/route.ts | 12 | `// TODO: implement` | ⚠️ 警告 | 表示实现不完整 |
 
 ### 需要人工验证
-
 [如果不需要人工验证：]
 无——所有可验证项都已通过程序化检查。
 
@@ -97,7 +94,6 @@ score: N/M 个必备项已验证
    - 建议：{fix now or defer}
 
 ## 建议的修复计划
-
 [仅在 `gaps_found` 时生成]
 
 ### {phase}-{next}-PLAN.md: {Fix Name}
@@ -109,18 +105,17 @@ score: N/M 个必备项已验证
 2. {Task to fix gap 2}
 3. {Verification task}
 
-**预估范围：** {Small / Medium}
+**预计范围：** {Small / Medium}
 
 ## 验证元数据
-
-**验证方法：** 从目标反推（goal-backward）
-**must_haves 来源：** {PLAN.md frontmatter | derived from ROADMAP.md goal}
-**自动化检查：** {N} 通过，{M} 失败
-**需要人工检查：** {N}
+**验证方法：** 从目标反推（goal-backward）  
+**must_haves 来源：** {PLAN.md frontmatter | derived from ROADMAP.md goal}  
+**自动化检查：** {N} 通过，{M} 失败  
+**需要人工检查：** {N}  
 **总验证耗时：** {duration}
 
 ---
-*验证时间：{timestamp}*
+*验证时间：{timestamp}*  
 *验证者：Claude (subagent)*
 ```
 

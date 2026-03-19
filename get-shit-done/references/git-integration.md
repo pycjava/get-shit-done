@@ -1,25 +1,25 @@
 <overview>
-Git integration for GSD framework.
+GSD framework 的 Git 集成规范。
 </overview>
 
 <core_principle>
 
-**Commit outcomes, not process.**
+**提交结果，而不是过程。**
 
-The git log should read like a changelog of what shipped, not a diary of planning activity.
+git log 应该像“已交付内容的变更日志”，而不是“规划活动的流水账”。
 </core_principle>
 
 <commit_points>
 
-| Event                   | Commit? | Why                                              |
-| ----------------------- | ------- | ------------------------------------------------ |
-| BRIEF + ROADMAP created | YES     | Project initialization                           |
-| PLAN.md created         | NO      | Intermediate - commit with plan completion       |
-| RESEARCH.md created     | NO      | Intermediate                                     |
-| DISCOVERY.md created    | NO      | Intermediate                                     |
-| **Task completed**      | YES     | Atomic unit of work (1 commit per task)         |
-| **Plan completed**      | YES     | Metadata commit (SUMMARY + STATE + ROADMAP)     |
-| Handoff created         | YES     | WIP state preserved                              |
+| 事件 | 提交？ | 原因 |
+|------|--------|------|
+| 创建 BRIEF + ROADMAP | YES | 项目初始化 |
+| 创建 PLAN.md | NO | 中间产物，应与计划完成一起提交 |
+| 创建 RESEARCH.md | NO | 中间产物 |
+| 创建 DISCOVERY.md | NO | 中间产物 |
+| **任务完成** | YES | 原子工作单元（每个 task 一个 commit） |
+| **计划完成** | YES | 元数据提交（`SUMMARY` + `STATE` + `ROADMAP`） |
+| 创建 handoff | YES | 保留 WIP 状态 |
 
 </commit_points>
 
@@ -29,13 +29,13 @@ The git log should read like a changelog of what shipped, not a diary of plannin
 [ -d .git ] && echo "GIT_EXISTS" || echo "NO_GIT"
 ```
 
-If NO_GIT: Run `git init` silently. GSD projects always get their own repo.
+如果结果是 `NO_GIT`：静默执行 `git init`。GSD 项目总是拥有自己的仓库。
 </git_check>
 
 <commit_formats>
 
 <format name="initialization">
-## Project Initialization (brief + roadmap together)
+## 项目初始化（brief + roadmap 一起提交）
 
 ```
 docs: initialize [project-name] ([N] phases)
@@ -48,7 +48,7 @@ Phases:
 3. [phase-name]: [goal]
 ```
 
-What to commit:
+提交内容：
 
 ```bash
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: initialize [project-name] ([N] phases)" --files .planning/
@@ -57,9 +57,9 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: initialize [p
 </format>
 
 <format name="task-completion">
-## Task Completion (During Plan Execution)
+## 任务完成（计划执行过程中）
 
-Each task gets its own commit immediately after completion.
+每个 task 完成后都要立刻单独提交。
 
 ```
 {type}({phase}-{plan}): {task-name}
@@ -69,18 +69,18 @@ Each task gets its own commit immediately after completion.
 - [Key change 3]
 ```
 
-**Commit types:**
-- `feat` - New feature/functionality
-- `fix` - Bug fix
-- `test` - Test-only (TDD RED phase)
-- `refactor` - Code cleanup (TDD REFACTOR phase)
-- `perf` - Performance improvement
-- `chore` - Dependencies, config, tooling
+**提交类型：**
+- `feat` - 新功能 / 新行为
+- `fix` - 修复 bug
+- `test` - 仅测试（TDD RED 阶段）
+- `refactor` - 代码整理（TDD REFACTOR 阶段）
+- `perf` - 性能优化
+- `chore` - 依赖、配置、工具链
 
-**Examples:**
+**示例：**
 
 ```bash
-# Standard task
+# 标准任务
 git add src/api/auth.ts src/types/user.ts
 git commit -m "feat(08-02): create user registration endpoint
 
@@ -89,7 +89,7 @@ git commit -m "feat(08-02): create user registration endpoint
 - Returns JWT token on success
 "
 
-# TDD task - RED phase
+# TDD 任务 - RED 阶段
 git add src/__tests__/jwt.test.ts
 git commit -m "test(07-02): add failing test for JWT generation
 
@@ -98,7 +98,7 @@ git commit -m "test(07-02): add failing test for JWT generation
 - Tests signature verification
 "
 
-# TDD task - GREEN phase
+# TDD 任务 - GREEN 阶段
 git add src/utils/jwt.ts
 git commit -m "feat(07-02): implement JWT generation
 
@@ -111,9 +111,9 @@ git commit -m "feat(07-02): implement JWT generation
 </format>
 
 <format name="plan-completion">
-## Plan Completion (After All Tasks Done)
+## 计划完成（所有任务都完成之后）
 
-After all tasks committed, one final metadata commit captures plan completion.
+所有任务各自提交后，再补一个元数据提交，记录计划完成。
 
 ```
 docs({phase}-{plan}): complete [plan-name] plan
@@ -126,18 +126,18 @@ Tasks completed: [N]/[N]
 SUMMARY: .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md
 ```
 
-What to commit:
+提交内容：
 
 ```bash
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-PLAN.md .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md
 ```
 
-**Note:** Code files NOT included - already committed per-task.
+**注意：** 不包含代码文件，这些文件已经在 task 级提交中提交过。
 
 </format>
 
 <format name="handoff">
-## Handoff (WIP)
+## Handoff（WIP）
 
 ```
 wip: [phase-name] paused at task [X]/[Y]
@@ -146,7 +146,7 @@ Current: [task name]
 [If blocked:] Blocked: [reason]
 ```
 
-What to commit:
+提交内容：
 
 ```bash
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "wip: [phase-name] paused at task [X]/[Y]" --files .planning/
@@ -157,7 +157,7 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "wip: [phase-name] p
 
 <example_log>
 
-**Old approach (per-plan commits):**
+**旧方式（按 plan 提交）：**
 ```
 a7f2d1 feat(checkout): Stripe payments with webhook verification
 3e9c4b feat(products): catalog with search, filters, and pagination
@@ -166,7 +166,7 @@ a7f2d1 feat(checkout): Stripe payments with webhook verification
 2f4a8d docs: initialize ecommerce-app (5 phases)
 ```
 
-**New approach (per-task commits):**
+**新方式（按 task 提交）：**
 ```
 # Phase 04 - Checkout
 1a2b3c docs(04-01): complete checkout flow plan
@@ -198,51 +198,51 @@ a7f2d1 feat(checkout): Stripe payments with webhook verification
 5c6d7e docs: initialize ecommerce-app (5 phases)
 ```
 
-Each plan produces 2-4 commits (tasks + metadata). Clear, granular, bisectable.
+每个计划会产生 2-4 个提交（tasks + metadata），足够清晰、足够细粒度，也便于 bisect。
 
 </example_log>
 
 <anti_patterns>
 
-**Still don't commit (intermediate artifacts):**
-- PLAN.md creation (commit with plan completion)
-- RESEARCH.md (intermediate)
-- DISCOVERY.md (intermediate)
-- Minor planning tweaks
-- "Fixed typo in roadmap"
+**仍然不要提交的内容（中间产物）：**
+- PLAN.md 刚创建时（应与 plan 完成一起提交）
+- RESEARCH.md（中间产物）
+- DISCOVERY.md（中间产物）
+- 微小的规划改动
+- “修了 roadmap 里的错别字”
 
-**Do commit (outcomes):**
-- Each task completion (feat/fix/test/refactor)
-- Plan completion metadata (docs)
-- Project initialization (docs)
+**应该提交的内容（结果）：**
+- 每个 task 完成（`feat` / `fix` / `test` / `refactor`）
+- 计划完成元数据（`docs`）
+- 项目初始化（`docs`）
 
-**Key principle:** Commit working code and shipped outcomes, not planning process.
+**核心原则：** 提交可运行的结果与已交付成果，而不是规划过程本身。
 
 </anti_patterns>
 
 <commit_strategy_rationale>
 
-## Why Per-Task Commits?
+## 为什么采用按任务提交？
 
-**Context engineering for AI:**
-- Git history becomes primary context source for future Claude sessions
-- `git log --grep="{phase}-{plan}"` shows all work for a plan
-- `git diff <hash>^..<hash>` shows exact changes per task
-- Less reliance on parsing SUMMARY.md = more context for actual work
+**为了 AI 的上下文工程：**
+- Git 历史会成为后续 Claude session 的主要上下文来源
+- `git log --grep="{phase}-{plan}"` 能直接看到某个 plan 的全部工作
+- `git diff <hash>^..<hash>` 能看到某个 task 的精确变更
+- 对 `SUMMARY.md` 的依赖更少，把更多上下文留给实际工作
 
-**Failure recovery:**
-- Task 1 committed ✅, Task 2 failed ❌
-- Claude in next session: sees task 1 complete, can retry task 2
-- Can `git reset --hard` to last successful task
+**为了失败恢复：**
+- Task 1 已提交 ✅，Task 2 失败 ❌
+- 下一次 session 中，Claude 能看出 task 1 已完成，并从 task 2 继续
+- 可以 `git reset --hard` 回到上一个成功 task
 
-**Debugging:**
-- `git bisect` finds exact failing task, not just failing plan
-- `git blame` traces line to specific task context
-- Each commit is independently revertable
+**为了调试：**
+- `git bisect` 能直接定位到具体失败 task，而不是整个 plan
+- `git blame` 能把某一行追溯到具体 task 背景
+- 每个 commit 都可以独立回退
 
-**Observability:**
-- Solo developer + Claude workflow benefits from granular attribution
-- Atomic commits are git best practice
-- "Commit noise" irrelevant when consumer is Claude, not humans
+**为了可观测性：**
+- 单人开发 + Claude 的工作流本来就适合细粒度归因
+- 原子提交本身就是 Git 最佳实践
+- 对主要消费者是 Claude 而不是人类时，“提交噪音”不是问题
 
 </commit_strategy_rationale>

@@ -56,12 +56,12 @@ gaps = [
 **向用户说明诊断计划：**
 
 ```
-## DIAGNOSING GAPS（诊断缺口）
+## 正在诊断缺口
 
 将并行启动 debug agents 调查根因：
 
-| Gap（行为真相） | Severity |
-|----------------|----------|
+| 缺口（行为真相） | 严重级别 |
+|------------------|------------|
 | Comment appears immediately after submission | major |
 | Reply button positioned correctly | minor |
 | Delete removes comment | blocker |
@@ -117,11 +117,11 @@ Task(
 - {key finding 2}
 - {key finding 3}
 
-**Files Involved:**
+**涉及文件：**
 - {file1}: {what's wrong}
 - {file2}: {related issue}
 
-**Suggested Fix Direction:** {brief hint for plan-phase --gaps}
+**建议修复方向：** {brief hint for plan-phase --gaps}
 ```
 
 需要从返回中提取：
@@ -174,13 +174,13 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs({phase_num}): 
  GSD ▶ 诊断完成
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| Gap（行为真相） | Root Cause（根因） | Files |
-|----------------|--------------------|-------|
+| 缺口（行为真相） | Root Cause（根因） | Files |
+|------------------|--------------------|-------|
 | Comment appears immediately | useEffect missing dependency | CommentList.tsx |
 | Reply button positioned correctly | CSS flex order incorrect | ReplyButton.tsx |
 | Delete removes comment | API missing auth header | api/comments.ts |
 
-Debug sessions: ${DEBUG_DIR}/
+调试会话目录：${DEBUG_DIR}/
 
 继续生成修复计划...
 ```

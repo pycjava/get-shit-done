@@ -5,477 +5,476 @@ last_reviewed: "2026-03"
 template_for: ".planning/operations/BACKUP.md"
 ---
 
-# Backup & Recovery Template
+# 备份与恢复模板
 
-Template for `.planning/operations/BACKUP.md` — backup strategies and disaster recovery procedures.
+用于 `.planning/operations/BACKUP.md` 的模板，覆盖备份策略与灾难恢复流程。
 
 <template>
 
 ```markdown
-# Backup & Recovery
+# 备份与恢复
 
-**Project:** [Project Name]
-**Last Updated:** [YYYY-MM-DD]
-**Recovery Owner:** [Team/Person]
-
----
-
-## Backup Strategy
-
-### Overview
-
-| Aspect | Configuration |
-|--------|---------------|
-| Backup Type | [Full/Incremental/Differential] |
-| Primary Storage | [e.g., AWS S3, GCS] |
-| Secondary Storage | [e.g., Cross-region replication] |
-| Encryption | [e.g., AES-256] |
-| Retention Period | [e.g., 90 days] |
-
-### Backup Schedule
-
-| Data Type | Frequency | Retention | Storage Location |
-|-----------|-----------|-----------|------------------|
-| Database | [e.g., Hourly] | [e.g., 30 days] | [Location] |
-| File Storage | [e.g., Daily] | [e.g., 90 days] | [Location] |
-| Configuration | [e.g., On change] | [e.g., 1 year] | [Location] |
-| Logs | [e.g., Daily] | [e.g., 14 days] | [Location] |
+**项目：** [项目名称]
+**最后更新：** [YYYY-MM-DD]
+**恢复负责人：** [团队/人员]
 
 ---
 
-## Data Categories
+## 备份策略
 
-### Critical Data (RPO < 1hr)
+### 概览
 
-| Data | Backup Method | Frequency | Location |
-|------|---------------|-----------|----------|
-| User Database | [Method] | [Frequency] | [Location] |
-| Transaction Logs | [Method] | [Frequency] | [Location] |
-| [Other critical data] | [Method] | [Frequency] | [Location] |
+| 维度 | 配置 |
+|------|------|
+| 备份类型 | [Full/Incremental/Differential] |
+| 主存储 | [例如：AWS S3、GCS] |
+| 次存储 | [例如：跨区域复制] |
+| 加密 | [例如：AES-256] |
+| 保留周期 | [例如：90 天] |
 
-### Important Data (RPO < 24hr)
+### 备份计划
 
-| Data | Backup Method | Frequency | Location |
-|------|---------------|-----------|----------|
-| User Uploads | [Method] | [Frequency] | [Location] |
-| Configuration | [Method] | [Frequency] | [Location] |
-| [Other important data] | [Method] | [Frequency] | [Location] |
-
-### Archive Data (RPO > 24hr)
-
-| Data | Backup Method | Frequency | Location |
-|------|---------------|-----------|----------|
-| Historical Logs | [Method] | [Frequency] | [Location] |
-| Analytics Data | [Method] | [Frequency] | [Location] |
-| [Other archive data] | [Method] | [Frequency] | [Location] |
+| 数据类型 | 频率 | 保留期 | 存储位置 |
+|----------|------|--------|----------|
+| 数据库 | [例如：每小时] | [例如：30 天] | [位置] |
+| 文件存储 | [例如：每日] | [例如：90 天] | [位置] |
+| 配置 | [例如：变更时] | [例如：1 年] | [位置] |
+| 日志 | [例如：每日] | [例如：14 天] | [位置] |
 
 ---
 
-## Recovery Objectives
+## 数据分类
 
-### RTO/RPO Targets
+### 关键数据（RPO < 1hr）
 
-| System | RTO (Recovery Time) | RPO (Recovery Point) | Priority |
-|--------|---------------------|----------------------|----------|
-| Database | [e.g., 1 hour] | [e.g., 1 hour] | P1 |
-| API Services | [e.g., 30 min] | [e.g., N/A] | P1 |
-| File Storage | [e.g., 4 hours] | [e.g., 24 hours] | P2 |
-| Analytics | [e.g., 24 hours] | [e.g., 24 hours] | P3 |
+| 数据 | 备份方式 | 频率 | 位置 |
+|------|----------|------|------|
+| 用户数据库 | [方式] | [频率] | [位置] |
+| 交易日志 | [方式] | [频率] | [位置] |
+| [其他关键数据] | [方式] | [频率] | [位置] |
 
-### Recovery Priority Order
+### 重要数据（RPO < 24hr）
+
+| 数据 | 备份方式 | 频率 | 位置 |
+|------|----------|------|------|
+| 用户上传 | [方式] | [频率] | [位置] |
+| 配置 | [方式] | [频率] | [位置] |
+| [其他重要数据] | [方式] | [频率] | [位置] |
+
+### 归档数据（RPO > 24hr）
+
+| 数据 | 备份方式 | 频率 | 位置 |
+|------|----------|------|------|
+| 历史日志 | [方式] | [频率] | [位置] |
+| 分析数据 | [方式] | [频率] | [位置] |
+| [其他归档数据] | [方式] | [频率] | [位置] |
+
+---
+
+## 恢复目标
+
+### RTO/RPO 目标
+
+| 系统 | RTO（恢复时间） | RPO（恢复点） | 优先级 |
+|------|------------------|---------------|--------|
+| 数据库 | [例如：1 小时] | [例如：1 小时] | P1 |
+| API 服务 | [例如：30 分钟] | [例如：N/A] | P1 |
+| 文件存储 | [例如：4 小时] | [例如：24 小时] | P2 |
+| Analytics | [例如：24 小时] | [例如：24 小时] | P3 |
+
+### 恢复优先顺序
 
 ```
-1. Database (P1)
-   └── Core data, user accounts, transactions
+1. 数据库（P1）
+   └── 核心数据、用户账户、交易
 
-2. API Services (P1)
-   └── Application functionality
+2. API 服务（P1）
+   └── 应用核心功能
 
-3. Authentication (P1)
-   └── User access
+3. Authentication（P1）
+   └── 用户访问能力
 
-4. File Storage (P2)
-   └── User uploads, assets
+4. 文件存储（P2）
+   └── 用户上传、静态资源
 
-5. Monitoring (P3)
-   └── Observability stack
+5. 监控（P3）
+   └── 可观测性栈
 
-6. Analytics (P3)
-   └── Reporting, metrics
+6. Analytics（P3）
+   └── 报表、指标
 ```
 
 ---
 
-## Backup Procedures
+## 备份流程
 
-### Database Backups
+### 数据库备份
 
-**Automated Backups:**
+**自动备份：**
 ```bash
-# Backup command (automated)
+# 备份命令（自动执行）
 [backup command]
 
-# Verify backup
+# 校验备份
 [verify command]
 ```
 
-**Manual Backups:**
+**手动备份：**
 ```bash
-# Create manual backup
+# 创建手动备份
 [manual backup command]
 
-# Verify backup integrity
+# 校验备份完整性
 [integrity check command]
 ```
 
-**Backup Verification:**
-- [ ] Automated daily backup verification
-- [ ] Weekly restore test to staging
-- [ ] Monthly full recovery drill
+**备份校验：**
+- [ ] 每日自动备份校验
+- [ ] 每周恢复到 staging 做测试
+- [ ] 每月执行一次完整恢复演练
 
-### File Storage Backups
+### 文件存储备份
 
-**Backup Command:**
+**备份命令：**
 ```bash
 [file backup command]
 ```
 
-**Verification:**
+**校验：**
 ```bash
 [verification command]
 ```
 
-### Configuration Backups
+### 配置备份
 
-**What's Backed Up:**
-- Environment variables (encrypted)
-- Infrastructure as Code (Terraform/CloudFormation)
-- CI/CD pipeline configurations
-- Monitoring/alerting rules
+**备份内容：**
+- 环境变量（已加密）
+- Infrastructure as Code（Terraform/CloudFormation）
+- CI/CD pipeline 配置
+- 监控 / 告警规则
 
-**Storage:**
+**存储位置：**
 ```bash
 [config backup location]
 ```
 
 ---
 
-## Capacity Considerations
+## 容量考量
 
-| Area | Signal | Threshold | Action |
-|------|--------|-----------|--------|
-| Backup Storage | Total backup footprint growth | [threshold] | Expand storage or tune retention |
-| Backup Window | Backup duration vs maintenance window | [threshold] | Reschedule or parallelize backups |
-| Restore Window | Restore time vs RTO target | [threshold] | Pre-stage recovery capacity |
-| Cross-Region Replication | Replication lag | [threshold] | Increase bandwidth or reduce payload |
+| 区域 | 信号 | 阈值 | 动作 |
+|------|------|------|------|
+| 备份存储 | 总备份体积增长 | [threshold] | 扩容存储或调整保留策略 |
+| 备份窗口 | 备份时长相对维护窗口 | [threshold] | 重新排期或并行化备份 |
+| 恢复窗口 | 恢复耗时相对 RTO 目标 | [threshold] | 预先准备恢复容量 |
+| 跨区域复制 | 复制延迟 | [threshold] | 增加带宽或减少负载 |
 
 ---
 
-## Recovery Procedures
+## 恢复流程
 
-### Database Recovery
+### 数据库恢复
 
-**Point-in-Time Recovery:**
+**Point-in-Time Recovery：**
 ```bash
-# 1. Stop application services
+# 1. 停止应用服务
 [stop command]
 
-# 2. Restore from backup
+# 2. 从备份恢复
 [restore command --timestamp "YYYY-MM-DD HH:MM:SS"]
 
-# 3. Verify data integrity
+# 3. 校验数据完整性
 [integrity check command]
 
-# 4. Restart services
+# 4. 重启服务
 [start command]
 ```
 
-**Full Database Restore:**
+**完整数据库恢复：**
 ```bash
-# 1. Stop application services
+# 1. 停止应用服务
 [stop command]
 
-# 2. Drop existing database (if needed)
+# 2. 删除现有数据库（如有需要）
 [drop command]
 
-# 3. Restore from latest backup
+# 3. 从最新备份恢复
 [restore command --latest]
 
-# 4. Run migrations (if needed)
+# 4. 执行 migration（如有需要）
 [migration command]
 
-# 5. Verify data integrity
+# 5. 校验数据完整性
 [integrity check command]
 
-# 6. Restart services
+# 6. 重启服务
 [start command]
 ```
 
-### File Storage Recovery
+### 文件存储恢复
 
 ```bash
-# 1. Identify files to restore
+# 1. 确认待恢复文件
 [list command]
 
-# 2. Restore files
+# 2. 恢复文件
 [restore command]
 
-# 3. Verify file integrity
+# 3. 校验文件完整性
 [verify command]
 
-# 4. Update permissions if needed
+# 4. 如有需要更新权限
 [permissions command]
 ```
 
-### Configuration Recovery
+### 配置恢复
 
 ```bash
-# 1. Restore infrastructure config
+# 1. 恢复基础设施配置
 [infra restore command]
 
-# 2. Restore environment variables
+# 2. 恢复环境变量
 [env restore command]
 
-# 3. Apply configurations
+# 3. 应用配置
 [apply command]
 
-# 4. Verify services
+# 4. 校验服务
 [verify command]
 ```
 
 ---
 
-## Disaster Recovery
+## 灾难恢复
 
-### DR Scenarios
+### DR 场景
 
-| Scenario | Response | RTO | Procedure |
-|----------|----------|-----|-----------|
-| Single server failure | Failover to replica | 15 min | [Link] |
-| Database corruption | Restore from backup | 1 hr | [Link] |
-| Region outage | Failover to DR region | 4 hr | [Link] |
-| Ransomware attack | Isolate and restore | 8 hr | [Link] |
-| Total data center loss | Full DR activation | 24 hr | [Link] |
+| 场景 | 响应 | RTO | 流程 |
+|------|------|-----|------|
+| 单机故障 | 切换到副本 | 15 分钟 | [Link] |
+| 数据库损坏 | 从备份恢复 | 1 小时 | [Link] |
+| 区域故障 | 切换到 DR 区域 | 4 小时 | [Link] |
+| 勒索软件攻击 | 隔离并恢复 | 8 小时 | [Link] |
+| 整个数据中心丢失 | 启动完整 DR | 24 小时 | [Link] |
 
-### DR Site Configuration
+### DR 站点配置
 
-| Aspect | Primary | DR Site |
-|--------|---------|---------|
-| Region | [e.g., us-east-1] | [e.g., us-west-2] |
-| Database | [Type] | [Replica type] |
-| Storage | [Type] | [Replication] |
-| DNS | [Provider] | [Failover config] |
+| 维度 | 主站点 | DR 站点 |
+|------|--------|---------|
+| 区域 | [例如：us-east-1] | [例如：us-west-2] |
+| 数据库 | [类型] | [副本类型] |
+| 存储 | [类型] | [复制方式] |
+| DNS | [Provider] | [Failover 配置] |
 
-### DR Activation Procedure
+### DR 激活流程
 
 ```
 1. ASSESS
-   ├── Confirm disaster scope
-   ├── Notify stakeholders
-   └── Activate incident response
+   ├── 确认灾难范围
+   ├── 通知相关方
+   └── 启动 incident response
 
 2. PREPARE
-   ├── Verify DR site readiness
-   ├── Prepare DNS failover
-   └── Notify users (if needed)
+   ├── 确认 DR 站点已就绪
+   ├── 准备 DNS failover
+   └── 必要时通知用户
 
 3. ACTIVATE
-   ├── Promote DR database
-   ├── Update DNS to DR site
-   └── Verify services operational
+   ├── 提升 DR 数据库
+   ├── 将 DNS 更新到 DR 站点
+   └── 校验服务已恢复可用
 
 4. MONITOR
-   ├── Watch for issues
-   ├── Communicate status
-   └── Document timeline
+   ├── 持续观察问题
+   ├── 同步状态
+   └── 记录时间线
 
 5. RECOVER
-   ├── Restore primary site
-   ├── Sync data back
-   └── Failback when ready
+   ├── 恢复主站点
+   ├── 将数据同步回去
+   └── 准备好后执行 failback
 ```
 
 ---
 
-## Backup Testing
+## 备份测试
 
-### Test Schedule
+### 测试计划
 
-| Test Type | Frequency | Scope | Last Run |
-|-----------|-----------|-------|----------|
-| Backup Verification | Daily | Automated integrity check | [Date] |
-| Restore Test | Weekly | Single table/collection | [Date] |
-| Full Recovery Drill | Monthly | Complete system | [Date] |
-| DR Drill | Quarterly | Full DR activation | [Date] |
+| 测试类型 | 频率 | 范围 | 最近执行 |
+|----------|------|------|----------|
+| 备份校验 | 每日 | 自动完整性检查 | [Date] |
+| 恢复测试 | 每周 | 单表 / 单集合 | [Date] |
+| 完整恢复演练 | 每月 | 整个系统 | [Date] |
+| DR 演练 | 每季度 | 完整 DR 激活 | [Date] |
 
-### Test Procedure
+### 测试流程
 
-**Weekly Restore Test:**
+**每周恢复测试：**
 ```bash
-# 1. Create test environment
+# 1. 创建测试环境
 [create test env command]
 
-# 2. Restore backup to test
+# 2. 将备份恢复到测试环境
 [restore to test command]
 
-# 3. Run verification tests
+# 3. 运行校验测试
 [test command]
 
-# 4. Document results
+# 4. 记录结果
 [document command]
 
-# 5. Clean up test environment
+# 5. 清理测试环境
 [cleanup command]
 ```
 
-### Test Checklist
+### 测试清单
 
-- [ ] Backup completed successfully
-- [ ] Restore completed without errors
-- [ ] Data integrity verified
-- [ ] Application functions correctly with restored data
-- [ ] Performance acceptable
-- [ ] Results documented
+- [ ] 备份成功完成
+- [ ] 恢复过程无错误
+- [ ] 数据完整性已验证
+- [ ] 应用在恢复数据下运行正常
+- [ ] 性能可接受
+- [ ] 结果已记录
 
 ---
 
-## Retention Policy
+## 保留策略
 
-### Retention Schedule
+### 保留计划
 
-| Backup Type | Retention Period | Reason |
-|-------------|------------------|--------|
-| Hourly | 7 days | Quick recovery |
-| Daily | 30 days | Standard recovery |
-| Weekly | 90 days | Extended recovery |
-| Monthly | 1 year | Compliance |
-| Yearly | 7 years | Legal requirements |
+| 备份类型 | 保留周期 | 原因 |
+|----------|----------|------|
+| 每小时 | 7 天 | 快速恢复 |
+| 每日 | 30 天 | 标准恢复 |
+| 每周 | 90 天 | 延长恢复窗口 |
+| 每月 | 1 年 | 合规要求 |
+| 每年 | 7 年 | 法律要求 |
 
-### Purge Policy
+### 清理策略
 
 ```bash
-# Automated purge command (runs daily)
+# 自动清理命令（每日执行）
 [purge command --older-than 90d]
 ```
 
-### Legal Hold
+### 法务保留
 
-When legal hold is required:
-1. Identify relevant backups
-2. Copy to legal hold storage
-3. Document chain of custody
-4. Exclude from purge policies
+当需要 legal hold 时：
+1. 识别相关备份
+2. 复制到 legal hold 存储
+3. 记录保管链
+4. 从清理策略中排除
 
 ---
 
-## Monitoring & Alerts
+## 监控与告警
 
-### Backup Monitoring
+### 备份监控
 
-| Metric | Threshold | Alert |
-|--------|-----------|-------|
-| Backup Duration | > 2x normal | Warning |
-| Backup Size | > 20% change | Warning |
-| Backup Failure | Any failure | Critical |
-| Storage Usage | > 80% capacity | Warning |
+| 指标 | 阈值 | 告警 |
+|------|------|------|
+| 备份耗时 | > 正常值 2x | Warning |
+| 备份体积 | > 20% 变化 | Warning |
+| 备份失败 | 任意失败 | Critical |
+| 存储使用率 | > 80% 容量 | Warning |
 
-### Alert Configuration
+### 告警配置
 
 ```yaml
-# Backup failure alert
+# 备份失败告警
 - alert: BackupFailed
   expr: backup_status == 0
   for: 5m
   severity: critical
   annotations:
-    summary: "Backup failed for {{ $labels.job }}"
+    summary: "{{ $labels.job }} 的备份失败"
 ```
 
 ---
 
-## Compliance & Auditing
+## 合规与审计
 
-### Compliance Requirements
+### 合规要求
 
-| Requirement | How Met | Evidence |
-|-------------|---------|----------|
-| Data retention | [Policy] | [Location] |
-| Encryption at rest | [Method] | [Config] |
-| Encryption in transit | [Method] | [Config] |
-| Access logging | [Method] | [Location] |
-| Recovery testing | [Schedule] | [Records] |
+| 要求 | 满足方式 | 证据 |
+|------|----------|------|
+| 数据保留 | [Policy] | [Location] |
+| 静态加密 | [Method] | [Config] |
+| 传输加密 | [Method] | [Config] |
+| 访问日志 | [Method] | [Location] |
+| 恢复测试 | [Schedule] | [Records] |
 
-### Audit Trail
+### 审计轨迹
 
-| Date | Action | Performed By | Result |
-|------|--------|--------------|--------|
+| 日期 | 动作 | 执行人 | 结果 |
+|------|------|--------|------|
 | [Date] | [Action] | [Name] | [Result] |
 
 ---
 
-## Related Documents
+## 相关文档
 
-- [CAPACITY.md](./CAPACITY.md) - Capacity baselines and storage growth plan
-
-- [OPERATIONS.md](./OPERATIONS.md) — Operations overview
-- [RUNBOOK.md](./RUNBOOK.md) — Incident response
-- [SECURITY-OPS.md](./SECURITY-OPS.md) — Security operations
+- [CAPACITY.md](./CAPACITY.md) - 容量基线与存储增长计划
+- [OPERATIONS.md](./OPERATIONS.md) — 运维总览
+- [RUNBOOK.md](./RUNBOOK.md) — 事故响应
+- [SECURITY-OPS.md](./SECURITY-OPS.md) — 安全运维
 
 ---
 
-*Backup review: [date]*
-*Update when backup requirements change*
+*备份评审： [date]*
+*当备份要求发生变化时更新*
 ```
 
 </template>
 
 <guidelines>
 
-**What This Is:**
-- Backup strategy and procedures
-- Recovery objectives (RTO/RPO)
-- Disaster recovery procedures
-- Testing and compliance
+**这份文档是什么：**
+- 备份策略与流程
+- 恢复目标（RTO/RPO）
+- 灾难恢复流程
+- 测试与合规要求
 
-**Backup Strategy:**
-- Define backup types and schedules
-- Document storage locations
-- Specify encryption requirements
-- Set retention periods
+**备份策略：**
+- 定义备份类型与执行计划
+- 记录存储位置
+- 明确加密要求
+- 设定保留周期
 
-**Data Categories:**
-- Classify by criticality
-- Set appropriate RPO for each
-- Document backup methods
+**数据分类：**
+- 按关键性划分
+- 为每类设置合适的 RPO
+- 记录备份方法
 
-**Recovery Objectives:**
-- Define RTO/RPO for each system
-- Prioritize recovery order
-- Document dependencies
+**恢复目标：**
+- 为每个系统定义 RTO/RPO
+- 排定恢复优先顺序
+- 记录依赖关系
 
-**Recovery Procedures:**
-- Step-by-step instructions
-- Include verification steps
-- Document rollback if recovery fails
+**恢复流程：**
+- 提供逐步操作说明
+- 包含校验步骤
+- 说明恢复失败时如何回退
 
-**Disaster Recovery:**
-- Define DR scenarios
-- Document DR site configuration
-- Create activation procedure
+**灾难恢复：**
+- 定义 DR 场景
+- 记录 DR 站点配置
+- 制定激活流程
 
-**Testing:**
-- Regular restore tests
-- Document results
-- Update procedures based on findings
+**测试：**
+- 定期执行恢复测试
+- 记录结果
+- 根据发现更新流程
 
-**Retention:**
-- Balance cost vs recovery needs
-- Consider compliance requirements
-- Document legal hold process
+**保留策略：**
+- 平衡成本与恢复需求
+- 考虑合规要求
+- 记录 legal hold 流程
 
-**Compliance:**
-- Map requirements to controls
-- Maintain audit trail
-- Regular compliance reviews
+**合规：**
+- 将要求映射到控制项
+- 维护审计轨迹
+- 定期进行合规审查
 
 </guidelines>

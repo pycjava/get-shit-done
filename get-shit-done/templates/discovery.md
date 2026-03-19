@@ -1,10 +1,10 @@
 # Discovery 模板
 
-用于生成 `.planning/phases/XX-name/DISCOVERY.md`，适合库选型、方案对比这类浅层调研。
+用于生成 `.planning/phases/XX-name/DISCOVERY.md`，适合做库选型、方案对比这一类浅层调研。
 
-**目的：** 回答 plan-phase 强制 discovery 阶段里的“我们应该选哪个库 / 方案”。
+**目的：** 回答 `plan-phase` 强制 discovery 阶段里的“我们应该选哪个库 / 哪种方案”。
 
-如果需要的是更深的生态研究，例如“这个领域专家通常怎么做”，改用 `/gsd:research-phase`，它会产出 `RESEARCH.md`。
+如果需要的是更深的生态研究，比如“这个领域里成熟团队通常怎么做”，应该改用 `/gsd:research-phase`，它会产出 `RESEARCH.md`。
 
 ---
 
@@ -21,13 +21,12 @@ topic: [discovery-topic]
 开始 discovery 之前，先确认今天的日期：
 !`date +%Y-%m-%d`
 
-在搜索“当前 / 最新”信息时必须使用今天的年份。
-例：如果今天是 2025-11-22，搜索词应写 2025，而不是 2024。
+在搜索“当前 / 最新”信息时，必须使用今天所在的年份。
+例如：如果今天是 2025-11-22，搜索词就应该写 2025，而不是 2024。
 </session_initialization>
 
 <discovery_objective>
 围绕 [topic] 做调研，为 [phase name] 的实现提供依据。
-
 Purpose: [这次决策或实现要解决什么]
 Scope: [边界]
 Output: DISCOVERY.md with recommendation
@@ -51,28 +50,25 @@ Output: DISCOVERY.md with recommendation
 **信息源优先级：**
 1. **Context7 MCP**：库 / 框架文档，当前且权威
 2. **官方文档**：Context7 未覆盖的平台或库
-3. **WebSearch**：比较、趋势、社区经验，所有结论都要再验证
+3. **WebSearch**：比较、趋势、社区经验，但所有结论都要再次验证
 
 **质量检查清单：**
 完成 discovery 前确认：
 - [ ] 所有关键结论都有权威来源（Context7 或官方文档）
-- [ ] 否定性结论（例如“X 不支持”）已由官方文档验证
+- [ ] 否定性结论（如“X 不支持”）已经由官方文档验证
 - [ ] API 语法 / 配置来自 Context7 或官方文档，不能只靠 WebSearch
 - [ ] WebSearch 发现已与权威来源交叉验证
-- [ ] 检查了近期更新 / changelog，避免遗漏破坏性变更
-- [ ] 比较过可行替代方案，而不是只停在第一个答案
+- [ ] 检查过近期更新 / changelog，避免遗漏破坏性变化
+- [ ] 比较过可行替代方案，而不是停在第一个答案
 
 **置信度定义：**
 - HIGH：Context7 或官方文档直接确认
 - MEDIUM：WebSearch 发现 + Context7 / 官方文档共同确认
 - LOW：仅来自 WebSearch 或训练知识，必须标记待验证
-
 </discovery_protocol>
-
 
 <output_structure>
 创建 `.planning/phases/XX-name/DISCOVERY.md`：
-
 ```markdown
 # [主题] 调研结论
 
@@ -97,7 +93,6 @@ Output: DISCOVERY.md with recommendation
 [如果适用，给出相关实现模式]
 
 ## Metadata（元信息）
-
 <metadata>
 <confidence level="high|medium|low">
 [为什么给出这个置信度，基于哪些来源和验证]
@@ -119,11 +114,11 @@ Output: DISCOVERY.md with recommendation
 </output_structure>
 
 <success_criteria>
-- 所有 discovery 范围内的问题都有权威来源支撑
+- discovery 范围内的问题都有权威来源支撑
 - 质量检查清单已完成
 - 给出清晰明确的主建议
 - 低置信度结论带有后续验证点
-- 可以直接用于指导 `PLAN.md` 生成
+- 可以直接指导 `PLAN.md` 生成
 </success_criteria>
 
 <guidelines>
@@ -134,13 +129,14 @@ Output: DISCOVERY.md with recommendation
 - 当前只卡在一个关键决策上
 
 **不适合使用 discovery 的场景：**
-- 已经成熟稳定的常见模式（CRUD、已知库的 auth）
+- 已经成熟稳定的常见模式（如 CRUD、已知库的 auth）
 - 纯实现细节，应留到执行阶段
 - 现有项目上下文已经能直接回答的问题
 
 **以下场景应改用 RESEARCH.md：**
 - 细分或复杂领域（3D、游戏、音频、shader 等）
-- 需要生态知识，而不仅是简单选型
-- 问题是“这个方向通常怎么做”
+- 需要生态知识，而不只是简单选型
+- 问题是“这个方向通常怎么做？”
 - 使用 `/gsd:research-phase`
 </guidelines>
+```

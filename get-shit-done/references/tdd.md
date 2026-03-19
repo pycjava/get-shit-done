@@ -1,40 +1,40 @@
 <overview>
-TDD is about design quality, not coverage metrics. The red-green-refactor cycle forces you to think about behavior before implementation, producing cleaner interfaces and more testable code.
+TDD 关注的是设计质量，而不是覆盖率数字。`red-green-refactor` 循环会强迫你在写实现之前先思考行为，因此通常能产出更干净的接口和更容易测试的代码。
 
-**Principle:** If you can describe the behavior as `expect(fn(input)).toBe(output)` before writing `fn`, TDD improves the result.
+**原则：** 如果你能在写 `fn` 之前就把行为描述成 `expect(fn(input)).toBe(output)`，那么 TDD 往往会让结果更好。
 
-**Key insight:** TDD work is fundamentally heavier than standard tasks—it requires 2-3 execution cycles (RED → GREEN → REFACTOR), each with file reads, test runs, and potential debugging. TDD features get dedicated plans to ensure full context is available throughout the cycle.
+**关键洞察：** TDD 的工作量天然比标准任务更重。它至少包含 2-3 个执行循环（`RED -> GREEN -> REFACTOR`），每一轮都伴随文件读取、测试运行和可能的调试。因此，适合 TDD 的功能应该获得专门的 plan，确保整个循环期间上下文都足够充足。
 </overview>
 
 <when_to_use_tdd>
-## When TDD Improves Quality
+## 什么情况下 TDD 会提升质量
 
-**TDD candidates (create a TDD plan):**
-- Business logic with defined inputs/outputs
-- API endpoints with request/response contracts
-- Data transformations, parsing, formatting
-- Validation rules and constraints
-- Algorithms with testable behavior
-- State machines and workflows
-- Utility functions with clear specifications
+**适合 TDD 的候选项（创建 TDD plan）：**
+- 有明确定义输入/输出的业务逻辑
+- 有请求/响应契约的 API endpoint
+- 数据转换、解析、格式化
+- 校验规则与约束
+- 行为可测试的算法
+- 状态机与工作流
+- 规格清晰的 utility function
 
-**Skip TDD (use standard plan with `type="auto"` tasks):**
-- UI layout, styling, visual components
-- Configuration changes
-- Glue code connecting existing components
-- One-off scripts and migrations
-- Simple CRUD with no business logic
-- Exploratory prototyping
+**不适合 TDD（使用 `type="auto"` 的标准 plan）：**
+- UI 布局、样式、视觉组件
+- 配置变更
+- 连接既有组件的 glue code
+- 一次性脚本和迁移
+- 没有业务逻辑的简单 CRUD
+- 探索式原型
 
-**Heuristic:** Can you write `expect(fn(input)).toBe(output)` before writing `fn`?
-→ Yes: Create a TDD plan
-→ No: Use standard plan, add tests after if needed
+**经验判断：** 你能在写 `fn` 之前先写出 `expect(fn(input)).toBe(output)` 吗？  
+-> 能：创建 TDD plan  
+-> 不能：使用标准 plan，需要时事后补测试
 </when_to_use_tdd>
 
 <tdd_plan_structure>
-## TDD Plan Structure
+## TDD Plan 结构
 
-Each TDD plan implements **one feature** through the full RED-GREEN-REFACTOR cycle.
+每个 TDD plan 都只通过完整的 `RED-GREEN-REFACTOR` 循环实现**一个功能**。
 
 ```markdown
 ---
@@ -60,7 +60,7 @@ Output: [Working, tested feature]
   <files>[source file, test file]</files>
   <behavior>
     [Expected behavior in testable terms]
-    Cases: input → expected output
+    Cases: input -> expected output
   </behavior>
   <implementation>[How to implement once tests pass]</implementation>
 </feature>
@@ -85,60 +85,60 @@ After completion, create SUMMARY.md with:
 </output>
 ```
 
-**One feature per TDD plan.** If features are trivial enough to batch, they're trivial enough to skip TDD—use a standard plan and add tests after.
+**一个 TDD plan 只做一个功能。** 如果多个功能已经小到能批量塞进一个 TDD plan，那通常也小到不值得走 TDD；直接用标准 plan 并在实现后补测试即可。
 </tdd_plan_structure>
 
 <execution_flow>
-## Red-Green-Refactor Cycle
+## Red-Green-Refactor 循环
 
-**RED - Write failing test:**
-1. Create test file following project conventions
-2. Write test describing expected behavior (from `<behavior>` element)
-3. Run test - it MUST fail
-4. If test passes: feature exists or test is wrong. Investigate.
-5. Commit: `test({phase}-{plan}): add failing test for [feature]`
+**RED - 写一个会失败的测试：**
+1. 按项目约定创建测试文件
+2. 基于 `<behavior>` 写出描述预期行为的测试
+3. 运行测试，它**必须失败**
+4. 如果测试直接通过了：要么功能已存在，要么测试写错了，先查清楚
+5. 提交：`test({phase}-{plan}): add failing test for [feature]`
 
-**GREEN - Implement to pass:**
-1. Write minimal code to make test pass
-2. No cleverness, no optimization - just make it work
-3. Run test - it MUST pass
-4. Commit: `feat({phase}-{plan}): implement [feature]`
+**GREEN - 实现到能通过：**
+1. 写最少量的代码让测试通过
+2. 不要耍聪明，不要先做优化，只求先工作
+3. 运行测试，它**必须通过**
+4. 提交：`feat({phase}-{plan}): implement [feature]`
 
-**REFACTOR (if needed):**
-1. Clean up implementation if obvious improvements exist
-2. Run tests - MUST still pass
-3. Only commit if changes made: `refactor({phase}-{plan}): clean up [feature]`
+**REFACTOR（如有必要）：**
+1. 如果确实存在明显改进空间，再清理实现
+2. 重跑测试，**必须继续通过**
+3. 只有发生了真实改动才提交：`refactor({phase}-{plan}): clean up [feature]`
 
-**Result:** Each TDD plan produces 2-3 atomic commits.
+**结果：** 每个 TDD plan 会产出 2-3 个原子提交。
 </execution_flow>
 
 <test_quality>
-## Good Tests vs Bad Tests
+## 好测试与坏测试
 
-**Test behavior, not implementation:**
-- Good: "returns formatted date string"
-- Bad: "calls formatDate helper with correct params"
-- Tests should survive refactors
+**测试行为，不测试实现细节：**
+- 好：`returns formatted date string`
+- 坏：`calls formatDate helper with correct params`
+- 测试应该在重构后仍然稳定成立
 
-**One concept per test:**
-- Good: Separate tests for valid input, empty input, malformed input
-- Bad: Single test checking all edge cases with multiple assertions
+**一个测试只验证一个概念：**
+- 好：把有效输入、空输入、格式错误拆成不同测试
+- 坏：一个测试里用很多断言把所有边界情况都塞进去
 
-**Descriptive names:**
-- Good: "should reject empty email", "returns null for invalid ID"
-- Bad: "test1", "handles error", "works correctly"
+**命名要描述行为：**
+- 好：`should reject empty email`、`returns null for invalid ID`
+- 坏：`test1`、`handles error`、`works correctly`
 
-**No implementation details:**
-- Good: Test public API, observable behavior
-- Bad: Mock internals, test private methods, assert on internal state
+**不要测试内部细节：**
+- 好：测试公开 API、可观察行为
+- 坏：mock 内部实现、测试私有方法、断言内部状态
 </test_quality>
 
 <framework_setup>
-## Test Framework Setup (If None Exists)
+## 测试框架初始化（如果项目里还没有）
 
-When executing a TDD plan but no test framework is configured, set it up as part of the RED phase:
+如果执行 TDD plan 时项目里还没有配置测试框架，就把它视为 RED 阶段的一部分：
 
-**1. Detect project type:**
+**1. 识别项目类型：**
 ```bash
 # JavaScript/TypeScript
 if [ -f package.json ]; then echo "node"; fi
@@ -153,7 +153,7 @@ if [ -f go.mod ]; then echo "go"; fi
 if [ -f Cargo.toml ]; then echo "rust"; fi
 ```
 
-**2. Install minimal framework:**
+**2. 安装最小测试框架：**
 | Project | Framework | Install |
 |---------|-----------|---------|
 | Node.js | Jest | `npm install -D jest @types/jest ts-jest` |
@@ -162,12 +162,12 @@ if [ -f Cargo.toml ]; then echo "rust"; fi
 | Go | testing | Built-in |
 | Rust | cargo test | Built-in |
 
-**3. Create config if needed:**
-- Jest: `jest.config.js` with ts-jest preset
-- Vitest: `vitest.config.ts` with test globals
-- pytest: `pytest.ini` or `pyproject.toml` section
+**3. 如有需要，创建配置：**
+- Jest：`jest.config.js` + `ts-jest` preset
+- Vitest：`vitest.config.ts` + test globals
+- pytest：`pytest.ini` 或 `pyproject.toml` 对应 section
 
-**4. Verify setup:**
+**4. 验证框架可用：**
 ```bash
 # Run empty test suite - should pass with 0 tests
 npm test  # Node
@@ -176,43 +176,43 @@ go test ./...  # Go
 cargo test    # Rust
 ```
 
-**5. Create first test file:**
-Follow project conventions for test location:
-- `*.test.ts` / `*.spec.ts` next to source
-- `__tests__/` directory
-- `tests/` directory at root
+**5. 创建第一个测试文件：**
+遵循项目既有测试位置约定：
+- `*.test.ts` / `*.spec.ts` 与源码相邻
+- `__tests__/` 目录
+- 根目录下的 `tests/` 目录
 
-Framework setup is a one-time cost included in the first TDD plan's RED phase.
+测试框架初始化是一笔一次性成本，算在第一个 TDD plan 的 RED 阶段里。
 </framework_setup>
 
 <error_handling>
-## Error Handling
+## 错误处理
 
-**Test doesn't fail in RED phase:**
-- Feature may already exist - investigate
-- Test may be wrong (not testing what you think)
-- Fix before proceeding
+**RED 阶段测试没有失败：**
+- 这个功能可能已经存在，先调查
+- 测试可能写错了，没测到你以为在测的东西
+- 在查清前不要进入下一阶段
 
-**Test doesn't pass in GREEN phase:**
-- Debug implementation
-- Don't skip to refactor
-- Keep iterating until green
+**GREEN 阶段测试没有通过：**
+- 调试实现
+- 不要跳到 refactor
+- 一直迭代到变绿为止
 
-**Tests fail in REFACTOR phase:**
-- Undo refactor
-- Commit was premature
-- Refactor in smaller steps
+**REFACTOR 阶段测试失败：**
+- 回退这次重构
+- 说明提交时机太早
+- 用更小的步子重新做重构
 
-**Unrelated tests break:**
-- Stop and investigate
-- May indicate coupling issue
-- Fix before proceeding
+**无关测试也挂了：**
+- 立刻停下来调查
+- 这可能说明耦合存在问题
+- 查清并修复后再继续
 </error_handling>
 
 <commit_pattern>
-## Commit Pattern for TDD Plans
+## TDD Plan 的提交模式
 
-TDD plans produce 2-3 atomic commits (one per phase):
+TDD plan 会产出 2-3 个原子提交（每个阶段一个）：
 
 ```
 test(08-02): add failing test for email validation
@@ -234,30 +234,30 @@ refactor(08-02): extract regex to constant (optional)
 - Tests still pass
 ```
 
-**Comparison with standard plans:**
-- Standard plans: 1 commit per task, 2-4 commits per plan
-- TDD plans: 2-3 commits for single feature
+**与标准 plan 的区别：**
+- 标准 plan：每个任务 1 个提交，每个 plan 通常 2-4 个提交
+- TDD plan：为了一个功能产出 2-3 个提交
 
-Both follow same format: `{type}({phase}-{plan}): {description}`
+两者都遵循统一格式：`{type}({phase}-{plan}): {description}`
 
-**Benefits:**
-- Each commit independently revertable
-- Git bisect works at commit level
-- Clear history showing TDD discipline
-- Consistent with overall commit strategy
+**收益：**
+- 每个提交都能独立回退
+- `git bisect` 可以在提交粒度上工作
+- 历史能清楚体现 TDD discipline
+- 与整体提交策略保持一致
 </commit_pattern>
 
 <context_budget>
-## Context Budget
+## 上下文预算
 
-TDD plans target **~40% context usage** (lower than standard plans' ~50%).
+TDD plan 的目标是**约 40% 的上下文占用**，低于标准 plan 通常的 50%。
 
-Why lower:
-- RED phase: write test, run test, potentially debug why it didn't fail
-- GREEN phase: implement, run test, potentially iterate on failures
-- REFACTOR phase: modify code, run tests, verify no regressions
+原因在于：
+- RED 阶段：写测试、跑测试、还可能调试为什么它没失败
+- GREEN 阶段：写实现、跑测试、还可能多轮迭代修错
+- REFACTOR 阶段：改代码、重跑测试、确认没有回归
 
-Each phase involves reading files, running commands, analyzing output. The back-and-forth is inherently heavier than linear task execution.
+每个阶段都包含读文件、跑命令、分析输出，这种来回切换天然比线性执行更重。
 
-Single feature focus ensures full quality throughout the cycle.
+因此，坚持“一个 plan 只做一个 feature”，才能在整个循环里都保持足够质量。
 </context_budget>

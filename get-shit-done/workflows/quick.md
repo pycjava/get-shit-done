@@ -1,7 +1,7 @@
 <purpose>
 执行小型、临时性的 quick task，同时保留 GSD 的基本保障：原子提交、`STATE.md` 追踪、产物目录化。
 
-Quick 模式会拉起 `gsd-planner`（quick mode）和 `gsd-executor`，把任务记录到 `.planning/quick/`，并把结果写入 `STATE.md` 的 `Quick Tasks Completed` 表。
+quick 模式会拉起 `gsd-planner`（quick mode）和 `gsd-executor`，把任务记录到 `.planning/quick/`，并把结果写入 `STATE.md` 的 `Quick Tasks Completed` 表。
 
 支持的增强模式：
 - `--discuss`：在规划前做轻量讨论，提前暴露灰区并把用户决策写入 `CONTEXT.md`
@@ -12,7 +12,7 @@ Quick 模式会拉起 `gsd-planner`（quick mode）和 `gsd-executor`，把任�
 </purpose>
 
 <required_reading>
-开始前，先读取 invoking prompt 的 execution_context 中引用的全部文件。
+开始前，先读取调用方 prompt 的 `execution_context` 中引用的全部文件。
 </required_reading>
 
 <process>
@@ -43,7 +43,7 @@ AskUserQuestion(
 **根据启用的 flag 展示横幅。**
 
 不要求保留旧版花哨字符框，但必须明确显示：
-- 这是 `QUICK TASK`
+- 这是“快速任务”
 - 当前启用的模式组合，例如 `DISCUSS + RESEARCH + FULL`
 - 对用户的含义，例如：
   - `--discuss`：先澄清灰区
@@ -292,7 +292,7 @@ researcher 返回后：
 2. 向用户报告：`研究完成：${QUICK_DIR}/${quick_id}-RESEARCH.md`
 
 如果文件不存在：
-- 给出 warning
+- 给出警告
 - 继续进入规划
 - 提示：`研究 agent 没有产出文件，继续按无研究输入进行规划`
 
@@ -411,7 +411,7 @@ Task(
 - 进入步骤 6
 
 - `## ISSUES FOUND`
-  - 展示 issue 列表
+  - 展示问题列表
   - 如果还没达到 2 轮上限，就发回 planner 做修订
 
 **修订循环最多 2 轮：**
@@ -485,7 +485,7 @@ executor 返回后：
 如果 `SUMMARY.md` 不存在：
 - 报错：`Executor failed to create ${quick_id}-SUMMARY.md`
 
-注：quick task 理论上也可能拆成多 plan，但极少见。如果真的出现多 plan，参考 `execute-phase` 的 wave 模式处理。
+注：quick task 理论上也可能拆成多 plan，但极少见。如果真的出现多 plan，参考 `execute-phase` 的波次模式处理。
 
 ---
 

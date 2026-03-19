@@ -5,57 +5,57 @@ last_reviewed: "2026-03"
 template_for: ".planning/operations/CAPACITY.md"
 ---
 
-# Capacity Planning Template
+# 容量规划模板
 
-Template for `.planning/operations/CAPACITY.md` - capacity baselines, forecasts, and scaling strategy.
+用于 `.planning/operations/CAPACITY.md` 的模板，覆盖容量基线、预测与扩缩容策略。
 
 <template>
 
 ```markdown
-# Capacity Planning
+# 容量规划
 
-**Project:** [Project Name]
-**Last Updated:** [YYYY-MM-DD]
-**Owner:** [Team/Person responsible]
-
----
-
-## Capacity Objectives
-
-| Objective | Target | Current | Status |
-|-----------|--------|---------|--------|
-| Peak CPU Headroom | [e.g., >30%] | [current] | [On Track / Risk / Blocked] |
-| Peak Memory Headroom | [e.g., >25%] | [current] | [On Track / Risk / Blocked] |
-| Queue Backlog Recovery | [e.g., <15 min] | [current] | [On Track / Risk / Blocked] |
-| Storage Growth Budget | [e.g., <10% per month] | [current] | [On Track / Risk / Blocked] |
-| Cost Ceiling | [e.g., <$X/month] | [current] | [On Track / Risk / Blocked] |
+**项目：** [项目名称]
+**最后更新：** [YYYY-MM-DD]
+**负责人：** [负责团队/人员]
 
 ---
 
-## Workload Profile
+## 容量目标
 
-### Traffic Characteristics
+| 目标 | 目标值 | 当前值 | 状态 |
+|------|--------|--------|------|
+| CPU 峰值余量 | [例如：>30%] | [current] | [On Track / Risk / Blocked] |
+| 内存峰值余量 | [例如：>25%] | [current] | [On Track / Risk / Blocked] |
+| 队列积压恢复 | [例如：<15 min] | [current] | [On Track / Risk / Blocked] |
+| 存储增长预算 | [例如：每月 <10%] | [current] | [On Track / Risk / Blocked] |
+| 成本上限 | [例如：<$X/month] | [current] | [On Track / Risk / Blocked] |
 
-| Workload | Normal | Peak | Burst Pattern | Notes |
-|----------|--------|------|---------------|-------|
-| API Requests | [baseline] | [peak] | [daily/weekly/event-driven] | [notes] |
-| Background Jobs | [baseline] | [peak] | [pattern] | [notes] |
-| Scheduled Tasks | [baseline] | [peak] | [pattern] | [notes] |
-| External Integrations | [baseline] | [peak] | [pattern] | [notes] |
+---
 
-### Data Growth
+## 工作负载画像
 
-| Data Domain | Current Size | Monthly Growth | Peak Growth Trigger | Retention |
-|-------------|--------------|----------------|---------------------|-----------|
-| Primary Database | [size] | [growth] | [trigger] | [retention] |
-| Object Storage | [size] | [growth] | [trigger] | [retention] |
-| Logs | [size] | [growth] | [trigger] | [retention] |
-| Backups | [size] | [growth] | [trigger] | [retention] |
+### 流量特征
 
-### Dependency Limits
+| 工作负载 | 常态 | 峰值 | 突发模式 | 备注 |
+|----------|------|------|----------|------|
+| API 请求 | [baseline] | [peak] | [daily/weekly/event-driven] | [notes] |
+| 后台任务 | [baseline] | [peak] | [pattern] | [notes] |
+| 定时任务 | [baseline] | [peak] | [pattern] | [notes] |
+| 外部集成 | [baseline] | [peak] | [pattern] | [notes] |
 
-| Dependency | Limit Type | Current Usage | Limit | Notes |
-|------------|------------|---------------|-------|-------|
+### 数据增长
+
+| 数据域 | 当前大小 | 月增长 | 峰值增长触发因素 | 保留策略 |
+|--------|----------|--------|------------------|----------|
+| 主数据库 | [size] | [growth] | [trigger] | [retention] |
+| 对象存储 | [size] | [growth] | [trigger] | [retention] |
+| 日志 | [size] | [growth] | [trigger] | [retention] |
+| 备份 | [size] | [growth] | [trigger] | [retention] |
+
+### 依赖上限
+
+| 依赖 | 上限类型 | 当前使用量 | 上限 | 备注 |
+|------|----------|------------|------|------|
 | Database | Connections / throughput | [usage] | [limit] | [notes] |
 | Cache | Memory / ops | [usage] | [limit] | [notes] |
 | Queue | Throughput / depth | [usage] | [limit] | [notes] |
@@ -63,195 +63,195 @@ Template for `.planning/operations/CAPACITY.md` - capacity baselines, forecasts,
 
 ---
 
-## Current Baseline
+## 当前基线
 
-### Service Baseline
+### 服务基线
 
-| Service | Replicas / Size | CPU Peak | Memory Peak | Latency P95 | Error Rate |
-|---------|------------------|----------|-------------|-------------|------------|
+| 服务 | 副本数 / 规格 | CPU 峰值 | 内存峰值 | 延迟 P95 | 错误率 |
+|------|---------------|----------|----------|----------|--------|
 | [service-name] | [count/size] | [value] | [value] | [value] | [value] |
 | [service-name] | [count/size] | [value] | [value] | [value] | [value] |
 
-### Infrastructure Baseline
+### 基础设施基线
 
-| Resource | Current Capacity | Average Utilization | Peak Utilization | Headroom |
-|----------|------------------|---------------------|------------------|----------|
+| 资源 | 当前容量 | 平均利用率 | 峰值利用率 | 余量 |
+|------|----------|------------|------------|------|
 | Compute | [value] | [value] | [value] | [value] |
 | Database | [value] | [value] | [value] | [value] |
 | Cache | [value] | [value] | [value] | [value] |
 | Storage | [value] | [value] | [value] | [value] |
 | Network | [value] | [value] | [value] | [value] |
 
-### Cost Baseline
+### 成本基线
 
-| Area | Current Monthly Cost | Cost Driver | Forecast Sensitivity |
-|------|----------------------|-------------|----------------------|
+| 区域 | 当前月成本 | 成本驱动项 | 预测敏感度 |
+|------|------------|------------|------------|
 | Compute | [cost] | [driver] | [high/medium/low] |
 | Database | [cost] | [driver] | [high/medium/low] |
 | Storage | [cost] | [driver] | [high/medium/low] |
-| Observability | [cost] | [driver] | [high/medium/low] |
+| 可观测性 | [cost] | [driver] | [high/medium/low] |
 
 ---
 
-## Forecast
+## 预测
 
-### Demand Forecast
+### 需求预测
 
-| Horizon | Requests / Jobs | Storage Growth | Peak Concurrency | Cost Estimate |
-|---------|------------------|----------------|------------------|---------------|
-| Next 30 Days | [forecast] | [forecast] | [forecast] | [estimate] |
-| Next 90 Days | [forecast] | [forecast] | [forecast] | [estimate] |
-| Next 12 Months | [forecast] | [forecast] | [forecast] | [estimate] |
+| 时间范围 | 请求 / 任务量 | 存储增长 | 峰值并发 | 成本预估 |
+|----------|---------------|----------|----------|----------|
+| 接下来 30 天 | [forecast] | [forecast] | [forecast] | [estimate] |
+| 接下来 90 天 | [forecast] | [forecast] | [forecast] | [estimate] |
+| 接下来 12 个月 | [forecast] | [forecast] | [forecast] | [estimate] |
 
-### Planning Assumptions
+### 规划假设
 
-- [Assumption about user or traffic growth]
-- [Assumption about launches, regions, or new customers]
-- [Assumption about retention or data expansion]
-- [Assumption about vendor or infrastructure limits]
+- [关于用户或流量增长的假设]
+- [关于发布、区域扩张或新客户的假设]
+- [关于保留策略或数据扩张的假设]
+- [关于供应商或基础设施上限的假设]
 
-### Scenario Planning
+### 场景规划
 
-| Scenario | Trigger | Expected Impact | Mitigation |
-|----------|---------|-----------------|------------|
-| Planned Launch | [date/event] | [impact] | [mitigation] |
-| Traffic Spike | [condition] | [impact] | [mitigation] |
-| Dependency Slowdown | [condition] | [impact] | [mitigation] |
-| Storage Growth Surprise | [condition] | [impact] | [mitigation] |
+| 场景 | 触发条件 | 预期影响 | 缓解措施 |
+|------|----------|----------|----------|
+| 计划发布 | [date/event] | [impact] | [mitigation] |
+| 流量激增 | [condition] | [impact] | [mitigation] |
+| 依赖变慢 | [condition] | [impact] | [mitigation] |
+| 存储增长超预期 | [condition] | [impact] | [mitigation] |
 
 ---
 
-## Scaling Strategy
+## 扩缩容策略
 
-### Scaling Actions
+### 扩缩容动作
 
-| Constraint | Trigger | Action | Owner | Lead Time |
-|------------|---------|--------|-------|-----------|
-| Compute Saturation | [threshold] | [scale out/up action] | [owner] | [lead time] |
-| Database Saturation | [threshold] | [action] | [owner] | [lead time] |
-| Queue Backlog | [threshold] | [action] | [owner] | [lead time] |
-| Storage Utilization | [threshold] | [action] | [owner] | [lead time] |
+| 约束 | 触发条件 | 动作 | 负责人 | 前置周期 |
+|------|----------|------|--------|----------|
+| Compute 饱和 | [threshold] | [scale out/up action] | [owner] | [lead time] |
+| Database 饱和 | [threshold] | [action] | [owner] | [lead time] |
+| Queue 积压 | [threshold] | [action] | [owner] | [lead time] |
+| Storage 利用率 | [threshold] | [action] | [owner] | [lead time] |
 
-### Deployment Coupling
+### 与部署的耦合
 
-- [How deployment strategy changes at higher load]
-- [What must be verified before traffic increases]
-- [What rollback looks like during saturation]
+- [更高负载下部署策略如何变化]
+- [流量增长前必须验证什么]
+- [饱和状态下回滚应如何执行]
 
-### Cost Controls
+### 成本控制
 
 - [Reserved capacity / autoscaling / limits]
-- [Spend alerts and approval path]
-- [Low-priority workload shedding plan]
+- [支出告警与审批路径]
+- [低优先级工作负载削峰方案]
 
 ---
 
-## Validation
+## 验证
 
-### Load and Stress Testing
+### 负载与压力测试
 
-| Test | Goal | Environment | Last Run | Result |
-|------|------|-------------|----------|--------|
-| Baseline Load Test | Confirm steady-state limits | [env] | [date] | [result] |
-| Peak Load Test | Validate expected peak | [env] | [date] | [result] |
-| Stress Test | Find breaking point | [env] | [date] | [result] |
-| Recovery Test | Validate recovery after saturation | [env] | [date] | [result] |
+| 测试 | 目标 | 环境 | 最近执行 | 结果 |
+|------|------|------|----------|------|
+| 基线负载测试 | 确认稳态上限 | [env] | [date] | [result] |
+| 峰值负载测试 | 验证预期峰值 | [env] | [date] | [result] |
+| 压力测试 | 找出崩溃点 | [env] | [date] | [result] |
+| 恢复测试 | 验证饱和后的恢复能力 | [env] | [date] | [result] |
 
-### Review Cadence
+### 评审节奏
 
-| Review | Frequency | Owner |
-|--------|-----------|-------|
-| Headroom Review | Weekly | [owner] |
-| Forecast Refresh | Monthly | [owner] |
-| Cost Review | Monthly | [owner] |
-| Scaling Drill | Quarterly | [owner] |
-
----
-
-## Alerts and Triggers
-
-| Signal | Warning | Critical | Action |
-|--------|---------|----------|--------|
-| CPU Headroom | [threshold] | [threshold] | [action] |
-| Memory Headroom | [threshold] | [threshold] | [action] |
-| Queue Depth | [threshold] | [threshold] | [action] |
-| Database Connections | [threshold] | [threshold] | [action] |
-| Storage Utilization | [threshold] | [threshold] | [action] |
-| Cost Burn Rate | [threshold] | [threshold] | [action] |
+| 评审 | 频率 | 负责人 |
+|------|------|--------|
+| 余量评审 | 每周 | [owner] |
+| 预测刷新 | 每月 | [owner] |
+| 成本评审 | 每月 | [owner] |
+| 扩容演练 | 每季度 | [owner] |
 
 ---
 
-## Risks and Bottlenecks
+## 告警与触发器
 
-| Risk | Likelihood | Impact | Mitigation | Owner |
-|------|------------|--------|------------|-------|
+| 信号 | Warning | Critical | 动作 |
+|------|---------|----------|------|
+| CPU 余量 | [threshold] | [threshold] | [action] |
+| 内存余量 | [threshold] | [threshold] | [action] |
+| 队列深度 | [threshold] | [threshold] | [action] |
+| 数据库连接数 | [threshold] | [threshold] | [action] |
+| 存储利用率 | [threshold] | [threshold] | [action] |
+| 成本燃烧率 | [threshold] | [threshold] | [action] |
+
+---
+
+## 风险与瓶颈
+
+| 风险 | 可能性 | 影响 | 缓解措施 | 负责人 |
+|------|--------|------|----------|--------|
 | [risk] | [L/M/H] | [L/M/H] | [mitigation] | [owner] |
 | [risk] | [L/M/H] | [L/M/H] | [mitigation] | [owner] |
 
 ---
 
-## Decision Log
+## 决策记录
 
-| Date | Decision | Rationale | Review Date |
-|------|----------|-----------|-------------|
+| 日期 | 决策 | 原因 | 复审日期 |
+|------|------|------|----------|
 | [date] | [decision] | [why] | [date] |
 | [date] | [decision] | [why] | [date] |
 
 ---
 
-## Related Documents
+## 相关文档
 
-- [OPERATIONS.md](./OPERATIONS.md) - Operations overview
-- [DEPLOYMENT.md](./DEPLOYMENT.md) - Deployment procedures
-- [MONITORING.md](./MONITORING.md) - Monitoring and alerting
-- [RUNBOOK.md](./RUNBOOK.md) - Incident response
-- [BACKUP.md](./BACKUP.md) - Backup and recovery
+- [OPERATIONS.md](./OPERATIONS.md) - 运维总览
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - 部署流程
+- [MONITORING.md](./MONITORING.md) - 监控与告警
+- [RUNBOOK.md](./RUNBOOK.md) - 事故响应
+- [BACKUP.md](./BACKUP.md) - 备份与恢复
 
 ---
 
-*Capacity review: [date]*
-*Update after launches, sustained growth changes, or infrastructure limit changes*
+*容量评审： [date]*
+*在发布、持续增长变化或基础设施上限变化后更新*
 ```
 
 </template>
 
 <guidelines>
 
-**What This Is:**
-- Capacity baseline and forecast document
-- Scaling strategy and trigger reference
-- Load validation and headroom planning
-- Cost and dependency limit visibility
+**这份文档是什么：**
+- 容量基线与预测文档
+- 扩缩容策略与触发器参考
+- 负载验证与余量规划
+- 成本与依赖上限可见性
 
-**Workload Profile:**
-- Capture normal, peak, and burst behavior
-- Include data growth and retention assumptions
-- Note third-party or platform limits
+**工作负载画像：**
+- 记录常态、峰值与突发行为
+- 包含数据增长与保留假设
+- 标明第三方或平台上限
 
-**Current Baseline:**
-- Record real measured baselines, not guesses
-- Track headroom for each critical resource
-- Include cost drivers when scale has budget impact
+**当前基线：**
+- 记录真实测得的基线，而不是猜测
+- 跟踪每个关键资源的余量
+- 当扩容影响预算时，一并记录成本驱动项
 
-**Forecasting:**
-- Keep assumptions explicit
-- Review after launches, migrations, and customer growth
-- Use multiple horizons to avoid reactive scaling
+**预测：**
+- 明确写出假设
+- 在发布、迁移和客户增长后复审
+- 使用多个时间范围，避免被动扩容
 
-**Scaling Strategy:**
-- Define exact triggers and owners
-- Note lead times for manual capacity changes
-- Connect scaling plans to deployment and rollback procedures
+**扩缩容策略：**
+- 明确定义触发条件与负责人
+- 标注手动扩容需要的提前量
+- 将扩容方案与部署、回滚流程关联起来
 
-**Validation:**
-- Use load, stress, and recovery testing
-- Refresh thresholds when baseline changes
-- Review on a regular cadence
+**验证：**
+- 使用负载、压力和恢复测试
+- 基线变化后刷新阈值
+- 按固定节奏评审
 
-**When to Update:**
-- Before launches or migrations
-- After significant traffic or storage changes
-- When vendor limits or pricing changes
-- After incidents caused by saturation
+**何时更新：**
+- 发布或迁移前
+- 流量或存储显著变化后
+- 供应商上限或定价变化时
+- 发生容量饱和导致的事故后
 
 </guidelines>

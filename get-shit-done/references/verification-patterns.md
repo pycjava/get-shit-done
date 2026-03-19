@@ -1,26 +1,26 @@
-# Verification Patterns
+# 验证模式
 
-How to verify different types of artifacts are real implementations, not stubs or placeholders.
+用于判断不同类型产物是否为真实实现，而不是 stub 或 placeholder。
 
 <core_principle>
-**Existence ≠ Implementation**
+**存在 ≠ 已实现**
 
-A file existing does not mean the feature works. Verification must check:
-1. **Exists** - File is present at expected path
-2. **Substantive** - Content is real implementation, not placeholder
-3. **Wired** - Connected to the rest of the system
-4. **Functional** - Actually works when invoked
+一个文件存在，不代表这个功能真的可用。验证时必须检查：
+1. **Exists** - 文件是否在预期路径存在
+2. **Substantive** - 内容是否是真实实现，而不是 placeholder
+3. **Wired** - 是否已经接入系统其他部分
+4. **Functional** - 调用时是否真的能工作
 
-Levels 1-3 can be checked programmatically. Level 4 often requires human verification.
+其中 1-3 级通常可以程序化检查，4 级往往需要人工验证。
 </core_principle>
 
 <stub_detection>
 
-## Universal Stub Patterns
+## 通用 Stub 模式
 
-These patterns indicate placeholder code regardless of file type:
+这些模式无论文件类型如何，都常常意味着只是占位代码：
 
-**Comment-based stubs:**
+**基于注释的 stub：**
 ```bash
 # Grep patterns for stub comments
 grep -E "(TODO|FIXME|XXX|HACK|PLACEHOLDER)" "$file"
@@ -28,7 +28,7 @@ grep -E "implement|add later|coming soon|will be" "$file" -i
 grep -E "// \.\.\.|/\* \.\.\. \*/|# \.\.\." "$file"
 ```
 
-**Placeholder text in output:**
+**输出中的 placeholder 文本：**
 ```bash
 # UI placeholder patterns
 grep -E "placeholder|lorem ipsum|coming soon|under construction" "$file" -i
@@ -36,7 +36,7 @@ grep -E "sample|example|test data|dummy" "$file" -i
 grep -E "\[.*\]|<.*>|\{.*\}" "$file"  # Template brackets left in
 ```
 
-**Empty or trivial implementations:**
+**空实现或过于简单的实现：**
 ```bash
 # Functions that do nothing
 grep -E "return null|return undefined|return \{\}|return \[\]" "$file"
@@ -44,7 +44,7 @@ grep -E "pass$|\.\.\.|\bnothing\b" "$file"
 grep -E "console\.(log|warn|error).*only" "$file"  # Log-only functions
 ```
 
-**Hardcoded values where dynamic expected:**
+**本应动态却被硬编码的值：**
 ```bash
 # Hardcoded IDs, counts, or content
 grep -E "id.*=.*['\"].*['\"]" "$file"  # Hardcoded string IDs
@@ -56,15 +56,15 @@ grep -E "\\\$\d+\.\d{2}|\d+ items" "$file"  # Hardcoded display values
 
 <react_components>
 
-## React/Next.js Components
+## React / Next.js 组件
 
-**Existence check:**
+**存在性检查：**
 ```bash
 # File exists and exports component
 [ -f "$component_path" ] && grep -E "export (default |)function|export const.*=.*\(" "$component_path"
 ```
 
-**Substantive check:**
+**实质性检查：**
 ```bash
 # Returns actual JSX, not placeholder
 grep -E "return.*<" "$component_path" | grep -v "return.*null" | grep -v "placeholder" -i
@@ -76,7 +76,7 @@ grep -E "<[A-Z][a-zA-Z]+|className=|onClick=|onChange=" "$component_path"
 grep -E "props\.|useState|useEffect|useContext|\{.*\}" "$component_path"
 ```
 
-**Stub patterns specific to React:**
+**React 特有的 stub 模式：**
 ```javascript
 // RED FLAGS - These are stubs:
 return <div>Component</div>
@@ -92,7 +92,7 @@ onChange={() => console.log('clicked')}
 onSubmit={(e) => e.preventDefault()}  // Only prevents default, does nothing
 ```
 
-**Wiring check:**
+**接线检查：**
 ```bash
 # Component imports what it needs
 grep -E "^import.*from" "$component_path"
@@ -105,19 +105,19 @@ grep -E "\{ .* \}.*props|\bprops\.[a-zA-Z]+" "$component_path"
 grep -E "fetch\(|axios\.|useSWR|useQuery|getServerSideProps|getStaticProps" "$component_path"
 ```
 
-**Functional verification (human required):**
-- Does the component render visible content?
-- Do interactive elements respond to clicks?
-- Does data load and display?
-- Do error states show appropriately?
+**功能验证（需要人工）：**
+- 组件是否渲染出可见内容？
+- 交互元素点击后是否有响应？
+- 数据是否真的加载并展示？
+- 错误态是否展示正确？
 
 </react_components>
 
 <api_routes>
 
-## API Routes (Next.js App Router / Express / etc.)
+## API 路由（Next.js App Router / Express / 等）
 
-**Existence check:**
+**存在性检查：**
 ```bash
 # Route file exists
 [ -f "$route_path" ]
@@ -129,7 +129,7 @@ grep -E "export (async )?(function|const) (GET|POST|PUT|PATCH|DELETE)" "$route_p
 grep -E "\.(get|post|put|patch|delete)\(" "$route_path"
 ```
 
-**Substantive check:**
+**实质性检查：**
 ```bash
 # Has actual logic, not just return statement
 wc -l "$route_path"  # More than 10-15 lines suggests real implementation
@@ -144,7 +144,7 @@ grep -E "try|catch|throw|error|Error" "$route_path"
 grep -E "Response\.json|res\.json|res\.send|return.*\{" "$route_path" | grep -v "message.*not implemented" -i
 ```
 
-**Stub patterns specific to API routes:**
+**API 路由特有的 stub 模式：**
 ```typescript
 // RED FLAGS - These are stubs:
 export async function POST() {
@@ -166,7 +166,7 @@ export async function POST(req) {
 }
 ```
 
-**Wiring check:**
+**接线检查：**
 ```bash
 # Imports database/service clients
 grep -E "^import.*prisma|^import.*db|^import.*client" "$route_path"
@@ -178,19 +178,19 @@ grep -E "req\.json\(\)|req\.body|request\.json\(\)" "$route_path"
 grep -E "schema\.parse|validate|zod|yup|joi" "$route_path"
 ```
 
-**Functional verification (human or automated):**
-- Does GET return real data from database?
-- Does POST actually create a record?
-- Does error response have correct status code?
-- Are auth checks actually enforced?
+**功能验证（人工或自动）：**
+- GET 是否真的从数据库返回数据？
+- POST 是否真的创建了记录？
+- 错误响应的状态码是否正确？
+- 鉴权检查是否真的生效？
 
 </api_routes>
 
 <database_schema>
 
-## Database Schema (Prisma / Drizzle / SQL)
+## 数据库 Schema（Prisma / Drizzle / SQL）
 
-**Existence check:**
+**存在性检查：**
 ```bash
 # Schema file exists
 [ -f "prisma/schema.prisma" ] || [ -f "drizzle/schema.ts" ] || [ -f "src/db/schema.sql" ]
@@ -199,7 +199,7 @@ grep -E "schema\.parse|validate|zod|yup|joi" "$route_path"
 grep -E "^model $model_name|CREATE TABLE $table_name|export const $table_name" "$schema_path"
 ```
 
-**Substantive check:**
+**实质性检查：**
 ```bash
 # Has expected fields (not just id)
 grep -A 20 "model $model_name" "$schema_path" | grep -E "^\s+\w+\s+\w+"
@@ -211,7 +211,7 @@ grep -E "@relation|REFERENCES|FOREIGN KEY" "$schema_path"
 grep -A 20 "model $model_name" "$schema_path" | grep -E "Int|DateTime|Boolean|Float|Decimal|Json"
 ```
 
-**Stub patterns specific to schemas:**
+**Schema 特有的 stub 模式：**
 ```prisma
 // RED FLAGS - These are stubs:
 model User {
@@ -231,7 +231,7 @@ model Order {
 }
 ```
 
-**Wiring check:**
+**接线检查：**
 ```bash
 # Migrations exist and are applied
 ls prisma/migrations/ 2>/dev/null | wc -l  # Should be > 0
@@ -241,7 +241,7 @@ npx prisma migrate status 2>/dev/null | grep -v "pending"
 [ -d "node_modules/.prisma/client" ]
 ```
 
-**Functional verification:**
+**功能验证：**
 ```bash
 # Can query the table (automated)
 npx prisma db execute --stdin <<< "SELECT COUNT(*) FROM $table_name"
@@ -251,15 +251,15 @@ npx prisma db execute --stdin <<< "SELECT COUNT(*) FROM $table_name"
 
 <hooks_utilities>
 
-## Custom Hooks and Utilities
+## 自定义 Hook 与工具函数
 
-**Existence check:**
+**存在性检查：**
 ```bash
 # File exists and exports function
 [ -f "$hook_path" ] && grep -E "export (default )?(function|const)" "$hook_path"
 ```
 
-**Substantive check:**
+**实质性检查：**
 ```bash
 # Hook uses React hooks (for custom hooks)
 grep -E "useState|useEffect|useCallback|useMemo|useRef|useContext" "$hook_path"
@@ -271,7 +271,7 @@ grep -E "return \{|return \[" "$hook_path"
 [ $(wc -l < "$hook_path") -gt 10 ]
 ```
 
-**Stub patterns specific to hooks:**
+**Hook 特有的 stub 模式：**
 ```typescript
 // RED FLAGS - These are stubs:
 export function useAuth() {
@@ -289,7 +289,7 @@ export function useUser() {
 }
 ```
 
-**Wiring check:**
+**接线检查：**
 ```bash
 # Hook is actually imported somewhere
 grep -r "import.*$hook_name" src/ --include="*.tsx" --include="*.ts" | grep -v "$hook_path"
@@ -302,9 +302,9 @@ grep -r "$hook_name()" src/ --include="*.tsx" --include="*.ts" | grep -v "$hook_
 
 <environment_config>
 
-## Environment Variables and Configuration
+## 环境变量与配置
 
-**Existence check:**
+**存在性检查：**
 ```bash
 # .env file exists
 [ -f ".env" ] || [ -f ".env.local" ]
@@ -313,7 +313,7 @@ grep -r "$hook_name()" src/ --include="*.tsx" --include="*.ts" | grep -v "$hook_
 grep -E "^$VAR_NAME=" .env .env.local 2>/dev/null
 ```
 
-**Substantive check:**
+**实质性检查：**
 ```bash
 # Variable has actual value (not placeholder)
 grep -E "^$VAR_NAME=.+" .env .env.local 2>/dev/null | grep -v "your-.*-here|xxx|placeholder|TODO" -i
@@ -324,7 +324,7 @@ grep -E "^$VAR_NAME=.+" .env .env.local 2>/dev/null | grep -v "your-.*-here|xxx|
 # - Booleans should be true/false
 ```
 
-**Stub patterns specific to env:**
+**env 特有的 stub 模式：**
 ```bash
 # RED FLAGS - These are stubs:
 DATABASE_URL=your-database-url-here
@@ -333,7 +333,7 @@ API_KEY=placeholder
 NEXT_PUBLIC_API_URL=http://localhost:3000  # Still pointing to localhost in prod
 ```
 
-**Wiring check:**
+**接线检查：**
 ```bash
 # Variable is actually used in code
 grep -r "process\.env\.$VAR_NAME|env\.$VAR_NAME" src/ --include="*.ts" --include="*.tsx"
@@ -346,13 +346,13 @@ grep -E "$VAR_NAME" src/env.ts src/env.mjs 2>/dev/null
 
 <wiring_verification>
 
-## Wiring Verification Patterns
+## 接线验证模式
 
-Wiring verification checks that components actually communicate. This is where most stubs hide.
+接线验证用于判断组件之间是否真的打通了通信。这通常也是最容易藏 stub 的地方。
 
-### Pattern: Component → API
+### 模式：Component → API
 
-**Check:** Does the component actually call the API?
+**检查：** 组件是否真的调用了 API？
 
 ```bash
 # Find the fetch/axios call
@@ -365,7 +365,7 @@ grep -E "fetch\(|axios\." "$component_path" | grep -v "^.*//.*fetch"
 grep -E "await.*fetch|\.then\(|setData|setState" "$component_path"
 ```
 
-**Red flags:**
+**危险信号：**
 ```typescript
 // Fetch exists but response ignored:
 fetch('/api/messages')  // No await, no .then, no assignment
@@ -377,9 +377,9 @@ fetch('/api/messages')  // No await, no .then, no assignment
 fetch('/api/message')  // Typo - should be /api/messages
 ```
 
-### Pattern: API → Database
+### 模式：API → Database
 
-**Check:** Does the API route actually query the database?
+**检查：** API 路由是否真的查询了数据库？
 
 ```bash
 # Find the database call
@@ -392,7 +392,7 @@ grep -E "await.*prisma|await.*db\." "$route_path"
 grep -E "return.*json.*data|res\.json.*result" "$route_path"
 ```
 
-**Red flags:**
+**危险信号：**
 ```typescript
 // Query exists but result not returned:
 await prisma.message.findMany()
@@ -403,9 +403,9 @@ const messages = prisma.message.findMany()  // Missing await
 return Response.json(messages)  // Returns Promise, not data
 ```
 
-### Pattern: Form → Handler
+### 模式：Form → Handler
 
-**Check:** Does the form submission actually do something?
+**检查：** 表单提交后是否真的执行了有效动作？
 
 ```bash
 # Find onSubmit handler
@@ -418,7 +418,7 @@ grep -A 10 "onSubmit.*=" "$component_path" | grep -E "fetch|axios|mutate|dispatc
 grep -A 5 "onSubmit" "$component_path" | grep -v "only.*preventDefault" -i
 ```
 
-**Red flags:**
+**危险信号：**
 ```typescript
 // Handler only prevents default:
 onSubmit={(e) => e.preventDefault()}
@@ -432,9 +432,9 @@ const handleSubmit = (data) => {
 onSubmit={() => {}}
 ```
 
-### Pattern: State → Render
+### 模式：State → Render
 
-**Check:** Does the component render state, not hardcoded content?
+**检查：** 组件渲染的是否是状态数据，而不是硬编码内容？
 
 ```bash
 # Find state usage in JSX
@@ -447,7 +447,7 @@ grep -E "\.map\(|\.filter\(|\.reduce\(" "$component_path"
 grep -E "\{[a-zA-Z_]+\." "$component_path"  # Variable interpolation
 ```
 
-**Red flags:**
+**危险信号：**
 ```tsx
 // Hardcoded instead of state:
 return <div>
@@ -468,58 +468,58 @@ return <div>{otherData.map(...)}</div>  // Uses different data
 
 <verification_checklist>
 
-## Quick Verification Checklist
+## 快速验证清单
 
-For each artifact type, run through this checklist:
+针对每种产物类型，都可以按下面清单走一遍：
 
-### Component Checklist
-- [ ] File exists at expected path
-- [ ] Exports a function/const component
-- [ ] Returns JSX (not null/empty)
-- [ ] No placeholder text in render
-- [ ] Uses props or state (not static)
-- [ ] Event handlers have real implementations
-- [ ] Imports resolve correctly
-- [ ] Used somewhere in the app
+### 组件清单
+- [ ] 文件存在于预期路径
+- [ ] 导出了函数 / const 组件
+- [ ] 返回 JSX（不是 null / 空）
+- [ ] 渲染内容中没有 placeholder 文本
+- [ ] 使用了 props 或 state（不是纯静态）
+- [ ] 事件处理器有真实实现
+- [ ] imports 可以正确解析
+- [ ] 在应用某处被实际使用
 
-### API Route Checklist
-- [ ] File exists at expected path
-- [ ] Exports HTTP method handlers
-- [ ] Handlers have more than 5 lines
-- [ ] Queries database or service
-- [ ] Returns meaningful response (not empty/placeholder)
-- [ ] Has error handling
-- [ ] Validates input
-- [ ] Called from frontend
+### API 路由清单
+- [ ] 文件存在于预期路径
+- [ ] 导出了 HTTP 方法处理器
+- [ ] 处理器不止 5 行
+- [ ] 会查询数据库或服务
+- [ ] 返回有意义的响应（不是空 / placeholder）
+- [ ] 包含错误处理
+- [ ] 做了输入校验
+- [ ] 被前端实际调用
 
-### Schema Checklist
-- [ ] Model/table defined
-- [ ] Has all expected fields
-- [ ] Fields have appropriate types
-- [ ] Relationships defined if needed
-- [ ] Migrations exist and applied
-- [ ] Client generated
+### Schema 清单
+- [ ] 定义了 model / table
+- [ ] 具备所有预期字段
+- [ ] 字段类型合适
+- [ ] 必要时定义了关系
+- [ ] 存在 migration 且已应用
+- [ ] 已生成 client
 
-### Hook/Utility Checklist
-- [ ] File exists at expected path
-- [ ] Exports function
-- [ ] Has meaningful implementation (not empty returns)
-- [ ] Used somewhere in the app
-- [ ] Return values consumed
+### Hook / 工具函数清单
+- [ ] 文件存在于预期路径
+- [ ] 导出了函数
+- [ ] 有真实实现（不是空返回）
+- [ ] 在应用某处被实际使用
+- [ ] 返回值被实际消费
 
-### Wiring Checklist
-- [ ] Component → API: fetch/axios call exists and uses response
-- [ ] API → Database: query exists and result returned
-- [ ] Form → Handler: onSubmit calls API/mutation
-- [ ] State → Render: state variables appear in JSX
+### 接线清单
+- [ ] Component → API：存在 fetch / axios 调用，且响应被实际使用
+- [ ] API → Database：存在查询，且结果被返回
+- [ ] Form → Handler：`onSubmit` 会调用 API / mutation
+- [ ] State → Render：状态变量实际出现在 JSX 中
 
 </verification_checklist>
 
 <automated_verification_script>
 
-## Automated Verification Approach
+## 自动验证方法
 
-For the verification subagent, use this pattern:
+给 verification subagent 时，可使用这套模式：
 
 ```bash
 # 1. Check existence
@@ -552,32 +552,32 @@ check_substantive() {
 }
 ```
 
-Run these checks against each must-have artifact. Aggregate results into VERIFICATION.md.
+对每个 must-have artifact 运行这些检查，再把结果汇总进 `VERIFICATION.md`。
 
 </automated_verification_script>
 
 <human_verification_triggers>
 
-## When to Require Human Verification
+## 何时必须人工验证
 
-Some things can't be verified programmatically. Flag these for human testing:
+有些内容无法稳定地程序化验证。遇到这些情况时，应显式标记为人工测试项：
 
-**Always human:**
-- Visual appearance (does it look right?)
-- User flow completion (can you actually do the thing?)
-- Real-time behavior (WebSocket, SSE)
-- External service integration (Stripe, email sending)
-- Error message clarity (is the message helpful?)
-- Performance feel (does it feel fast?)
+**始终需要人工：**
+- 视觉外观（看起来是否正确）
+- 完整用户流程（用户是否真的能完成目标）
+- 实时行为（WebSocket、SSE）
+- 外部服务集成（Stripe、邮件发送）
+- 错误消息是否清晰
+- 体感性能是否足够快
 
-**Human if uncertain:**
-- Complex wiring that grep can't trace
-- Dynamic behavior depending on state
-- Edge cases and error states
-- Mobile responsiveness
-- Accessibility
+**不确定时也要人工：**
+- grep 无法稳定追踪的复杂接线
+- 依赖动态状态的行为
+- 边界情况与错误态
+- 移动端响应式表现
+- 无障碍能力
 
-**Format for human verification request:**
+**人工验证请求格式：**
 ```markdown
 ## Human Verification Required
 
@@ -596,17 +596,17 @@ Some things can't be verified programmatically. Flag these for human testing:
 
 <checkpoint_automation_reference>
 
-## Pre-Checkpoint Automation
+## 检查点前的自动化准备
 
-For automation-first checkpoint patterns, server lifecycle management, CLI installation handling, and error recovery protocols, see:
+关于 automation-first 的 checkpoint 模式、server 生命周期管理、CLI 安装处理和错误恢复协议，见：
 
 **@~/.claude/get-shit-done/references/checkpoints.md** → `<automation_reference>` section
 
-Key principles:
-- Claude sets up verification environment BEFORE presenting checkpoints
-- Users never run CLI commands (visit URLs only)
-- Server lifecycle: start before checkpoint, handle port conflicts, keep running for duration
-- CLI installation: auto-install where safe, checkpoint for user choice otherwise
-- Error handling: fix broken environment before checkpoint, never present checkpoint with failed setup
+关键原则：
+- Claude 必须在展示 checkpoint 之前先搭好验证环境
+- 用户不应执行 CLI 命令（只访问 URL）
+- Server 生命周期：checkpoint 前启动，处理端口冲突，并在整个验证期间保持运行
+- CLI 安装：能安全自动装就自动装，否则再用 checkpoint 让用户选择
+- 错误处理：先修复损坏的环境，再展示 checkpoint；绝不要带着失败的 setup 进入 checkpoint
 
 </checkpoint_automation_reference>

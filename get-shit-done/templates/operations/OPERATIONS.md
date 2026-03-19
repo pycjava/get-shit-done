@@ -5,184 +5,181 @@ last_reviewed: "2026-03"
 template_for: ".planning/operations/OPERATIONS.md"
 ---
 
-# Operations Overview Template
+# Operations 总览模板
 
-Template for `.planning/operations/OPERATIONS.md` — the operations strategy overview document.
+用于生成 `.planning/operations/OPERATIONS.md`，即运维策略总览文档。
 
 <template>
 
 ```markdown
-# Operations Overview
+# Operations 总览
 
 **Project:** [Project Name]
 **Last Updated:** [YYYY-MM-DD]
-**Owner:** [Team/Person responsible]
+**Owner:** [负责团队 / 负责人]
 
 ---
 
-## Operations Strategy
+## 运维策略
 
-### Philosophy
+### 方法观
 
-[One paragraph describing the operations philosophy:
-- How the team approaches reliability, availability, and maintainability
-- Key principles that guide operational decisions
-- Balance between speed and stability]
+[用一段话描述运维方法观：
+- 团队如何看待可靠性、可用性与可维护性
+- 做运维决策时遵循哪些原则
+- 如何平衡速度与稳定性]
 
-### Core Objectives
+### 核心目标
 
 | Objective | Target | Current | Status |
 |-----------|--------|---------|--------|
-| Capacity Headroom | [e.g., >30% at peak] | [current] | [On Track / Risk / Blocked] |
-| Availability | [e.g., 99.9%] | [current %] | [✓/⚠/✗] |
-| Response Time (P95) | [e.g., <200ms] | [current] | [✓/⚠/✗] |
-| Deployment Frequency | [e.g., daily] | [current] | [✓/⚠/✗] |
-| Mean Time to Recovery | [e.g., <1hr] | [current] | [✓/⚠/✗] |
-| Change Failure Rate | [e.g., <5%] | [current] | [✓/⚠/✗] |
+| Capacity Headroom | [如 >30% at peak] | [current] | [On Track / Risk / Blocked] |
+| Availability | [如 99.9%] | [current %] | [✅ / ⚠️ / ❌] |
+| Response Time (P95) | [如 <200ms] | [current] | [✅ / ⚠️ / ❌] |
+| Deployment Frequency | [如 daily] | [current] | [✅ / ⚠️ / ❌] |
+| Mean Time to Recovery | [如 <1hr] | [current] | [✅ / ⚠️ / ❌] |
+| Change Failure Rate | [如 <5%] | [current] | [✅ / ⚠️ / ❌] |
 
 ---
 
-## Environment Configuration
+## 环境配置
 
-### Environment Tiers
+### 环境层级
 
 | Environment | Purpose | URL | Auto-Deploy |
 |-------------|---------|-----|-------------|
-| Development | Feature development | [URL] | On push to `develop` |
-| Staging | Pre-production testing | [URL] | On merge to `main` |
-| Production | Live users | [URL] | Manual approval |
+| Development | 功能开发 | [URL] | 推送到 `develop` 时 |
+| Staging | 生产前测试 | [URL] | merge 到 `main` 时 |
+| Production | 面向真实用户 | [URL] | 手动批准 |
 
-### Configuration Management
+### 配置管理
 
 | Config Type | Storage | Rotation | Access |
 |-------------|---------|----------|--------|
-| Environment Variables | [e.g., Vercel Dashboard] | [frequency] | [who can access] |
-| Secrets | [e.g., Vault, AWS Secrets] | [frequency] | [who can access] |
-| Feature Flags | [e.g., LaunchDarkly] | N/A | [who can access] |
+| Environment Variables | [如 Vercel Dashboard] | [frequency] | [who can access] |
+| Secrets | [如 Vault, AWS Secrets] | [frequency] | [who can access] |
+| Feature Flags | [如 LaunchDarkly] | N/A | [who can access] |
 
 ---
 
 ## CI/CD Pipeline
 
-### Pipeline Overview
+### Pipeline 总览
 
 ```
-[Diagram or description of CI/CD flow]
-┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
-│  Commit │ -> │  Build  │ -> │  Test   │ -> │ Deploy  │
-└─────────┘    └─────────┘    └─────────┘    └─────────┘
+[用图示或文字描述 CI/CD 流程]
+Commit -> Build -> Test -> Deploy
 ```
 
-### Pipeline Stages
+### Pipeline 阶段
 
 | Stage | Trigger | Duration | Critical Checks |
 |-------|---------|----------|-----------------|
-| Build | Every push | ~[X]min | Compilation, lint |
-| Test | After build | ~[X]min | Unit, integration |
-| Security Scan | After test | ~[X]min | SAST, dependency |
-| Deploy (Dev) | On develop | ~[X]min | Smoke tests |
-| Deploy (Prod) | Manual | ~[X]min | Canary, rollback ready |
+| Build | 每次 push | ~[X]min | Compilation, lint |
+| Test | Build 之后 | ~[X]min | Unit, integration |
+| Security Scan | Test 之后 | ~[X]min | SAST, dependency |
+| Deploy (Dev) | `develop` 更新后 | ~[X]min | Smoke tests |
+| Deploy (Prod) | 手动触发 | ~[X]min | Canary, rollback ready |
 
-### Deployment Strategy
+### 部署策略
 
 - **Strategy:** [Blue-Green / Rolling / Canary / Feature Flags]
-- **Rollback:** [Automated / Manual] - [trigger conditions]
-- **Maintenance Windows:** [When/None]
+- **Rollback:** [Automated / Manual] - [触发条件]
+- **Maintenance Windows:** [何时 / 无]
 
 ---
 
-## Team Responsibilities
+## 团队职责
 
-### On-Call Rotation
+### On-Call 轮值
 
 | Role | Primary | Backup | Schedule |
 |------|---------|--------|----------|
 | [Role 1] | [Person/Team] | [Person/Team] | [Rotation] |
 | [Role 2] | [Person/Team] | [Person/Team] | [Rotation] |
 
-### Escalation Path
+### 升级路径
 
 ```
-Level 1: On-Call Engineer (Response: 5min)
-    ↓ (15min no resolution)
-Level 2: Senior Engineer (Response: 15min)
-    ↓ (30min no resolution)
-Level 3: Engineering Manager (Response: 30min)
-    ↓ (1hr no resolution)
-Level 4: VP Engineering (Response: 1hr)
+Level 1: On-Call Engineer（响应：5min）
+    -> 15min 未解决
+Level 2: Senior Engineer（响应：15min）
+    -> 30min 未解决
+Level 3: Engineering Manager（响应：30min）
+    -> 1hr 未解决
+Level 4: VP Engineering（响应：1hr）
 ```
 
 ---
 
-## Key Operational Decisions
+## 关键运维决策
 
 | Decision | Rationale | Date | Outcome |
 |----------|-----------|------|---------|
-| [Decision 1] | [Why] | [Date] | [✓/⚠/—] |
-| [Decision 2] | [Why] | [Date] | [✓/⚠/—] |
+| [Decision 1] | [Why] | [Date] | [✅ / ⚠️ / ❌] |
+| [Decision 2] | [Why] | [Date] | [✅ / ⚠️ / ❌] |
 
 ---
 
-## Related Documents
+## 相关文档
 
-- [CAPACITY.md](./CAPACITY.md) - Capacity baselines and scaling plan
-
-- [DEPLOYMENT.md](./DEPLOYMENT.md) — Deployment procedures
-- [MONITORING.md](./MONITORING.md) — Monitoring and alerting
-- [RUNBOOK.md](./RUNBOOK.md) — Incident response
-- [BACKUP.md](./BACKUP.md) — Backup and recovery
-- [SECURITY-OPS.md](./SECURITY-OPS.md) — Security operations
+- [CAPACITY.md](./CAPACITY.md) - 容量基线与扩缩容计划
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - 部署流程
+- [MONITORING.md](./MONITORING.md) - 监控与告警
+- [RUNBOOK.md](./RUNBOOK.md) - 故障响应
+- [BACKUP.md](./BACKUP.md) - 备份与恢复
+- [SECURITY-OPS.md](./SECURITY-OPS.md) - 安全运维
 
 ---
 
-*Operations audit: [date]*
-*Update when operational requirements change*
+*Operations audit: [date]*  
+*运维要求发生变化时及时更新*
 ```
 
 </template>
 
 <guidelines>
 
-**What This Is:**
-- High-level operations strategy document
-- Defines operational objectives and targets
-- Documents environment configuration
-- Outlines CI/CD pipeline
-- Specifies team responsibilities
+**这份文档是什么：**
+- 高层运维策略总览
+- 定义运维目标与目标值
+- 记录环境配置方式
+- 概述 CI/CD pipeline
+- 明确团队职责
 
-**Core Objectives:**
-- Use DORA metrics where applicable
-- Set realistic, measurable targets
-- Track current status for visibility
-- Update quarterly or when targets change
+**核心目标：**
+- 尽可能使用 DORA 指标
+- 目标要现实且可度量
+- 保留当前状态，方便对比
+- 至少按季度更新一次，或在目标变化时更新
 
-**Environment Configuration:**
-- Document all environments
-- Specify configuration storage
-- Note rotation schedules for secrets
-- Define access controls
+**环境配置：**
+- 记录所有环境
+- 明确配置存储位置
+- 标出 secret 轮换周期
+- 说明访问控制方式
 
-**CI/CD Pipeline:**
-- Visual diagram helps understanding
-- Document stage durations
-- Note critical checks at each stage
-- Specify deployment strategy and rollback
+**CI/CD Pipeline：**
+- 图示能显著提高可理解性
+- 记录每个阶段的大致耗时
+- 标明关键检查项
+- 说明部署策略和回滚方式
 
-**Team Responsibilities:**
-- Clear on-call rotation
-- Defined escalation path with timing
-- Update when team changes
+**团队职责：**
+- On-call 轮值必须清晰
+- 升级路径和响应时限必须明确
+- 团队变化时及时同步
 
-**Key Operational Decisions:**
-- Track significant operational choices
-- Include rationale for future reference
-- Note outcomes for learning
+**关键运维决策：**
+- 跟踪重要运维选择
+- 给出理由，方便后续复盘
+- 标出结果，帮助沉淀经验
 
-**When to Update:**
-- New environments added
-- CI/CD pipeline changes
-- Team structure changes
-- Operational targets adjusted
-- After major incidents
+**何时更新：**
+- 新增环境
+- CI/CD 流程变化
+- 团队结构变化
+- 运维目标调整
+- 发生重大事故之后
 
 </guidelines>

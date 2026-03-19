@@ -3,7 +3,7 @@
 </purpose>
 
 <core_principle>
-编排器负责协调，不直接实现业务代码。每个子 agent 自行读取完整的 `execute-plan` 上下文并独立执行。编排器只做这些事：发现计划 -> 分析依赖 -> 按 wave 分组 -> 启动 agent -> 处理 checkpoint -> 汇总结果。
+编排器负责协调，不直接实现业务代码。每个子 agent 自行读取完整的 `execute-plan` 上下文并独立执行。编排器只做这些事：发现计划 -> 分析依赖 -> 按波次分组 -> 启动 agent -> 处理 checkpoint -> 汇总结果。
 </core_principle>
 
 <required_reading>
@@ -27,7 +27,7 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 - `plan_count` 为 `0`：报错“当前阶段没有可执行计划”
 - `state_exists` 为 `false` 但 `.planning/` 存在：提示用户选择重建或继续
 
-当 `parallelization=false` 时，同一 wave 内也按顺序执行。
+当 `parallelization=false` 时，同一波次内也按顺序执行。
 
 **必须同步自动链路标记：**
 如果这次是用户手动调用（没有 `--auto`），先清掉上次中断自动链留下的 `_auto_chain_active`，避免误触发自动推进。注意：这不会修改用户的持久偏好 `workflow.auto_advance`。
@@ -68,7 +68,7 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" state begin-phase --phase "
 </step>
 
 <step name="discover_and_group_plans">
-一次性读取计划索引和 wave 分组：
+一次性读取计划索引和波次分组：
 
 ```bash
 PLAN_INDEX=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" phase-plan-index "${PHASE_NUMBER}")
@@ -92,7 +92,7 @@ PLAN_INDEX=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" phase-plan-ind
 
 **阶段 {X}: {Name}** - 共 {total_plans} 个计划，分布在 {wave_count} 个 wave 中
 
-| Wave | 计划 | 构建内容 |
+| 波次 | 计划 | 构建内容 |
 |------|------|----------|
 | 1 | 01-01, 01-02 | {根据 objective 提炼的 3-8 个字摘要} |
 | 2 | 01-03 | ... |
@@ -100,11 +100,11 @@ PLAN_INDEX=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" phase-plan-ind
 </step>
 
 <step name="execute_waves">
-按 wave 顺序执行。wave 内是否并行由 `PARALLELIZATION` 决定。
+按波次顺序执行。波次内是否并行由 `PARALLELIZATION` 决定。
 
-**每个 wave 都执行以下流程：**
+**每个波次都执行以下流程：**
 
-1. **在启动 agent 之前，先说明这一 wave 在做什么**
+1. **在启动 agent 之前，先说明这一波次在做什么**
 
 读取每个 plan 的 `<objective>`，提炼“要构建什么、技术路线是什么、为什么现在做”。
 
@@ -164,9 +164,9 @@ Task(
 )
 ```
 
-3. **等待当前 wave 的所有 agents 完成**
+3. **等待当前波次的所有 agents 完成**
 
-4. **先 spot-check，再汇报成功**
+4. **先做抽查，再汇报成功**
 
 对每个 `SUMMARY.md` 做抽查：
 - `key-files.created` 中前 2 个文件必须真实存在
@@ -227,11 +227,11 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" verify key-links {phase_dir
 
 引用当前 wave 内文件的 key-link 可以跳过，重点检查“上一波应该已经产出的东西”。
 
-6. **在 wave 之间执行 checkpoint plans**
+6. **在波次之间执行 checkpoint plans**
 
 详见 `<checkpoint_handling>`。
 
-7. **进入下一 wave**
+7. **进入下一波次**
 </step>
 
 <step name="checkpoint_handling">
@@ -280,8 +280,8 @@ AUTO_CFG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workf
 7. continuation agent 先校验之前的提交，再从中断点继续
 8. 重复直到该计划完成，或用户决定停止
 
-**为什么必须 fresh agent，而不是 resume：**
-并行工具调用下，resume 的内部序列化经常不稳。显式传状态给一个新 agent 更可靠。
+**为什么必须使用新 agent，而不是 resume：**
+并行工具调用下，resume 的内部序列化经常不稳定。把状态显式传给一个新 agent 更可靠。
 
 如果 checkpoint 计划与其他并行计划同属一波：
 - 其他 agent 可以先跑完
@@ -290,14 +290,14 @@ AUTO_CFG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workf
 </step>
 
 <step name="aggregate_results">
-所有 wave 完成后，输出阶段级汇总：
+所有波次完成后，输出阶段级汇总：
 
 ```markdown
 ## 阶段 {X}: {Name} 执行完成
 
 **波次数：** {N} | **计划：** {M}/{total} 完成
 
-| Wave | 计划 | 状态 |
+| 波次 | 计划 | 状态 |
 |------|------|------|
 | 1 | plan-01, plan-02 | ✓ 完成 |
 | CP | plan-03 | ✓ 已验证 |
@@ -392,7 +392,7 @@ grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
 
 状态分支：
 
-| Status | 处理方式 |
+| 状态 | 处理方式 |
 |--------|----------|
 | `passed` | 进入 `update_roadmap` |
 | `human_needed` | 展示待人工验证项，等待用户确认或反馈 |
@@ -467,7 +467,7 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs(phase-{X}): co
 
 如果带了 `--no-transition`：
 - 说明这是被自动链上的上游 workflow 调起的
-- 当前 workflow 只负责完成阶段执行与验证，不负责 transition
+- 当前 workflow 只负责完成阶段执行与验证，不负责阶段切换
 
 在验证通过并完成 roadmap/state 更新后，只返回阶段完成摘要：
 
@@ -503,7 +503,7 @@ AUTO_CFG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workf
 则展示：
 
 ```
-自动推进：进入 transition 阶段
+自动推进：进入阶段切换
 阶段 {X} 已通过验证，继续执行自动链。
 ```
 
@@ -513,7 +513,7 @@ AUTO_CFG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workf
 
 **如果以上条件都不满足：**
 
-到此停止，不自动推进，不自动执行 transition，不自动规划下一阶段。
+到此停止，不自动推进，不自动执行阶段切换，也不自动规划下一阶段。
 
 向用户展示可选下一步：
 
@@ -534,7 +534,7 @@ AUTO_CFG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workf
 </context_efficiency>
 
 <failure_handling>
-- agent 报 `classifyHandoffIfNeeded is not defined`：先做 spot-check，只有 spot-check 也失败才算真失败
+- agent 报 `classifyHandoffIfNeeded is not defined`：先做抽查，只有抽查也失败才算真失败
 - agent 中途失败且缺少 `SUMMARY.md`：报告给用户并等待决策
 - 依赖链断裂：上一波失败时，后续依赖波也可能连锁失败，应明确提醒
 - 同一波所有 agents 全挂：高度可疑是系统性问题，应停止并报告
@@ -546,7 +546,7 @@ AUTO_CFG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workf
 - 重新发现该阶段全部计划
 - 跳过已有 `SUMMARY.md` 的计划
 - 从第一个未完成计划继续
-- 按 wave 规则接着执行
+- 按波次规则接着执行
 
-`STATE.md` 负责记录：最后完成的计划、当前 wave、以及待处理的 checkpoint。
+`STATE.md` 负责记录：最后完成的计划、当前波次，以及待处理的 checkpoint。
 </resumption>

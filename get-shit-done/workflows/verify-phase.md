@@ -136,7 +136,7 @@ grep -r "$artifact_name" src/ --include="*.ts" --include="*.tsx" | grep -v "impo
 | yes | no | - | STUB |
 | no | - | - | MISSING |
 
-**导出级 spot check（WARNING 级别）：**
+**导出级抽查（WARNING 级别）：**
 
 对已经通过 Level 3 的 artifact，抽查其导出项：
 - 提取关键导出符号（函数、常量、类；跳过 types / interfaces）
@@ -220,7 +220,7 @@ grep 无法稳定追踪的复杂接线、依赖动态状态的行为、边界场
 **human_needed：**
 自动化检查全部通过，但还有人工验证项。
 
-**Score：**
+**得分：**
 `verified_truths / total_truths`
 </step>
 
@@ -232,9 +232,9 @@ API 是 stub + 组件未接线 -> “打通前后端”
 多个关键实现缺失 -> “补完核心实现”
 只差接线 -> “连接现有组件”
 
-2. **为每个 cluster 生成一个修复计划：**
+2. **为每个缺口簇生成一个修复计划：**
 包含 objective、2-3 个任务（每个任务写明 files / action / verify），以及 re-verify 步骤。
-每个计划只聚焦一个 concern。
+每个计划只聚焦一个问题。
 
 3. **按依赖顺序排序：**
 先修缺失 -> 再修 stub -> 再修接线 -> 最后复验。

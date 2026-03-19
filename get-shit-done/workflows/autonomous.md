@@ -7,7 +7,7 @@
 
 <required_reading>
 
-先读取 invoking prompt 的 execution_context 中引用的全部文件。
+先读取调用方 prompt 的 `execution_context` 中引用的全部文件。
 
 </required_reading>
 
@@ -121,8 +121,8 @@ ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
 | # | 阶段 | 状态 |
 |---|------|------|
 | 5 | Skill Scaffolding & Phase Discovery | 进行中 |
-| 6 | Smart Discuss | 未开始 |
-| 7 | Auto-Chain Refinements | 未开始 |
+| 6 | 智能讨论 | 未开始 |
+| 7 | 自动链优化 | 未开始 |
 ```
 
 必要时对每个阶段读取详情：
@@ -131,7 +131,7 @@ ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
 DETAIL=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase ${PHASE_NUM})
 ```
 
-提取 `phase_name`、`goal`、`success_criteria`，用于执行前说明与 blocker 提示。
+提取 `phase_name`、`goal`、`success_criteria`，用于执行前说明与阻塞提示。
 
 </step>
 
@@ -148,7 +148,7 @@ DETAIL=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase 
 
 如果这些要求与旧版 banner 冲突，以这里为准。
 
-当前阶段开始时，展示进度 banner：
+当前阶段开始时，展示进度横幅：
 
 ```markdown
 ## GSD 自主执行 · 阶段 {N}/{T}: {Name} [■■■□□□] {P}%
@@ -160,7 +160,7 @@ DETAIL=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase 
 - `P`：已完成阶段数 / 总阶段数 * 100
 - 进度条固定 8 格，已完成用 `■`，未完成用 `□`
 
-**3a. Smart Discuss**
+**3a. 智能讨论**
 
 先检查当前阶段是否已经有 `CONTEXT.md`：
 
@@ -171,7 +171,7 @@ PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op
 读取 `has_context`。
 
 如果 `has_context=true`：
-- 直接跳过 discuss
+- 直接跳过讨论
 - 输出：`阶段 ${PHASE_NUM} 已存在 CONTEXT.md，跳过讨论。`
 - 进入 3b
 
@@ -186,7 +186,7 @@ PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op
 
 如果 `has_context` 仍是 `false`：
 - 进入 `handle_blocker`
-- 描述：`阶段 ${PHASE_NUM} 的 smart discuss 没有生成 CONTEXT.md`
+- 描述：`阶段 ${PHASE_NUM} 的智能讨论没有生成 CONTEXT.md`
 
 **3b. Plan**
 
@@ -313,9 +313,9 @@ PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op
 
 <step name="smart_discuss">
 
-## Smart Discuss
+## 智能讨论
 
-这是面向 autonomous 模式的 discuss 变体：不是按题逐个提问，而是按“灰区 -> 建议答案 -> 用户接受/修改”的方式批量收敛决策。最终产出的 `CONTEXT.md` 结构必须与普通 `discuss-phase` 保持一致。
+这是面向 autonomous 模式的 discuss 变体：不是按题逐个提问，而是按“灰区 -> 建议答案 -> 用户接受 / 修改”的方式批量收敛决策。最终产出的 `CONTEXT.md` 结构必须与普通 `discuss-phase` 保持一致。
 
 > 说明：这是 `gsd:discuss-phase` 的自主执行优化版。输出格式相同，只是交互方式更适合自动链。
 
@@ -420,7 +420,7 @@ DETAIL=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase 
 
 **先判断是否是纯基础设施阶段。**
 
-满足以下条件时视为 infrastructure-only：
+满足以下条件时视为纯基础设施阶段：
 1. goal 关键词属于：`scaffolding`、`plumbing`、`setup`、`configuration`、`migration`、`refactor`、`rename`、`restructure`、`upgrade`、`infrastructure`
 2. success criteria 全是技术性结果，如“文件存在”“测试通过”“配置有效”“命令可运行”
 3. 没有任何用户可感知的行为描述，如“users can”“displays”“shows”“presents”

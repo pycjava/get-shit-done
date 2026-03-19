@@ -4,8 +4,8 @@
 
 要求：
 - frontmatter 键名保持英文，便于工具读取
-- 面向人的标题、表头、正文使用中文
-- 一句话总结必须具体，不要写“阶段完成”“实现完成”
+- 面向人的标题、表头和正文使用中文
+- 一句话总结必须具体，不要写“阶段完成”“实现完成”这种空话
 
 ---
 
@@ -15,7 +15,7 @@
 ---
 phase: XX-name
 plan: YY
-subsystem: [主要类别：auth, payments, ui, api, database, infra, testing ...]
+subsystem: [主要类别，如 auth, payments, ui, api, database, infra, testing ...]
 tags: [可检索技术标签]
 
 # Dependency graph
@@ -28,7 +28,7 @@ affects: [后续会受影响的阶段或关键词]
 
 # Tech tracking
 tech-stack:
-  added: [新增库/工具]
+  added: [新增库 / 工具]
   patterns: [建立的模式]
 
 key-files:
@@ -50,9 +50,9 @@ duration: Xmin
 completed: YYYY-MM-DD
 ---
 
-# 阶段 [X]： [Name] 总结
+# 阶段 [X]：[Name] 总结
 
-**[一句有信息量的话概括本次产出]**
+**[用一句有信息量的话概括本次产出]**
 
 ## 执行概况
 
@@ -71,15 +71,13 @@ completed: YYYY-MM-DD
 ## 任务提交记录
 
 每个任务都应原子提交：
-
 1. **任务 1：[任务名称]** - `abc123f` (feat/fix/test/refactor)
 2. **任务 2：[任务名称]** - `def456g` (feat/fix/test/refactor)
 3. **任务 3：[任务名称]** - `hij789k` (feat/fix/test/refactor)
 
 **计划元数据提交：** `lmn012o` (docs: complete plan)
 
-## 创建/修改的文件
-
+## 创建 / 修改的文件
 - `path/to/file.ts` - 文件作用
 - `path/to/another.ts` - 文件作用
 
@@ -94,7 +92,6 @@ completed: YYYY-MM-DD
 [如果有偏离：]
 
 ### 自动修复的问题
-
 **1. [Rule X - Category] 简述**
 
 - **发现于：** 任务 [N]（[任务名称]）
@@ -110,16 +107,14 @@ completed: YYYY-MM-DD
 **对计划的影响：** [简短评估]
 
 ## 遇到的问题
-
 [执行过程中遇到的问题及处理方式；如果没有，写“无”]
 
 ## 用户需要完成的设置
 
 [如果生成了 USER-SETUP.md：]
 **外部服务仍需人工配置。** 详见 [{phase}-USER-SETUP.md](./{phase}-USER-SETUP.md)：
-
 - 需要补充的环境变量
-- 控制台/仪表盘配置步骤
+- 控制台 / 仪表盘配置步骤
 - 验证命令
 
 [如果没有 USER-SETUP.md：]
@@ -131,7 +126,7 @@ completed: YYYY-MM-DD
 [阻塞项或注意事项]
 
 ---
-*阶段：XX-name*
+*阶段：XX-name*  
 *完成时间：[date]*
 ```
 
@@ -144,4 +139,4 @@ completed: YYYY-MM-DD
 - “已作决策”记录执行中真实发生的关键选择
 - “偏离计划”记录计划外但已自动处理的工作
 - “遇到的问题”记录计划内工作中的排障过程
-- 如果有 USER-SETUP.md，要在总结中明确提示
+- 如果有 `USER-SETUP.md`，要在总结里明确提示

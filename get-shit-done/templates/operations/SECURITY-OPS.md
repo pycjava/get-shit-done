@@ -5,115 +5,115 @@ last_reviewed: "2026-03"
 template_for: ".planning/operations/SECURITY-OPS.md"
 ---
 
-# Security Operations Template
+# 安全运维模板
 
-Template for `.planning/operations/SECURITY-OPS.md` — security operations and compliance procedures.
+用于 `.planning/operations/SECURITY-OPS.md` 的模板，覆盖安全运营与合规流程。
 
 <template>
 
 ```markdown
-# Security Operations
+# 安全运维
 
-**Project:** [Project Name]
-**Last Updated:** [YYYY-MM-DD]
-**Security Owner:** [Team/Person]
+**项目：** [项目名称]
+**最后更新：** [YYYY-MM-DD]
+**安全负责人：** [团队/人员]
 
 ---
 
-## Security Overview
+## 安全概览
 
-### Security Philosophy
+### 安全理念
 
-[One paragraph describing security approach:
-- How security is balanced with usability
-- Key principles (defense in depth, least privilege, etc.)
-- Security vs velocity considerations]
+[用一段话说明安全方法：
+- 如何平衡安全与易用性
+- 关键原则（defense in depth、least privilege 等）
+- 安全与交付速度之间的取舍]
 
-### Security Posture
+### 安全态势
 
-| Area | Current State | Target | Priority |
-|------|--------------|--------|----------|
-| Access Control | [State] | [Target] | [P1/P2/P3] |
-| Data Protection | [State] | [Target] | [P1/P2/P3] |
-| Network Security | [State] | [Target] | [P1/P2/P3] |
-| Vulnerability Management | [State] | [Target] | [P1/P2/P3] |
+| 领域 | 当前状态 | 目标状态 | 优先级 |
+|------|----------|----------|--------|
+| 访问控制 | [State] | [Target] | [P1/P2/P3] |
+| 数据保护 | [State] | [Target] | [P1/P2/P3] |
+| 网络安全 | [State] | [Target] | [P1/P2/P3] |
+| 漏洞管理 | [State] | [Target] | [P1/P2/P3] |
 | Incident Response | [State] | [Target] | [P1/P2/P3] |
 
 ---
 
-## Access Control
+## 访问控制
 
-### Authentication
+### 认证
 
-| Method | Environment | Status | Notes |
-|--------|-------------|--------|-------|
+| 方法 | 环境 | 状态 | 备注 |
+|------|------|------|------|
 | Email/Password | [Env] | [Enabled/Disabled] | [Notes] |
 | OAuth (Google) | [Env] | [Enabled/Disabled] | [Notes] |
 | SSO (SAML/OIDC) | [Env] | [Enabled/Disabled] | [Notes] |
 | API Keys | [Env] | [Enabled/Disabled] | [Notes] |
 | Service-to-Service | [Env] | [Enabled/Disabled] | [Notes] |
 
-### Password Policy
+### 密码策略
 
-| Setting | Policy | Enforcement |
-|---------|--------|-------------|
-| Minimum Length | 12 characters | Yes |
-| Complexity | Letters + numbers + symbols | Yes |
-| MFA Required | [Roles] | [Yes/No] |
-| Password Expiry | [e.g., 90 days] | [Yes/No] |
-| Account Lockout | [e.g., 5 failed attempts] | Yes |
+| 设置 | 策略 | 是否强制 |
+|------|------|----------|
+| 最小长度 | 12 个字符 | Yes |
+| 复杂度 | 字母 + 数字 + 符号 | Yes |
+| 必须启用 MFA | [Roles] | [Yes/No] |
+| 密码过期 | [例如：90 天] | [Yes/No] |
+| 账户锁定 | [例如：失败 5 次后锁定] | Yes |
 
-### Authorization
+### 授权
 
-**RBAC Model:**
+**RBAC 模型：**
 
-| Role | Permissions | Users |
-|------|-------------|-------|
-| Admin | Full access | [Count] |
-| Editor | Create, edit, delete own | [Count] |
-| Viewer | Read-only | [Count] |
-| API Service | Limited service access | [Count] |
+| 角色 | 权限 | 用户数 |
+|------|------|--------|
+| Admin | 完整访问 | [Count] |
+| Editor | 创建、编辑、删除自己的内容 | [Count] |
+| Viewer | 只读 | [Count] |
+| API Service | 受限的服务访问 | [Count] |
 
-**Permission Model:**
-- Principle of least privilege
-- Role-based access control (RBAC)
-- Regular access reviews (quarterly)
+**权限模型：**
+- 遵循 least privilege 原则
+- 使用基于角色的访问控制（RBAC）
+- 定期进行访问复审（每季度）
 
 ---
 
-## Secrets Management
+## Secrets 管理
 
-### Secrets Storage
+### Secrets 存储
 
-| Secret Type | Storage | Access | Rotation |
-|------------|--------|--------|----------|
-| API Keys | [e.g., AWS Secrets Manager] | [Who] | [Schedule] |
-| Database Credentials | [e.g., Vault] | [Who] | [Schedule] |
-| OAuth Secrets | [e.g., AWS Secrets Manager] | [Who] | [Schedule] |
-| Encryption Keys | [e.g., AWS KMS] | [Who] | [Schedule] |
-| SSH Keys | [e.g., AWS Secrets Manager] | [Who] | [Schedule] |
+| Secret 类型 | 存储位置 | 可访问人群 | 轮换 |
+|-------------|----------|------------|------|
+| API Keys | [例如：AWS Secrets Manager] | [Who] | [Schedule] |
+| 数据库凭据 | [例如：Vault] | [Who] | [Schedule] |
+| OAuth Secrets | [例如：AWS Secrets Manager] | [Who] | [Schedule] |
+| 加密密钥 | [例如：AWS KMS] | [Who] | [Schedule] |
+| SSH Keys | [例如：AWS Secrets Manager] | [Who] | [Schedule] |
 
-### Secrets Rotation
+### Secrets 轮换
 
-| Secret | Rotation Frequency | Last Rotated | Automated? |
-|--------|-------------------|--------------|------------|
+| Secret | 轮换频率 | 最近轮换 | 自动化？ |
+|--------|----------|----------|----------|
 | [Secret 1] | [Frequency] | [Date] | [Yes/No] |
 | [Secret 2] | [Frequency] | [Date] | [Yes/No] |
 
-### Secrets Management Checklist
+### Secrets 管理清单
 
-- [ ] No secrets in code
-- [ ] No secrets in config files
-- [ ] No secrets in logs
-- [ ] Secrets use environment-specific values
-- [ ] Access logs enabled
-- [ ] Rotation automated
+- [ ] 代码中没有 secrets
+- [ ] 配置文件中没有 secrets
+- [ ] 日志中没有 secrets
+- [ ] secrets 使用环境隔离值
+- [ ] 已启用访问日志
+- [ ] 已自动化轮换
 
 ---
 
-## Network Security
+## 网络安全
 
-### Network Architecture
+### 网络架构
 
 ```
 [Internet]
@@ -143,274 +143,274 @@ Template for `.planning/operations/SECURITY-OPS.md` — security operations and 
 └─────────────────┘
 ```
 
-### Firewall Rules
+### 防火墙规则
 
-| Source | Destination | Port | Protocol | Purpose |
-|--------|-------------|------|----------|---------|
-| WAF/Load Balancer | App Servers | 443 | HTTPS | Web traffic |
-| App Servers | Database | 5432 | PostgreSQL | Database access |
-| CI/CD | App Servers | 22 | SSH | Deployment |
-| Monitoring | App Servers | 443 | HTTPS | Health checks |
+| 来源 | 目标 | 端口 | 协议 | 用途 |
+|------|------|------|------|------|
+| WAF/Load Balancer | App Servers | 443 | HTTPS | Web 流量 |
+| App Servers | Database | 5432 | PostgreSQL | 数据库访问 |
+| CI/CD | App Servers | 22 | SSH | 部署 |
+| Monitoring | App Servers | 443 | HTTPS | 健康检查 |
 
-### VPN/Bastion
+### VPN / Bastion
 
-| Component | Purpose | Access |
-|-----------|---------|--------|
-| [Bastion/Jump Host] | SSH access to private network | [Who has access] |
-| [VPN] | Remote access to internal network | [Who has access] |
+| 组件 | 用途 | 访问人群 |
+|------|------|----------|
+| [Bastion/Jump Host] | 访问私有网络中的 SSH | [Who has access] |
+| [VPN] | 远程访问内部网络 | [Who has access] |
 
 ---
 
-## Data Protection
+## 数据保护
 
-### Data Classification
+### 数据分级
 
-| Classification | Description | Examples | Handling |
-|----------------|-------------|----------|----------|
-| Public | Can be freely shared | Marketing content | No restrictions |
-| Internal | Company-only | Internal docs | Access control |
-| Confidential | Restricted access | User data, financials | Encryption required |
-| Secret | Highly sensitive | Credentials, keys | Strict access, audit |
+| 分级 | 说明 | 示例 | 处理方式 |
+|------|------|------|----------|
+| Public | 可自由共享 | 营销内容 | 无限制 |
+| Internal | 仅公司内部 | 内部文档 | 访问控制 |
+| Confidential | 受限访问 | 用户数据、财务数据 | 必须加密 |
+| Secret | 高敏感 | 凭据、密钥 | 严格访问与审计 |
 
-### Encryption
+### 加密
 
-| Data State | Method | Key Management | Standard |
-|------------|--------|----------------|----------|
+| 数据状态 | 方法 | 密钥管理 | 标准 |
+|----------|------|----------|------|
 | At Rest | [AES-256] | [KMS] | FIPS 140-2 |
 | In Transit | TLS 1.3 | [Certificate Manager] | - |
 | Backups | [AES-256] | [Separate key] | - |
 
-### PII Handling
+### PII 处理
 
-| Data | Collection | Storage | Access | Retention |
-|------|------------|---------|--------|-----------|
-| Email | User input | Encrypted | Admin only | Account deletion |
-| Name | User input | Encrypted | Admin only | Account deletion |
-| [Other PII] | [Method] | [Storage] | [Access] | [Retention] |
+| 数据 | 收集方式 | 存储 | 访问 | 保留策略 |
+|------|----------|------|------|----------|
+| Email | 用户输入 | 加密 | 仅 Admin | 账户删除时清理 |
+| 姓名 | 用户输入 | 加密 | 仅 Admin | 账户删除时清理 |
+| [其他 PII] | [Method] | [Storage] | [Access] | [Retention] |
 
 ---
 
-## Vulnerability Management
+## 漏洞管理
 
-### Scanning Schedule
+### 扫描计划
 
-| Scan Type | Frequency | Tool | Responsible |
-|-----------|-----------|------|--------------|
-| SAST (Static) | Every commit | [e.g., SonarQube] | Automated |
-| DAST (Dynamic) | Weekly | [e.g., OWASP ZAP] | [Team] |
-| Dependency | Every PR | [e.g., Snyk] | Automated |
-| Container | Every build | [e.g., Trivy] | Automated |
-| Infrastructure | Monthly | [e.g., Prowler] | [Team] |
+| 扫描类型 | 频率 | 工具 | 负责人 |
+|----------|------|------|--------|
+| SAST (Static) | 每次 commit | [例如：SonarQube] | Automated |
+| DAST (Dynamic) | 每周 | [例如：OWASP ZAP] | [Team] |
+| Dependency | 每个 PR | [例如：Snyk] | Automated |
+| Container | 每次构建 | [例如：Trivy] | Automated |
+| Infrastructure | 每月 | [例如：Prowler] | [Team] |
 
-### Vulnerability Response
+### 漏洞响应
 
-| Severity | Response Time | Example |
-|----------|--------------|---------|
-| Critical (9.0-10.0) | 24 hours | Remote code execution |
-| High (7.0-8.9) | 7 days | SQL injection |
-| Medium (4.0-6.9) | 30 days | Information disclosure |
-| Low (0.1-3.9) | 90 days | Minor issues |
+| 严重级别 | 响应时限 | 示例 |
+|----------|----------|------|
+| Critical (9.0-10.0) | 24 小时 | 远程代码执行 |
+| High (7.0-8.9) | 7 天 | SQL injection |
+| Medium (4.0-6.9) | 30 天 | 信息泄露 |
+| Low (0.1-3.9) | 90 天 | 次要问题 |
 
-### Known Vulnerabilities
+### 已知漏洞
 
-| CVE/ID | Severity | Description | Status | Remediation |
-|--------|----------|-------------|--------|-------------|
+| CVE/ID | 严重级别 | 说明 | 状态 | 修复方式 |
+|--------|----------|------|------|----------|
 | [CVE-XXXX-XXXX] | [Critical] | [Description] | [Open/Fixed] | [Fix/Workaround] |
 
 ---
 
-## Security Monitoring
+## 安全监控
 
-### Security Logging
+### 安全日志
 
-| Log Type | Retention | Storage | Alert |
-|----------|-----------|---------|-------|
-| Authentication | 1 year | [Storage] | Failed login > 5 |
-| Authorization | 90 days | [Storage] | Unauthorized access |
-| API Requests | 30 days | [Storage] | Suspicious patterns |
-| Infrastructure | 1 year | [Storage] | Configuration changes |
-| Database | 1 year | [Storage] | Schema changes |
+| 日志类型 | 保留期 | 存储 | 告警 |
+|----------|--------|------|------|
+| Authentication | 1 年 | [Storage] | 登录失败 > 5 次 |
+| Authorization | 90 天 | [Storage] | 未授权访问 |
+| API Requests | 30 天 | [Storage] | 可疑模式 |
+| Infrastructure | 1 年 | [Storage] | 配置变更 |
+| Database | 1 年 | [Storage] | Schema 变更 |
 
 ### SIEM/SOAR
 
-| Tool | Purpose | Integration |
-|------|---------|-------------|
-| [e.g., Datadog] | Log aggregation | [Sources] |
-| [e.g., PagerDuty] | Alert management | [Sources] |
-| [e.g., Slack] | Team notification | [Channels] |
+| 工具 | 用途 | 集成来源 |
+|------|------|----------|
+| [例如：Datadog] | 日志聚合 | [Sources] |
+| [例如：PagerDuty] | 告警管理 | [Sources] |
+| [例如：Slack] | 团队通知 | [Channels] |
 
-### Alert Rules
+### 告警规则
 
-| Alert | Condition | Response |
-|-------|-----------|----------|
-| Multiple failed logins | > 5 in 10 min | Alert on-call |
-| Suspicious API activity | Anomaly detected | Alert security team |
-| New admin account | Account created | Alert immediately |
-| Database export | Large export detected | Alert security team |
+| 告警 | 条件 | 响应 |
+|------|------|------|
+| 多次登录失败 | 10 分钟内 > 5 次 | 告警给 on-call |
+| 可疑 API 活动 | 检测到异常 | 告警给安全团队 |
+| 新建 Admin 账户 | 账户被创建 | 立即告警 |
+| 数据库导出 | 检测到大规模导出 | 告警给安全团队 |
 
 ---
 
 ## Incident Response
 
-### Security Incident Levels
+### 安全事故等级
 
-| Level | Definition | Example | Response Team |
-|-------|------------|---------|---------------|
-| P1 - Critical | Active breach, data exposed | Ransomware | Full incident response |
-| P2 - High | Potential breach | Suspicious access | Security team |
-| P3 - Medium | Security policy violation | Minor exposure | Team lead |
-| P4 - Low | Policy advisory | Configuration drift | Notify only |
+| 等级 | 定义 | 示例 | 响应团队 |
+|------|------|------|----------|
+| P1 - Critical | 正在发生入侵，数据已暴露 | 勒索软件 | 完整 incident response |
+| P2 - High | 潜在入侵 | 可疑访问 | 安全团队 |
+| P3 - Medium | 安全策略违规 | 轻微暴露 | 团队负责人 |
+| P4 - Low | 策略提醒 | 配置漂移 | 仅通知 |
 
-### Incident Response Process
+### Incident Response 流程
 
 ```
 1. DETECT
-   ├── Automated alerts
-   ├── Manual discovery
-   └── User reports
+   ├── 自动告警
+   ├── 人工发现
+   └── 用户报告
 
 2. CONTAIN
-   ├── Isolate affected systems
-   ├── Preserve evidence
-   └── Prevent spread
+   ├── 隔离受影响系统
+   ├── 保全证据
+   └── 防止扩散
 
 3. ERADICATE
-   ├── Remove threat
-   ├── Patch vulnerabilities
-   └── Secure systems
+   ├── 清除威胁
+   ├── 修补漏洞
+   └── 加固系统
 
 4. RECOVER
-   ├── Restore services
-   ├── Verify integrity
-   └── Monitor for recurrence
+   ├── 恢复服务
+   ├── 校验完整性
+   └── 监控是否复发
 
 5. POST-INCIDENT
-   ├── Document findings
-   ├── Root cause analysis
-   └── Implement improvements
+   ├── 记录发现
+   ├── 根因分析
+   └── 落实改进
 ```
 
-### Security Contacts
+### 安全联系人
 
-| Role | Name | Contact | Availability |
-|------|------|---------|--------------|
+| 角色 | 姓名 | 联系方式 | 可用时段 |
+|------|------|----------|----------|
 | Security Lead | [Name] | [Email/Phone] | 24/7 |
 | On-Call | [Name] | [Email/Phone] | 24/7 |
-| Engineering Lead | [Name] | [Email/Phone] | Business hours |
-| Legal/Compliance | [Name] | [Email/Phone] | Business hours |
+| Engineering Lead | [Name] | [Email/Phone] | 工作时间 |
+| Legal/Compliance | [Name] | [Email/Phone] | 工作时间 |
 
 ---
 
-## Compliance
+## 合规
 
-### Compliance Frameworks
+### 合规框架
 
-| Framework | Status | Last Audit | Next Audit |
-|-----------|--------|-----------|------------|
+| 框架 | 状态 | 最近审计 | 下次审计 |
+|------|------|----------|----------|
 | SOC 2 | [Compliant/In Progress] | [Date] | [Date] |
 | GDPR | [Compliant/In Progress] | [Date] | [Date] |
 | [Other] | [Status] | [Date] | [Date] |
 
-### Compliance Controls
+### 合规控制
 
-| Control | Framework | Implementation | Evidence |
-|---------|-----------|----------------|----------|
-| Access logging | SOC 2 | [Method] | [Location] |
-| Encryption | GDPR | [Method] | [Location] |
+| 控制项 | 框架 | 实现方式 | 证据 |
+|--------|------|----------|------|
+| 访问日志 | SOC 2 | [Method] | [Location] |
+| 加密 | GDPR | [Method] | [Location] |
 | [Other] | [Framework] | [Method] | [Location] |
 
-### Security Audits
+### 安全审计
 
-| Audit Type | Frequency | Last | Next | Owner |
-|------------|-----------|------|------|-------|
-| Penetration Testing | Annual | [Date] | [Date] | [Team] |
-| Security Review | Quarterly | [Date] | [Date] | [Team] |
-| Access Review | Quarterly | [Date] | [Date] | [Team] |
-
----
-
-## Security Training
-
-| Training | Frequency | Audience | Completion |
-|----------|-----------|----------|------------|
-| Security Awareness | Annual | All employees | [X]% |
-| Phishing Simulation | Quarterly | All employees | [X]% |
-| Developer Security | Onboarding | Engineers | [X]% |
-| Incident Response | Annual | On-call | [X]% |
+| 审计类型 | 频率 | 最近一次 | 下一次 | 负责人 |
+|----------|------|----------|--------|--------|
+| 渗透测试 | 每年 | [Date] | [Date] | [Team] |
+| 安全评审 | 每季度 | [Date] | [Date] | [Team] |
+| 访问复审 | 每季度 | [Date] | [Date] | [Team] |
 
 ---
 
-## Related Documents
+## 安全培训
 
-- [OPERATIONS.md](./OPERATIONS.md) — Operations overview
-- [MONITORING.md](./MONITORING.md) — Monitoring configuration
-- [RUNBOOK.md](./RUNBOOK.md) — Incident response
-- [BACKUP.md](./BACKUP.md) — Backup procedures
+| 培训 | 频率 | 受众 | 完成率 |
+|------|------|------|--------|
+| 安全意识 | 每年 | 全员 | [X]% |
+| 钓鱼演练 | 每季度 | 全员 | [X]% |
+| 开发者安全 | Onboarding | 工程师 | [X]% |
+| Incident Response | 每年 | On-call | [X]% |
 
 ---
 
-*Security review: [date]*
-*Update quarterly or after security incidents*
+## 相关文档
+
+- [OPERATIONS.md](./OPERATIONS.md) — 运维总览
+- [MONITORING.md](./MONITORING.md) — 监控配置
+- [RUNBOOK.md](./RUNBOOK.md) — 事故响应
+- [BACKUP.md](./BACKUP.md) — 备份流程
+
+---
+
+*安全评审： [date]*
+*每季度或发生安全事故后更新*
 ```
 
 </template>
 
 <guidelines>
 
-**What This Is:**
-- Security operations procedures
-- Access control and authorization
-- Secrets management
-- Incident response
+**这份文档是什么：**
+- 安全运营流程
+- 访问控制与授权
+- Secrets 管理
+- 事故响应
 
-**Security Overview:**
-- Document security philosophy
-- Track security posture
-- Set priorities for improvements
+**安全概览：**
+- 记录安全理念
+- 跟踪安全态势
+- 为改进项设定优先级
 
-**Access Control:**
-- Document authentication methods
-- Define password policies
-- Map roles and permissions
+**访问控制：**
+- 记录认证方式
+- 定义密码策略
+- 映射角色与权限
 
-**Secrets Management:**
-- Never include actual secrets
-- Document storage solutions
-- Track rotation schedules
+**Secrets 管理：**
+- 绝不记录真实 secrets
+- 说明存储方案
+- 跟踪轮换计划
 
-**Network Security:**
-- Document network architecture
-- Define firewall rules
-- Control access to internal resources
+**网络安全：**
+- 记录网络架构
+- 定义防火墙规则
+- 控制内部资源访问
 
-**Data Protection:**
-- Classify data by sensitivity
-- Document encryption methods
-- Track PII handling
+**数据保护：**
+- 按敏感度对数据分级
+- 记录加密方式
+- 跟踪 PII 处理
 
-**Vulnerability Management:**
-- Define scanning schedule
-- Set response SLAs
-- Track known vulnerabilities
+**漏洞管理：**
+- 定义扫描计划
+- 设定响应 SLA
+- 跟踪已知漏洞
 
-**Security Monitoring:**
-- Enable comprehensive logging
-- Set up alert rules
-- Document SIEM integration
+**安全监控：**
+- 启用全面日志
+- 配置告警规则
+- 记录 SIEM 集成
 
-**Incident Response:**
-- Define incident levels
-- Document response process
-- Keep contacts current
+**Incident Response：**
+- 定义事故等级
+- 记录响应流程
+- 保持联系人信息最新
 
-**Compliance:**
-- Track compliance frameworks
-- Document controls
-- Schedule regular audits
+**合规：**
+- 跟踪合规框架
+- 记录控制项
+- 计划定期审计
 
-**Training:**
-- Document training requirements
-- Track completion rates
-- Update content regularly
+**培训：**
+- 记录培训要求
+- 跟踪完成率
+- 定期更新内容
 
 </guidelines>

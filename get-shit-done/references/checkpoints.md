@@ -1,32 +1,32 @@
 <overview>
-Plans execute autonomously. Checkpoints formalize interaction points where human verification or decisions are needed.
+计划会自主执行。checkpoint 用来明确那些必须由人类验证或决策的交互点。
 
-**Core principle:** Claude automates everything with CLI/API. Checkpoints are for verification and decisions, not manual work.
+**核心原则：** Claude 会用 CLI / API 自动化一切可自动化的事。checkpoint 只用于验证与决策，不用于把手工活丢给用户。
 
-**Golden rules:**
-1. **If Claude can run it, Claude runs it** - Never ask user to execute CLI commands, start servers, or run builds
-2. **Claude sets up the verification environment** - Start dev servers, seed databases, configure env vars
-3. **User only does what requires human judgment** - Visual checks, UX evaluation, "does this feel right?"
-4. **Secrets come from user, automation comes from Claude** - Ask for API keys, then Claude uses them via CLI
-5. **Auto-mode bypasses verification/decision checkpoints** — When `workflow._auto_chain_active` or `workflow.auto_advance` is true in config: human-verify auto-approves, decision auto-selects first option, human-action still stops (auth gates cannot be automated)
+**黄金规则：**
+1. **Claude 能执行的，就必须由 Claude 执行** - 不要让用户运行 CLI 命令、启动 server、或执行 build
+2. **验证环境由 Claude 负责搭建** - 启动 dev server、seed 数据库、配置 env vars
+3. **用户只做必须依赖人工判断的事** - 视觉检查、UX 评估、“这感觉对不对？”
+4. **Secrets 来自用户，自动化来自 Claude** - 先向用户获取 API key，再由 Claude 用 CLI 完成配置
+5. **自动模式会跳过验证 / 决策类 checkpoint** — 当配置中的 `workflow._auto_chain_active` 或 `workflow.auto_advance` 为 true 时：`human-verify` 自动通过，`decision` 自动选第一个选项，`human-action` 仍必须停下（认证闸门不能自动化）
 </overview>
 
 <checkpoint_types>
 
 <type name="human-verify">
-## checkpoint:human-verify (Most Common - 90%)
+## checkpoint:human-verify（最常见，约 90%）
 
-**When:** Claude completed automated work, human confirms it works correctly.
+**何时使用：** Claude 已完成自动化工作，由人类确认结果是否正确。
 
-**Use for:**
-- Visual UI checks (layout, styling, responsiveness)
-- Interactive flows (click through wizard, test user flows)
-- Functional verification (feature works as expected)
-- Audio/video playback quality
-- Animation smoothness
-- Accessibility testing
+**适用场景：**
+- 视觉 UI 检查（布局、样式、响应式）
+- 交互流程检查（点完整个 wizard、测试用户流）
+- 功能验证（特性是否按预期工作）
+- 音视频播放质量
+- 动画流畅度
+- 无障碍测试
 
-**Structure:**
+**结构：**
 ```xml
 <task type="checkpoint:human-verify" gate="blocking">
   <what-built>[What Claude automated and deployed/built]</what-built>
@@ -37,7 +37,7 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 </task>
 ```
 
-**Example: UI Component (shows key pattern: Claude starts server BEFORE checkpoint)**
+**示例：UI 组件（关键模式：Claude 会在 checkpoint 前先启动 server）**
 ```xml
 <task type="auto">
   <name>Build responsive dashboard layout</name>
@@ -67,7 +67,7 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 </task>
 ```
 
-**Example: Xcode Build**
+**示例：Xcode 构建**
 ```xml
 <task type="auto">
   <name>Build macOS app with Xcode</name>
@@ -92,18 +92,18 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 </type>
 
 <type name="decision">
-## checkpoint:decision (9%)
+## checkpoint:decision（约 9%）
 
-**When:** Human must make choice that affects implementation direction.
+**何时使用：** 人类必须做出会影响实现方向的选择。
 
-**Use for:**
-- Technology selection (which auth provider, which database)
-- Architecture decisions (monorepo vs separate repos)
-- Design choices (color scheme, layout approach)
-- Feature prioritization (which variant to build)
-- Data model decisions (schema structure)
+**适用场景：**
+- 技术选型（用哪个 auth provider、哪个数据库）
+- 架构决策（monorepo 还是拆仓）
+- 设计选择（配色、布局方式）
+- 功能优先级排序（先做哪个版本）
+- 数据模型决策（schema 结构）
 
-**Structure:**
+**结构：**
 ```xml
 <task type="checkpoint:decision" gate="blocking">
   <decision>[What's being decided]</decision>
@@ -124,7 +124,7 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 </task>
 ```
 
-**Example: Auth Provider Selection**
+**示例：Auth Provider 选择**
 ```xml
 <task type="checkpoint:decision" gate="blocking">
   <decision>Select authentication provider</decision>
@@ -152,7 +152,7 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 </task>
 ```
 
-**Example: Database Selection**
+**示例：数据库选择**
 ```xml
 <task type="checkpoint:decision" gate="blocking">
   <decision>Select database for user data</decision>
@@ -183,25 +183,25 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 </type>
 
 <type name="human-action">
-## checkpoint:human-action (1% - Rare)
+## checkpoint:human-action（约 1%，较少见）
 
-**When:** Action has NO CLI/API and requires human-only interaction, OR Claude hit an authentication gate during automation.
+**何时使用：** 某个动作没有 CLI / API，只能由人类完成；或者 Claude 在自动化过程中撞上了认证闸门。
 
-**Use ONLY for:**
-- **Authentication gates** - Claude tried CLI/API but needs credentials (this is NOT a failure)
-- Email verification links (clicking email)
-- SMS 2FA codes (phone verification)
-- Manual account approvals (platform requires human review)
-- Credit card 3D Secure flows (web-based payment authorization)
-- OAuth app approvals (web-based approval)
+**只用于以下情况：**
+- **认证闸门** - Claude 已尝试 CLI / API，但还需要凭证（这**不是**失败）
+- 邮件验证链接（点邮件）
+- SMS 2FA 验证码（手机验证）
+- 手动账号审批（平台要求人工审核）
+- 信用卡 3D Secure 流程（网页支付授权）
+- OAuth app 审批（网页端确认）
 
-**Do NOT use for pre-planned manual work:**
-- Deploying (use CLI - auth gate if needed)
-- Creating webhooks/databases (use API/CLI - auth gate if needed)
-- Running builds/tests (use Bash tool)
-- Creating files (use Write tool)
+**不要用于预先规划好的手工工作：**
+- 部署（应走 CLI；需要时再触发 auth gate）
+- 创建 webhook / 数据库（应走 API / CLI；需要时再触发 auth gate）
+- 运行 build / test（应使用 Bash 工具）
+- 创建文件（应使用 Write 工具）
 
-**Structure:**
+**结构：**
 ```xml
 <task type="checkpoint:human-action" gate="blocking">
   <action>[What human must do - Claude already did everything automatable]</action>
@@ -214,7 +214,7 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 </task>
 ```
 
-**Example: Email Verification**
+**示例：邮件验证**
 ```xml
 <task type="auto">
   <name>Create SendGrid account via API</name>
@@ -234,7 +234,7 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 </task>
 ```
 
-**Example: Authentication Gate (Dynamic Checkpoint)**
+**示例：认证闸门（动态 checkpoint）**
 ```xml
 <task type="auto">
   <name>Deploy to Vercel</name>
@@ -265,56 +265,56 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 </task>
 ```
 
-**Key distinction:** Auth gates are created dynamically when Claude encounters auth errors. NOT pre-planned — Claude automates first, asks for credentials only when blocked.
+**关键区别：** auth gate 是 Claude 遇到认证错误时动态创建的，而不是预先规划好的步骤。正确顺序是先自动化，只有被挡住时才向用户要凭证。
 </type>
 </checkpoint_types>
 
 <execution_protocol>
 
-When Claude encounters `type="checkpoint:*"`:
+当 Claude 遇到 `type="checkpoint:*"` 时：
 
-1. **Stop immediately** - do not proceed to next task
-2. **Display checkpoint clearly** using the format below
-3. **Wait for user response** - do not hallucinate completion
-4. **Verify if possible** - check files, run tests, whatever is specified
-5. **Resume execution** - continue to next task only after confirmation
+1. **立刻停下** - 不要继续下一个任务
+2. **清晰展示 checkpoint**，格式如下
+3. **等待用户回应** - 不要臆测已完成
+4. **能验证就先验证** - 查文件、跑测试，按要求执行
+5. **恢复执行** - 只有确认后才能继续下一个任务
 
-**For checkpoint:human-verify:**
+**针对 checkpoint:human-verify：**
 ```
 ╔═══════════════════════════════════════════════════════╗
-║  CHECKPOINT: Verification Required                    ║
+║  检查点：需要验证                                     ║
 ╚═══════════════════════════════════════════════════════╝
 
-Progress: 5/8 tasks complete
-Task: Responsive dashboard layout
+进度：8 个任务中已完成 5 个
+任务：响应式 dashboard 布局
 
-Built: Responsive dashboard at /dashboard
+已构建：`/dashboard` 上的响应式 dashboard
 
-How to verify:
-  1. Visit: http://localhost:3000/dashboard
-  2. Desktop (>1024px): Sidebar visible, content fills remaining space
-  3. Tablet (768px): Sidebar collapses to icons
-  4. Mobile (375px): Sidebar hidden, hamburger menu appears
+如何验证：
+  1. 访问：http://localhost:3000/dashboard
+  2. 桌面端（>1024px）：侧边栏可见，内容区填满剩余空间
+  3. 平板端（768px）：侧边栏收起为图标
+  4. 移动端（375px）：侧边栏隐藏，顶部出现汉堡菜单
 
 ────────────────────────────────────────────────────────
-→ YOUR ACTION: Type "approved" or describe issues
+→ 你的操作：输入 "approved" 或直接描述问题
 ────────────────────────────────────────────────────────
 ```
 
-**For checkpoint:decision:**
+**针对 checkpoint:decision：**
 ```
 ╔═══════════════════════════════════════════════════════╗
-║  CHECKPOINT: Decision Required                        ║
+║  检查点：需要决策                                     ║
 ╚═══════════════════════════════════════════════════════╝
 
-Progress: 2/6 tasks complete
-Task: Select authentication provider
+进度：6 个任务中已完成 2 个
+任务：选择认证提供方
 
-Decision: Which auth provider should we use?
+决策项：我们应该使用哪个 auth provider？
 
-Context: Need user authentication. Three options with different tradeoffs.
+上下文：当前需要用户认证。下面有三种方案，取舍不同。
 
-Options:
+可选方案：
   1. supabase - Built-in with our DB, free tier
      Pros: Row-level security integration, generous free tier
      Cons: Less customizable UI, ecosystem lock-in
@@ -328,28 +328,28 @@ Options:
      Cons: More setup work, DIY security updates
 
 ────────────────────────────────────────────────────────
-→ YOUR ACTION: Select supabase, clerk, or nextauth
+→ 你的操作：选择 supabase、clerk 或 nextauth
 ────────────────────────────────────────────────────────
 ```
 
-**For checkpoint:human-action:**
+**针对 checkpoint:human-action：**
 ```
 ╔═══════════════════════════════════════════════════════╗
-║  CHECKPOINT: Action Required                          ║
+║  检查点：需要人工动作                                 ║
 ╚═══════════════════════════════════════════════════════╝
 
-Progress: 3/8 tasks complete
-Task: Deploy to Vercel
+进度：8 个任务中已完成 3 个
+任务：部署到 Vercel
 
-Attempted: vercel --yes
-Error: Not authenticated. Please run 'vercel login'
+已尝试：`vercel --yes`
+错误：`Not authenticated`。请运行 `vercel login`
 
-What you need to do:
-  1. Run: vercel login
-  2. Complete browser authentication when it opens
-  3. Return here when done
+你需要执行：
+  1. 运行：`vercel login`
+  2. 浏览器弹出后完成认证
+  3. 完成后回到这里
 
-I'll verify: vercel whoami returns your account
+我会验证：`vercel whoami` 能返回你的账号
 
 ────────────────────────────────────────────────────────
 → YOUR ACTION: Type "done" when authenticated

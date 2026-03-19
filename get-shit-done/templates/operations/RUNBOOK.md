@@ -5,463 +5,457 @@ last_reviewed: "2026-03"
 template_for: ".planning/operations/RUNBOOK.md"
 ---
 
-# Runbook Template
+# Runbook 模板
 
-Template for `.planning/operations/RUNBOOK.md` — incident response and troubleshooting procedures.
+用于 `.planning/operations/RUNBOOK.md` 的模板，覆盖事故响应、常见问题排查与维护流程。
 
 <template>
 
 ```markdown
-# Operations Runbook
+# Runbook
 
-**Project:** [Project Name]
-**Last Updated:** [YYYY-MM-DD]
-**On-Call:** [Current on-call rotation link]
-
----
-
-## Quick Reference
-
-### Emergency Contacts
-
-| Role | Primary | Backup | Contact |
-|------|---------|--------|---------|
-| On-Call Engineer | [Name] | [Name] | [Phone/Slack] |
-| Engineering Manager | [Name] | — | [Phone/Slack] |
-| VP Engineering | [Name] | — | [Phone/Slack] |
-
-### Critical Commands
-
-| Action | Command |
-|--------|---------|
-| Check service status | `[command]` |
-| Restart service | `[command]` |
-| Rollback deployment | `[command]` |
-| Scale up | `[command]` |
-| View recent logs | `[command]` |
-
-### Service Endpoints
-
-| Service | Health Check | Dashboard |
-|---------|--------------|-----------|
-| API | `/health` | [Link] |
-| Database | `/db-health` | [Link] |
-| Cache | `/cache-health` | [Link] |
-
-### Capacity Escalation Reference
-
-- Check current utilization against `CAPACITY.md` thresholds before improvising manual scaling.
-- Prefer documented scale actions before increasing limits or changing instance classes.
-- Record emergency scaling decisions in the capacity decision log after the incident.
+**项目：** [项目名称]
+**最后更新：** [YYYY-MM-DD]
+**值班负责人：** [团队/人员]
 
 ---
 
-## Incident Response
+## 快速参考
 
-### Severity Levels
+### 服务概览
 
-| Level | Definition | Response Time | Example |
-|-------|------------|---------------|---------|
-| **SEV1** | Complete service outage | 5 min | All users affected |
-| **SEV2** | Major functionality broken | 15 min | Core feature down |
-| **SEV3** | Degraded performance | 30 min | Slow response times |
-| **SEV4** | Minor issue | 4 hr | Non-critical bug |
+| 服务 | 用途 | 环境 | 健康检查 | 仪表板 |
+|------|------|------|----------|--------|
+| [service-name] | [用途] | [prod/staging] | [URL/command] | [Link] |
+| [service-name] | [用途] | [prod/staging] | [URL/command] | [Link] |
 
-### Response Process
+### 关键联系人
+
+| 角色 | 姓名 | 联系方式 | 可用时段 |
+|------|------|----------|----------|
+| 值班工程师 | [Name] | [Slack/Phone] | 24/7 |
+| Engineering Lead | [Name] | [Slack/Phone] | 工作时间 |
+| Platform/Infra | [Name] | [Slack/Phone] | 24/7 |
+| 第三方支持 | [Vendor] | [Portal/Phone] | [Hours] |
+
+### 关键命令
+
+```bash
+# 查看服务状态
+[status command]
+
+# 查看日志
+[log command]
+
+# 重启服务
+[restart command]
+
+# 回滚最近一次部署
+[rollback command]
+```
+
+---
+
+## 事故分级
+
+| 等级 | 定义 | 示例 | 响应时间 |
+|------|------|------|----------|
+| SEV1 | 全站不可用 / 关键数据风险 | 生产完全宕机 | 立即 |
+| SEV2 | 严重功能降级 | 支付故障、认证故障 | 15 分钟内 |
+| SEV3 | 部分功能受影响 | 某个区域功能异常 | 1 小时内 |
+| SEV4 | 低影响问题 | 单个功能异常 / 次要 bug | 下一个工作日 |
+
+### 事故响应流程
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     INCIDENT LIFECYCLE                       │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  1. DETECT ──► 2. TRIAGE ──► 3. RESPOND ──► 4. RESOLVE     │
-│       │              │              │              │         │
-│       ▼              ▼              ▼              ▼         │
-│   Alert fires    Assess      Investigate     Fix issue     │
-│   User reports   severity    Mitigate        Verify fix    │
-│                              Communicate      Document      │
-│                                                              │
-│  5. POST-MORTEM ──► Review, learn, improve                 │
-│                                                              │
+│ 1. 检测 → 2. 分级 → 3. 响应 → 4. 沟通 → 5. 恢复            │
+│                                                             │
+│ 发现问题                                                     │
+│    └─► 评估影响和严重度                                      │
+│           └─► 启动响应者与负责人                             │
+│                  └─► 定期同步状态                            │
+│                         └─► 恢复服务                         │
+│                                └─► 复盘、学习、改进         │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Communication Templates
+### 沟通模板
 
-**Incident Start:**
+**事故开始：**
 ```
-🚨 INCIDENT: [Brief description]
-Severity: [SEV1/2/3/4]
-Impact: [User impact]
-Status: Investigating
-Incident Commander: [Name]
-```
-
-**Status Update:**
-```
-📊 UPDATE: [Brief description]
-Status: [Investigating/Identified/Monitoring/Resolved]
-Progress: [What's been done]
-Next Steps: [What's next]
-ETA: [If known]
+🚨 事故： [简要描述]
+等级： [SEV1/2/3/4]
+影响： [用户影响]
+状态： Investigating
+Incident Commander： [Name]
 ```
 
-**Resolution:**
+**状态更新：**
 ```
-✅ RESOLVED: [Brief description]
-Duration: [Total time]
-Root Cause: [If known]
-Fix: [What was done]
-Post-mortem: [Date/Time]
+📊 更新： [简要描述]
+状态： [Investigating/Identified/Monitoring/Resolved]
+进展： [已完成内容]
+下一步： [接下来要做什么]
+ETA： [如果已知]
+```
+
+**恢复完成：**
+```
+✅ 已恢复： [简要描述]
+持续时间： [总时长]
+根因： [如果已知]
+修复： [采取了什么措施]
+Post-mortem： [日期/时间]
 ```
 
 ---
 
-## Common Issues
+## 常见问题
 
-### Issue: Service Not Responding
+### 问题：服务无响应
 
-**Symptoms:**
-- Health checks failing
-- 502/503 errors
-- No response from endpoints
+**症状：**
+- 健康检查失败
+- 出现 502/503 错误
+- 端点无响应
 
-**Diagnosis:**
+**诊断：**
 ```bash
-# Check service status
+# 查看服务状态
 [status command]
 
-# Check logs
+# 查看日志
 [log command]
 
-# Check resource usage
+# 查看资源使用
 [resource command]
 ```
 
-**Resolution Steps:**
-1. Check if service is running
-2. Check resource limits (CPU, memory)
-3. Check for recent deployments
-4. Review error logs
-5. Restart service if needed
-6. Rollback if caused by recent deploy
+**处理步骤：**
+1. 确认服务是否正在运行
+2. 检查资源上限（CPU、内存）
+3. 查看最近部署
+4. 审查错误日志
+5. 必要时重启服务
+6. 如果由最近部署导致，执行回滚
 
-**Escalation:** If not resolved in 15 min, escalate to SEV1
+**升级：** 15 分钟内未恢复则升级为 SEV1
 
 ---
 
-### Issue: High Error Rate
+### 问题：错误率过高
 
-**Symptoms:**
-- Error rate > 1% (warning) or > 5% (critical)
-- Increased 4xx/5xx responses
-- User reports of failures
+**症状：**
+- 错误率 > 1%（warning）或 > 5%（critical）
+- 4xx/5xx 响应增加
+- 用户报告失败
 
-**Diagnosis:**
+**诊断：**
 ```bash
-# Check error logs
+# 查看错误日志
 [error log command]
 
-# Check by error type
+# 按错误类型聚合
 [group errors command]
 
-# Check recent changes
+# 查看最近改动
 [deployment history]
 ```
 
-**Resolution Steps:**
-1. Identify error patterns
-2. Check for recent deployments
-3. Check external dependencies
-4. Check database connectivity
-5. Apply hotfix or rollback
-6. Monitor error rate
+**处理步骤：**
+1. 识别错误模式
+2. 查看最近部署
+3. 检查外部依赖
+4. 检查数据库连通性
+5. 打 hotfix 或回滚
+6. 监控错误率恢复情况
 
-**Escalation:** If error rate > 5% for > 5 min, escalate to SEV2
+**升级：** 错误率 > 5% 且持续 > 5 分钟则升级为 SEV2
 
 ---
 
-### Issue: Slow Response Times
+### 问题：响应时间变慢
 
-**Symptoms:**
-- P95 latency > threshold
-- User complaints about slowness
-- Timeout errors
+**症状：**
+- P95 延迟 > 阈值
+- 用户反馈卡顿
+- 出现超时错误
 
-**Diagnosis:**
+**诊断：**
 ```bash
-# Check response time distribution
+# 查看响应时间分布
 [latency command]
 
-# Check database query times
+# 查看数据库查询耗时
 [db query time command]
 
-# Check cache hit rates
+# 查看缓存命中率
 [cache stats command]
 ```
 
-**Resolution Steps:**
-1. Identify slow endpoints
-2. Check database query performance
-3. Check cache effectiveness
-4. Check for resource contention
-5. Scale up if needed
-6. Optimize slow queries
+**处理步骤：**
+1. 找出慢接口
+2. 检查数据库查询性能
+3. 检查缓存效果
+4. 检查资源争用
+5. 必要时扩容
+6. 优化慢查询
 
-**Escalation:** If P95 > 2s for > 10 min, escalate to SEV2
+**升级：** P95 > 2s 且持续 > 10 分钟则升级为 SEV2
 
 ---
 
-### Issue: Database Connection Issues
+### 问题：数据库连接异常
 
-**Symptoms:**
-- Connection timeout errors
-- "Too many connections" errors
-- Query failures
+**症状：**
+- 连接超时错误
+- “Too many connections” 错误
+- 查询失败
 
-**Diagnosis:**
+**诊断：**
 ```bash
-# Check connection count
+# 查看连接数
 [connection count command]
 
-# Check database health
+# 查看数据库健康状态
 [db health command]
 
-# Check for locks
+# 查看锁情况
 [lock check command]
 ```
 
-**Resolution Steps:**
-1. Check connection pool settings
-2. Kill long-running queries
-3. Check for table locks
-4. Restart connection pool
-5. Scale database if needed
+**处理步骤：**
+1. 检查连接池配置
+2. 杀掉长时间运行的查询
+3. 检查是否存在表锁
+4. 重启连接池
+5. 必要时扩容数据库
 
-**Escalation:** If database unreachable > 5 min, escalate to SEV1
+**升级：** 数据库不可达超过 5 分钟则升级为 SEV1
 
 ---
 
-### Issue: Memory/CPU Exhaustion
+### 问题：内存 / CPU 耗尽
 
-**Symptoms:**
-- OOM errors
-- Service restarts
-- Slow performance
+**症状：**
+- 出现 OOM 错误
+- 服务重启
+- 性能变慢
 
-**Diagnosis:**
+**诊断：**
 ```bash
-# Check memory usage
+# 查看内存使用
 [memory command]
 
-# Check CPU usage
+# 查看 CPU 使用
 [cpu command]
 
-# Check process list
+# 查看进程列表
 [process command]
 ```
 
-**Resolution Steps:**
-1. Identify resource-heavy processes
-2. Check for memory leaks
-3. Scale up resources
-4. Restart affected services
-5. Investigate root cause
+**处理步骤：**
+1. 找出高资源占用进程
+2. 检查是否存在内存泄漏
+3. 扩容资源
+4. 重启受影响服务
+5. 调查根因
 
-**Escalation:** If service crashed, escalate to SEV2
+**升级：** 服务崩溃则升级为 SEV2
 
 ---
 
-### Issue: External Service Failure
+### 问题：外部服务故障
 
-**Symptoms:**
-- Third-party API errors
-- Payment processing failures
-- Authentication failures
+**症状：**
+- 第三方 API 错误
+- 支付处理失败
+- 认证失败
 
-**Diagnosis:**
+**诊断：**
 ```bash
-# Check external service status
+# 查看外部服务状态
 [status check command]
 
-# Check error responses
+# 查看错误响应
 [error log command]
 
-# Test connectivity
+# 测试连通性
 [connectivity test]
 ```
 
-**Resolution Steps:**
-1. Check service status page
-2. Enable fallback/circuit breaker
-3. Switch to backup provider if available
-4. Communicate to users
-5. Monitor for recovery
+**处理步骤：**
+1. 查看服务状态页
+2. 启用 fallback / circuit breaker
+3. 如可行切换到备用 Provider
+4. 通知用户
+5. 监控恢复
 
-**Escalation:** If business-critical service down, escalate to SEV2
-
----
-
-## Maintenance Procedures
-
-### Planned Maintenance
-
-**Pre-Maintenance:**
-- [ ] Notify stakeholders 24h in advance
-- [ ] Prepare rollback plan
-- [ ] Verify backup integrity
-- [ ] Set up monitoring alerts
-
-**During Maintenance:**
-- [ ] Enable maintenance mode
-- [ ] Perform maintenance tasks
-- [ ] Verify all services healthy
-- [ ] Disable maintenance mode
-
-**Post-Maintenance:**
-- [ ] Run smoke tests
-- [ ] Monitor for 1 hour
-- [ ] Document changes
-- [ ] Notify stakeholders of completion
-
-### Emergency Maintenance
-
-1. Announce maintenance immediately
-2. Enable maintenance mode
-3. Perform necessary fixes
-4. Verify and restore service
-5. Post-incident review
+**升级：** 业务关键服务不可用则升级为 SEV2
 
 ---
 
-## Post-Mortem Template
+## 维护流程
+
+### 计划内维护
+
+**维护前：**
+- [ ] 提前 24 小时通知相关方
+- [ ] 准备回滚方案
+- [ ] 校验备份完整性
+- [ ] 配置监控告警
+
+**维护中：**
+- [ ] 启用维护模式
+- [ ] 执行维护任务
+- [ ] 校验所有服务健康
+- [ ] 关闭维护模式
+
+**维护后：**
+- [ ] 运行 smoke tests
+- [ ] 持续监控 1 小时
+- [ ] 记录变更
+- [ ] 通知相关方维护完成
+
+### 紧急维护
+
+1. 立即发布维护通知
+2. 启用维护模式
+3. 执行必要修复
+4. 校验并恢复服务
+5. 进行事后复盘
+
+---
+
+## Post-Mortem 模板
 
 ```markdown
-# Post-Mortem: [Incident Title]
+# Post-Mortem: [事故标题]
 
-**Date:** [Date]
-**Duration:** [Start time] - [End time] ([Total duration])
-**Severity:** [SEV1/2/3/4]
-**Author:** [Name]
+**日期：** [Date]
+**持续时间：** [Start time] - [End time]（[Total duration]）
+**等级：** [SEV1/2/3/4]
+**作者：** [Name]
 
-## Summary
-[2-3 sentence summary of the incident]
+## 摘要
+[用 2-3 句话总结本次事故]
 
-## Impact
-- **Users affected:** [Number/percentage]
-- **Duration:** [Time]
-- **Business impact:** [Revenue, reputation, etc.]
+## 影响
+- **受影响用户：** [数量/比例]
+- **持续时间：** [时间]
+- **业务影响：** [收入、声誉等]
 
-## Timeline
-| Time | Event |
-|------|-------|
-| [Time] | [What happened] |
-| [Time] | [What happened] |
+## 时间线
+| 时间 | 事件 |
+|------|------|
+| [Time] | [发生了什么] |
+| [Time] | [发生了什么] |
 
-## Root Cause
-[Detailed explanation of what caused the incident]
+## 根因
+[详细说明事故原因]
 
-## Contributing Factors
-- [Factor 1]
-- [Factor 2]
+## 促成因素
+- [因素 1]
+- [因素 2]
 
-## Resolution
-[How the incident was resolved]
+## 解决过程
+[本次事故如何被解决]
 
-## Action Items
-| Action | Owner | Due Date | Status |
-|--------|-------|----------|--------|
+## 行动项
+| 动作 | 负责人 | 截止日期 | 状态 |
+|------|--------|----------|------|
 | [Action 1] | [Name] | [Date] | [ ] |
 | [Action 2] | [Name] | [Date] | [ ] |
 
-## Lessons Learned
-- [Lesson 1]
-- [Lesson 2]
+## 经验教训
+- [教训 1]
+- [教训 2]
 
-## Appendix
-- [Links to logs, dashboards, etc.]
+## 附录
+- [日志、仪表板等链接]
 ```
 
 ---
 
-## Knowledge Base
+## 知识库
 
-### Recent Incidents
+### 最近事故
 
-| Date | Issue | Resolution | Runbook Updated? |
-|------|-------|------------|------------------|
-| [Date] | [Brief description] | [How resolved] | [Yes/No] |
+| 日期 | 问题 | 解决方式 | Runbook 已更新？ |
+|------|------|----------|------------------|
+| [Date] | [简要描述] | [如何解决] | [Yes/No] |
 
-### Known Workarounds
+### 已知绕过方案
 
-| Issue | Workaround | Permanent Fix Status |
-|-------|------------|---------------------|
+| 问题 | 临时绕过方案 | 永久修复状态 |
+|------|--------------|--------------|
 | [Issue] | [Workaround] | [Planned/In Progress/None] |
 
 ---
 
-## Related Documents
+## 相关文档
 
-- [CAPACITY.md](./CAPACITY.md) - Capacity baselines and scaling plan
-
-- [OPERATIONS.md](./OPERATIONS.md) — Operations overview
-- [MONITORING.md](./MONITORING.md) — Monitoring configuration
-- [DEPLOYMENT.md](./DEPLOYMENT.md) — Deployment procedures
+- [CAPACITY.md](./CAPACITY.md) - 容量基线与扩缩容计划
+- [OPERATIONS.md](./OPERATIONS.md) — 运维总览
+- [MONITORING.md](./MONITORING.md) — 监控配置
+- [DEPLOYMENT.md](./DEPLOYMENT.md) — 部署流程
 
 ---
 
-*Runbook review: [date]*
-*Update after each incident or quarterly*
+*Runbook 评审： [date]*
+*每次事故后或至少每季度更新一次*
 ```
 
 </template>
 
 <guidelines>
 
-**What This Is:**
-- Incident response procedures
-- Common issue troubleshooting
-- Communication templates
-- Post-mortem process
+**这份文档是什么：**
+- 事故响应流程
+- 常见问题排查
+- 沟通模板
+- Post-mortem 流程
 
-**Quick Reference:**
-- Critical info at top
-- Emergency contacts
-- Key commands
-- Service endpoints
+**快速参考：**
+- 把关键信息放在顶部
+- 包含紧急联系人
+- 提供关键命令
+- 列出服务端点
 
-**Incident Response:**
-- Define severity levels clearly
-- Document response process
-- Provide communication templates
-- Set escalation triggers
+**事故响应：**
+- 明确定义事故等级
+- 记录响应流程
+- 提供沟通模板
+- 设定升级触发条件
 
-**Common Issues:**
-- Document symptoms
-- Provide diagnosis commands
-- List resolution steps
-- Define escalation criteria
+**常见问题：**
+- 记录症状
+- 提供诊断命令
+- 列出解决步骤
+- 明确升级标准
 
-**Maintenance:**
-- Planned vs emergency procedures
-- Checklists for each phase
-- Communication requirements
+**维护：**
+- 区分计划内和紧急维护
+- 为每个阶段准备 checklist
+- 明确沟通要求
 
-**Post-Mortem:**
-- Standardized template
-- Focus on learning
-- Track action items
-- Update runbook based on findings
+**Post-Mortem：**
+- 使用统一模板
+- 聚焦学习与改进
+- 跟踪行动项
+- 根据发现更新 runbook
 
-**Knowledge Base:**
-- Track recent incidents
-- Document workarounds
-- Link to permanent fixes
+**知识库：**
+- 跟踪近期事故
+- 记录绕过方案
+- 链接永久修复
 
-**Maintenance:**
-- Review after each incident
-- Update quarterly minimum
-- Keep commands current
-- Verify contacts
+**维护要求：**
+- 每次事故后复审
+- 至少每季度更新
+- 保持命令可用
+- 校验联系人信息
 
 </guidelines>

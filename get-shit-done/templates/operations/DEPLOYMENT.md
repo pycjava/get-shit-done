@@ -5,99 +5,99 @@ last_reviewed: "2026-03"
 template_for: ".planning/operations/DEPLOYMENT.md"
 ---
 
-# Deployment Template
+# Deployment 模板
 
-Template for `.planning/operations/DEPLOYMENT.md` — deployment procedures and strategies.
+用于生成 `.planning/operations/DEPLOYMENT.md`，即部署流程与部署策略文档。
 
 <template>
 
 ```markdown
-# Deployment Procedures
+# 部署流程
 
 **Project:** [Project Name]
 **Last Updated:** [YYYY-MM-DD]
 
 ---
 
-## Deployment Strategy
+## 部署策略
 
-### Strategy Overview
+### 策略概览
 
 **Type:** [Blue-Green / Rolling / Canary / Feature Flags]
 
 | Aspect | Configuration |
 |--------|---------------|
 | Strategy | [Type] |
-| Rollback | [Automated/Manual] |
-| Rollback Time | [e.g., <5min] |
-| Zero-Downtime | [Yes/No] |
+| Rollback | [Automated / Manual] |
+| Rollback Time | [如 <5min] |
+| Zero-Downtime | [Yes / No] |
 
-### Strategy Details
+### 策略细节
 
-[Detailed explanation of chosen deployment strategy:
-- How it works for this project
-- Why this strategy was chosen
-- Trade-offs and considerations]
+[详细解释本项目所选的部署策略：
+- 它在当前项目里如何运作
+- 为什么选择它
+- 有哪些取舍和前提]
 
 ---
 
-## Pre-Deployment Checklist
+## 部署前检查清单
 
 ### Code Review
 
-- [ ] All PRs approved by at least one reviewer
-- [ ] No unresolved review comments
-- [ ] Branch up to date with target branch
+- [ ] 所有 PR 至少有一位 reviewer 批准
+- [ ] 没有未解决的 review comment
+- [ ] 分支已同步到目标分支最新状态
 
-### Testing
+### 测试
 
-- [ ] All unit tests passing
-- [ ] Integration tests passing
-- [ ] E2E tests passing (if applicable)
-- [ ] Performance tests passing (if applicable)
-- [ ] Security scan completed
+- [ ] 所有 unit tests 通过
+- [ ] integration tests 通过
+- [ ] E2E tests 通过（如适用）
+- [ ] performance tests 通过（如适用）
+- [ ] security scan 已完成
 
-### Configuration
+### 配置
 
-- [ ] Environment variables verified
-- [ ] Secrets rotated (if scheduled)
-- [ ] Feature flags configured
-- [ ] Capacity headroom verified for expected rollout traffic
-- [ ] Database migrations tested
+- [ ] 环境变量已核对
+- [ ] secrets 已按计划轮换（如适用）
+- [ ] feature flags 已配置
+- [ ] 已确认本次 rollout 流量下仍有足够 capacity headroom
+- [ ] database migrations 已测试
 
-### Communication
+### 沟通
 
-- [ ] Deployment announced to team
-- [ ] Stakeholders notified (if maintenance window)
-- [ ] Rollback plan documented
+- [ ] 已向团队宣布部署
+- [ ] 如有维护窗口，已通知 stakeholders
+- [ ] rollback plan 已写明
 
 ---
 
-## Deployment Process
+## 部署过程
 
-### Step-by-Step Procedure
+### 分步流程
 
 ```
-1. Pre-deployment
-   ├── Verify all checks passed
-   ├── Confirm deployment target
-   └── Notify team
+1. 部署前
+   - 确认所有检查通过
+   - 确认部署目标环境
+   - 通知团队
 
-2. Deployment
-   ├── [Step 1: e.g., Create new release tag]
-   ├── [Step 2: e.g., Build production image]
-   ├── [Step 3: e.g., Deploy to canary]
-   ├── [Step 4: e.g., Monitor canary for 10min]
-   └── [Step 5: e.g., Promote to full deployment]
+2. 部署中
+   - [Step 1：例如创建 release tag]
+   - [Step 2：例如构建生产镜像]
+   - [Step 3：例如先部署到 canary]
+   - [Step 4：例如观察 canary 10 分钟]
+   - [Step 5：例如提升为全量]
 
-3. Post-deployment
-   ├── Verify health checks
-   ├── Run smoke tests
-   ├── Monitor error rates
-   └── Confirm deployment success
+3. 部署后
+   - 验证 health checks
+   - 运行 smoke tests
+   - 监控错误率
+   - 确认部署成功
 ```
 
-### Deployment Commands
+### 部署命令
 
 | Environment | Command | Duration |
 |-------------|---------|----------|
@@ -105,21 +105,21 @@ Template for `.planning/operations/DEPLOYMENT.md` — deployment procedures and 
 | Staging | `[command]` | ~[X]min |
 | Production | `[command]` | ~[X]min |
 
-### Automated Checks
+### 自动检查
 
 | Check | Threshold | Action on Failure |
 |-------|-----------|-------------------|
 | Health Check | 200 OK | Auto-rollback |
 | Error Rate | <1% | Alert, manual review |
 | Response Time | P95 <500ms | Alert, manual review |
-| Capacity Headroom | >20% remaining at expected peak | Scale first or hold deploy |
+| Capacity Headroom | >20% remaining at expected peak | 先扩容或暂停部署 |
 | Memory Usage | <80% | Alert, scale up |
 
 ---
 
-## Rollback Procedures
+## 回滚流程
 
-### Automatic Rollback Triggers
+### 自动回滚触发条件
 
 | Trigger | Threshold | Action |
 |---------|-----------|--------|
@@ -127,7 +127,7 @@ Template for `.planning/operations/DEPLOYMENT.md` — deployment procedures and 
 | Error rate spike | >5% errors | Immediate rollback |
 | Response time degradation | >2x baseline | Alert + manual decision |
 
-### Manual Rollback
+### 手动回滚
 
 ```bash
 # Rollback command
@@ -137,28 +137,25 @@ Template for `.planning/operations/DEPLOYMENT.md` — deployment procedures and 
 [verification command]
 ```
 
-### Rollback Decision Tree
+### 回滚决策树
 
 ```
 Issue Detected
-    │
-    ├── Critical (service down)?
-    │   └── Yes → Immediate rollback, investigate later
-    │
-    ├── Degraded (partial functionality)?
-    │   └── Yes → Assess impact
-    │       ├── User-facing? → Rollback
-    │       └── Internal only? → Monitor, decide in 15min
-    │
-    └── Minor (cosmetic, non-blocking)?
-        └── Monitor, fix in next deploy
+    -> Critical（服务不可用）？
+       -> Yes -> 立即回滚，之后再调查
+    -> Degraded（部分功能受损）？
+       -> Yes -> 评估影响
+           -> User-facing? -> 回滚
+           -> Internal only? -> 监控，15 分钟内决定
+    -> Minor（外观或非阻塞问题）？
+       -> 继续监控，在下次部署修复
 ```
 
 ---
 
-## Environment Variables
+## 环境变量
 
-### Required Variables
+### 必需变量
 
 | Variable | Environment | Description | Secret? |
 |----------|-------------|-------------|---------|
@@ -167,55 +164,55 @@ Issue Detected
 | `NODE_ENV` | All | Environment mode | No |
 | `LOG_LEVEL` | All | Logging verbosity | No |
 
-### Environment-Specific Variables
+### 分环境变量
 
 **Development:**
-```
+```env
 NODE_ENV=development
 LOG_LEVEL=debug
 [Other dev-specific vars]
 ```
 
 **Staging:**
-```
+```env
 NODE_ENV=staging
 LOG_LEVEL=info
 [Other staging-specific vars]
 ```
 
 **Production:**
-```
+```env
 NODE_ENV=production
 LOG_LEVEL=warn
 [Other prod-specific vars]
 ```
 
-### Secrets Management
+### Secrets 管理
 
 | Secret | Storage | Rotation | Last Rotated |
 |--------|---------|----------|--------------|
-| [Secret 1] | [e.g., AWS Secrets Manager] | [e.g., 90 days] | [Date] |
-| [Secret 2] | [e.g., Vault] | [e.g., 30 days] | [Date] |
+| [Secret 1] | [如 AWS Secrets Manager] | [如 90 days] | [Date] |
+| [Secret 2] | [如 Vault] | [如 30 days] | [Date] |
 
 ---
 
 ## Database Migrations
 
-### Migration Strategy
+### 迁移策略
 
 - **Approach:** [Forward-only / Reversible]
 - **Execution:** [Pre-deploy / During deploy / Post-deploy]
 - **Backup:** [Automatic / Manual]
 
-### Migration Checklist
+### 迁移检查清单
 
-- [ ] Migration tested on staging
-- [ ] Rollback migration prepared
-- [ ] Database backup taken
-- [ ] Migration timing estimated
-- [ ] Application compatible with old and new schema
+- [ ] migration 已在 staging 测试
+- [ ] rollback migration 已准备
+- [ ] 已完成数据库备份
+- [ ] 已估算迁移耗时
+- [ ] 应用同时兼容旧 schema 与新 schema
 
-### Migration Commands
+### 迁移命令
 
 ```bash
 # Run migrations
@@ -230,7 +227,7 @@ LOG_LEVEL=warn
 
 ---
 
-## Post-Deployment Verification
+## 部署后验证
 
 ### Smoke Tests
 
@@ -241,87 +238,86 @@ LOG_LEVEL=warn
 | Database connection | `/api/db-check` | 200 OK | Yes |
 | Authentication | `/api/auth/verify` | 200/401 | Yes |
 
-### Monitoring Period
+### 监控窗口
 
 | Timeframe | Actions |
 |-----------|---------|
-| 0-15 min | Watch error rates, response times |
-| 15-60 min | Monitor user-facing metrics |
-| 1-24 hr | Track business metrics, user reports |
+| 0-15 min | 观察错误率与响应时间 |
+| 15-60 min | 监控用户侧指标 |
+| 1-24 hr | 跟踪业务指标与用户反馈 |
 
-### Success Criteria
+### 成功标准
 
-- [ ] All smoke tests passing
-- [ ] Error rate within normal bounds
-- [ ] Response times within SLA
-- [ ] Capacity headroom acceptable after deploy
-- [ ] No user-reported issues
-- [ ] Monitoring dashboards green
+- [ ] 所有 smoke tests 通过
+- [ ] 错误率处于正常范围
+- [ ] 响应时间处于 SLA 内
+- [ ] 部署后 capacity headroom 仍可接受
+- [ ] 没有用户上报问题
+- [ ] 所有监控面板为绿色
 
 ---
 
-## Deployment Log
+## 部署日志
 
 | Date | Version | Environment | Deployer | Status | Notes |
 |------|---------|-------------|----------|--------|-------|
-| [Date] | [v1.2.3] | Production | [Name] | ✓/✗ | [Notes] |
+| [Date] | [v1.2.3] | Production | [Name] | [✅ / ❌] | [Notes] |
 
 ---
 
-## Related Documents
+## 相关文档
 
-- [CAPACITY.md](./CAPACITY.md) - Capacity baselines and scaling plan
-
-- [OPERATIONS.md](./OPERATIONS.md) — Operations overview
-- [RUNBOOK.md](./RUNBOOK.md) — Incident response
-- [BACKUP.md](./BACKUP.md) — Backup procedures
+- [CAPACITY.md](./CAPACITY.md) - 容量基线与扩缩容计划
+- [OPERATIONS.md](./OPERATIONS.md) - Operations 总览
+- [RUNBOOK.md](./RUNBOOK.md) - 故障响应
+- [BACKUP.md](./BACKUP.md) - 备份流程
 
 ---
 
-*Last deployment: [date]*
-*Update when deployment procedures change*
+*Last deployment: [date]*  
+*部署流程发生变化时及时更新*
 ```
 
 </template>
 
 <guidelines>
 
-**What This Is:**
-- Detailed deployment procedures
-- Step-by-step instructions
-- Rollback procedures
-- Environment configuration
+**这份文档是什么：**
+- 详细部署流程
+- 步骤化操作说明
+- 回滚流程
+- 环境配置约束
 
-**Deployment Strategy:**
-- Choose strategy based on:
-  - Service criticality
-  - Team experience
-  - Infrastructure capabilities
-  - Rollback requirements
+**部署策略：**
+- 选择时要考虑：
+  - 服务关键程度
+  - 团队经验
+  - 基础设施能力
+  - 回滚要求
 
-**Pre-Deployment Checklist:**
-- Customize for project needs
-- Include all critical checks
-- Update as process evolves
+**部署前检查清单：**
+- 按项目实际情况定制
+- 覆盖所有关键检查
+- 流程演变时同步更新
 
-**Rollback Procedures:**
-- Define clear triggers
-- Document decision tree
-- Practice rollback regularly
+**回滚流程：**
+- 定义清晰触发条件
+- 记录决策树
+- 定期演练回滚
 
-**Environment Variables:**
-- Never include actual values
-- Document rotation schedules
-- Note storage location for secrets
+**环境变量：**
+- 不要写入真实值
+- 记录轮换周期
+- 标明 secret 的存储位置
 
-**Database Migrations:**
-- Plan for backward compatibility
-- Test on staging first
-- Always have rollback plan
+**Database Migrations：**
+- 优先考虑向后兼容
+- 先在 staging 验证
+- 永远准备 rollback 方案
 
-**Post-Deployment:**
-- Define smoke tests
-- Set monitoring periods
-- Document success criteria
+**部署后：**
+- 定义 smoke tests
+- 明确观察窗口
+- 写清成功标准
 
 </guidelines>

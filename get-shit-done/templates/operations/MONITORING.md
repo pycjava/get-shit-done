@@ -5,53 +5,48 @@ last_reviewed: "2026-03"
 template_for: ".planning/operations/MONITORING.md"
 ---
 
-# Monitoring Template
+# Monitoring 模板
 
-Template for `.planning/operations/MONITORING.md` — monitoring, alerting, and observability configuration.
+用于生成 `.planning/operations/MONITORING.md`，覆盖监控、告警与可观测性配置。
 
 <template>
 
 ```markdown
-# Monitoring & Alerting
+# 监控与告警
 
 **Project:** [Project Name]
 **Last Updated:** [YYYY-MM-DD]
 
 ---
 
-## Observability Stack
+## 可观测性技术栈
 
-### Tools Overview
+### 工具总览
 
 | Layer | Tool | Purpose | Retention |
 |-------|------|---------|-----------|
-| Metrics | [e.g., Prometheus, Datadog] | Time-series data | [e.g., 30 days] |
-| Logs | [e.g., CloudWatch, ELK] | Log aggregation | [e.g., 14 days] |
-| Traces | [e.g., Jaeger, X-Ray] | Distributed tracing | [e.g., 7 days] |
-| Dashboards | [e.g., Grafana, Datadog] | Visualization | N/A |
-| Alerts | [e.g., PagerDuty, Opsgenie] | Alert routing | N/A |
+| Metrics | [如 Prometheus, Datadog] | Time-series data | [如 30 days] |
+| Logs | [如 CloudWatch, ELK] | Log aggregation | [如 14 days] |
+| Traces | [如 Jaeger, X-Ray] | Distributed tracing | [如 7 days] |
+| Dashboards | [如 Grafana, Datadog] | Visualization | N/A |
+| Alerts | [如 PagerDuty, Opsgenie] | Alert routing | N/A |
 
-### Architecture
+### 架构
 
 ```
 Application
-    │
-    ├── Metrics ──► [Metrics Store] ──► [Dashboards]
-    │                                      │
-    ├── Logs ────► [Log Store] ────────────┤
-    │                                      │
-    └── Traces ──► [Trace Store] ──────────┤
-                                           │
-                                      [Alert Manager]
-                                           │
-                                      [On-Call Team]
+    -> Metrics -> [Metrics Store] -> [Dashboards]
+    -> Logs -> [Log Store]
+    -> Traces -> [Trace Store]
+                         -> [Alert Manager]
+                         -> [On-Call Team]
 ```
 
 ---
 
-## Key Metrics
+## 关键指标
 
-### Golden Signals (RED Method)
+### Golden Signals（RED Method）
 
 | Metric | Description | Warning | Critical |
 |--------|-------------|---------|----------|
@@ -59,7 +54,7 @@ Application
 | **Errors** | Error rate (%) | [threshold] | [threshold] |
 | **Duration** | Response time (P95) | [threshold] | [threshold] |
 
-### USE Method (Resources)
+### USE Method（资源侧）
 
 | Resource | Utilization | Saturation | Errors |
 |----------|-------------|------------|--------|
@@ -68,40 +63,40 @@ Application
 | Disk I/O | [threshold] | [threshold] | [threshold] |
 | Network | [threshold] | [threshold] | [threshold] |
 
-### Application Metrics
+### 应用指标
 
 | Metric | Type | Description | Alert Threshold |
 |--------|------|-------------|-----------------|
 | `[metric_name]` | Counter/Gauge/Histogram | [description] | [threshold] |
 | `[metric_name]` | Counter/Gauge/Histogram | [description] | [threshold] |
 
-### Business Metrics
+### 业务指标
 
 | Metric | Description | Target | Current |
 |--------|-------------|--------|---------|
-| Active Users | Daily active users | [target] | [current] |
+| Active Users | DAU | [target] | [current] |
 | Conversion Rate | Sign-ups / visits | [target] | [current] |
 | Revenue | Daily revenue | [target] | [current] |
 
 ---
 
-## Capacity Signals
+## 容量信号
 
-### Headroom and Saturation
+### Headroom 与饱和度
 
 | Signal | Why It Matters | Warning | Critical |
 |--------|----------------|---------|----------|
-| CPU Headroom | Shows remaining compute buffer at peak | [threshold] | [threshold] |
-| Memory Headroom | Catches leak or saturation risk before failure | [threshold] | [threshold] |
-| Queue Depth | Detects when background demand exceeds throughput | [threshold] | [threshold] |
-| Database Connections | Surfaces approaching pool or instance limits | [threshold] | [threshold] |
-| Storage Growth | Tracks when retention or backup growth needs action | [threshold] | [threshold] |
+| CPU Headroom | 反映峰值时剩余算力缓冲 | [threshold] | [threshold] |
+| Memory Headroom | 提前发现泄漏或内存打满风险 | [threshold] | [threshold] |
+| Queue Depth | 发现后台需求已经超过吞吐能力 | [threshold] | [threshold] |
+| Database Connections | 暴露连接池或实例上限逼近情况 | [threshold] | [threshold] |
+| Storage Growth | 追踪保留策略或备份增长是否需调整 | [threshold] | [threshold] |
 
 ---
 
-## Alerting Rules
+## 告警规则
 
-### Critical Alerts (Page Immediately)
+### Critical Alerts（立即呼叫）
 
 | Alert | Condition | Response Time | Runbook |
 |-------|-----------|---------------|---------|
@@ -110,7 +105,7 @@ Application
 | Response Time Critical | P95 > 2s for 5min | 10min | [Link] |
 | Database Connection Failed | DB unreachable | 5min | [Link] |
 
-### Warning Alerts (Notify, No Page)
+### Warning Alerts（通知但不立即呼叫）
 
 | Alert | Condition | Response Time | Runbook |
 |-------|-----------|---------------|---------|
@@ -119,7 +114,7 @@ Application
 | Memory Usage High | Memory > 80% for 15min | 1hr | [Link] |
 | Disk Space Low | Disk > 85% used | 4hr | [Link] |
 
-### Alert Routing
+### 告警路由
 
 | Severity | Channel | Recipients |
 |----------|---------|------------|
@@ -131,9 +126,9 @@ Application
 
 ## Dashboards
 
-### Main Dashboard
+### 主仪表盘
 
-**Purpose:** High-level system health overview
+**Purpose:** 提供系统健康的高层视图
 
 | Panel | Metric | Visualization |
 |-------|--------|---------------|
@@ -143,9 +138,9 @@ Application
 | Active Users | Current users | Stat |
 | System Health | Up/Down status | Status panel |
 
-### Application Dashboard
+### 应用仪表盘
 
-**Purpose:** Detailed application metrics
+**Purpose:** 展示更细的应用层指标
 
 | Panel | Metric | Visualization |
 |-------|--------|---------------|
@@ -154,9 +149,9 @@ Application
 | Cache Hit Rate | Hit/Miss ratio | Pie chart |
 | Background Jobs | Queue depth, processing time | Line graph |
 
-### Infrastructure Dashboard
+### 基础设施仪表盘
 
-**Purpose:** Resource utilization
+**Purpose:** 展示资源利用率
 
 | Panel | Metric | Visualization |
 |-------|--------|---------------|
@@ -167,18 +162,18 @@ Application
 
 ---
 
-## Logging Strategy
+## 日志策略
 
-### Log Levels
+### 日志级别
 
 | Level | Usage | Examples |
 |-------|-------|----------|
-| ERROR | Failures requiring attention | Unhandled exceptions, service failures |
-| WARN | Potential issues | Deprecated API use, retry attempts |
-| INFO | Significant events | Request start/end, state changes |
-| DEBUG | Detailed diagnostics | Variable values, flow tracing |
+| ERROR | 需要关注的失败 | Unhandled exceptions, service failures |
+| WARN | 潜在问题 | Deprecated API use, retry attempts |
+| INFO | 重要事件 | Request start/end, state changes |
+| DEBUG | 详细诊断信息 | Variable values, flow tracing |
 
-### Log Format
+### 日志格式
 
 ```json
 {
@@ -193,7 +188,7 @@ Application
 }
 ```
 
-### Log Retention
+### 日志保留
 
 | Environment | Retention | Reason |
 |-------------|-----------|--------|
@@ -205,15 +200,15 @@ Application
 
 ## Distributed Tracing
 
-### Trace Configuration
+### Trace 配置
 
 | Setting | Value |
 |---------|-------|
-| Sampling Rate | [e.g., 10% of requests] |
-| Max Spans per Trace | [e.g., 1000] |
-| Propagation Format | [e.g., W3C Trace Context] |
+| Sampling Rate | [如 10% of requests] |
+| Max Spans per Trace | [如 1000] |
+| Propagation Format | [如 W3C Trace Context] |
 
-### Key Spans
+### 关键 Span
 
 | Span Name | Service | Purpose |
 |-----------|---------|---------|
@@ -224,7 +219,7 @@ Application
 
 ---
 
-## SLO/SLI Definitions
+## SLO / SLI 定义
 
 ### Service Level Objectives
 
@@ -238,38 +233,38 @@ Application
 
 | Metric | Value |
 |--------|-------|
-| Monthly Budget | [e.g., 43.2 min downtime] |
+| Monthly Budget | [如 43.2 min downtime] |
 | Remaining | [current remaining] |
 | Last Reset | [date] |
 
 ---
 
-## On-Call Procedures
+## On-Call 流程
 
-### Alert Response
+### 告警响应
 
 ```
-1. Acknowledge alert (within 5 min)
-2. Assess severity
-3. Check runbook for known issues
-4. Investigate using dashboards/logs
-5. Communicate status to team
-6. Resolve or escalate
-7. Document incident
+1. 5 分钟内确认告警
+2. 判断严重程度
+3. 查阅已知 runbook
+4. 用 dashboard / logs 调查
+5. 向团队同步状态
+6. 解决或升级
+7. 记录 incident
 ```
 
-### Escalation Triggers
+### 升级触发条件
 
-- Alert not acknowledged within 10 min
-- Issue not identified within 30 min
-- Resolution not progressing within 1 hour
-- Customer-facing impact confirmed
+- 告警 10 分钟内无人确认
+- 30 分钟内无法定位问题
+- 1 小时内没有明显解决进展
+- 已确认影响真实用户
 
 ---
 
-## Monitoring Maintenance
+## 监控维护
 
-### Regular Tasks
+### 常规任务
 
 | Task | Frequency | Owner |
 |------|-----------|-------|
@@ -278,7 +273,7 @@ Application
 | Audit log retention | Quarterly | Ops team |
 | Test alert routing | Monthly | On-call |
 
-### Alert Tuning
+### 告警调优
 
 | Metric | Last Tuned | Reason |
 |--------|------------|--------|
@@ -286,64 +281,63 @@ Application
 
 ---
 
-## Related Documents
+## 相关文档
 
-- [CAPACITY.md](./CAPACITY.md) - Capacity baselines and scaling plan
-
-- [OPERATIONS.md](./OPERATIONS.md) — Operations overview
-- [RUNBOOK.md](./RUNBOOK.md) — Incident response
-- [DEPLOYMENT.md](./DEPLOYMENT.md) — Deployment procedures
+- [CAPACITY.md](./CAPACITY.md) - 容量基线与扩缩容计划
+- [OPERATIONS.md](./OPERATIONS.md) - Operations 总览
+- [RUNBOOK.md](./RUNBOOK.md) - 故障响应
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - 部署流程
 
 ---
 
-*Monitoring audit: [date]*
-*Update when monitoring requirements change*
+*Monitoring audit: [date]*  
+*监控要求变化时及时更新*
 ```
 
 </template>
 
 <guidelines>
 
-**What This Is:**
-- Monitoring and alerting configuration
-- Key metrics and thresholds
-- Dashboard definitions
-- SLO/SLI tracking
+**这份文档是什么：**
+- 监控与告警配置
+- 关键指标和阈值
+- Dashboard 定义
+- SLO / SLI 跟踪
 
-**Observability Stack:**
-- Document all monitoring tools
-- Note retention periods
-- Include architecture diagram
+**可观测性技术栈：**
+- 记录所有监控工具
+- 标明保留周期
+- 尽量附带架构图
 
-**Key Metrics:**
-- Use RED method for services (Rate, Errors, Duration)
-- Use USE method for resources (Utilization, Saturation, Errors)
-- Include business metrics for context
+**关键指标：**
+- 服务侧优先用 RED method（Rate、Errors、Duration）
+- 资源侧优先用 USE method（Utilization、Saturation、Errors）
+- 业务指标也应纳入上下文
 
-**Alerting Rules:**
-- Separate critical vs warning alerts
-- Define clear response times
-- Link to runbooks
-- Document routing
+**告警规则：**
+- 区分 critical 与 warning
+- 定义清晰响应时限
+- 关联 runbook
+- 记录路由路径
 
-**Dashboards:**
-- Create purpose-driven dashboards
-- Include key visualizations
-- Update as system evolves
+**Dashboards：**
+- 每个 dashboard 都应有明确目的
+- 配置关键可视化
+- 系统演进时同步更新
 
-**Logging:**
-- Standardize log format
-- Define log levels clearly
-- Set appropriate retention
+**日志：**
+- 统一日志格式
+- 明确日志级别语义
+- 设置合理的保留周期
 
-**SLO/SLI:**
-- Set realistic targets
-- Track error budgets
-- Review regularly
+**SLO / SLI：**
+- 目标要现实
+- 跟踪 error budget
+- 定期复核
 
-**On-Call:**
-- Define response procedures
-- Set escalation triggers
-- Document responsibilities
+**On-Call：**
+- 定义响应流程
+- 明确升级条件
+- 记录责任归属
 
 </guidelines>

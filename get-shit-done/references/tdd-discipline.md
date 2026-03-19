@@ -1,22 +1,22 @@
 <discipline>
 
-Every atomic task follows a three-step discipline: **DEFINE → IMPLEMENT → VERIFY + SELF-CHECK**.
+每个原子任务都遵循三步纪律：**DEFINE -> IMPLEMENT -> VERIFY + SELF-CHECK**。
 
-This is not full TDD (no failing tests required). It is *test-driven discipline*: you must know what "done" looks like — in verifiable, runnable terms — BEFORE you start implementing.
+这不是完整 TDD（不要求必须先写失败测试），但它是一种*测试驱动纪律*：在你开始实现之前，必须先知道“完成”长什么样，而且要能用可验证、可运行的方式表达出来。
 
 </discipline>
 
-<step name="DEFINE — before writing a single line">
+<step name="DEFINE - before writing a single line">
 
-Before implementing, state aloud (in your reasoning):
+开始实现前，在你的推理里明确说清楚：
 
-1. **What is the observable outcome?** Not "create the file" but "file exists at path X, contains Y, command Z returns exit 0"
-2. **What is the exact verification command?** Write it now. If you can't write it now, you don't understand the task yet.
-3. **What are the failure modes?** What would make this task wrong even if it "completes"?
+1. **可观察结果是什么？** 不是“创建了某个文件”，而是“路径 X 上存在文件，内容包含 Y，命令 Z 返回 exit 0”
+2. **精确的验证命令是什么？** 现在就写出来。如果现在写不出来，说明你还没真正理解这个任务。
+3. **可能的失败模式是什么？** 哪些情况会导致它“看似完成，实际上是错的”？
 
-**Gate:** If you cannot answer all three, do NOT start. Re-read the task and plan until you can.
+**门禁：** 如果这三项你答不全，就**不要开始实现**。回去重读任务和 plan，直到能答清楚。
 
-**Format — write this mentally or inline before coding:**
+**格式：** 在编码前，至少要在心里或推理里形成下面这个结构：
 ```
 BEFORE:
   outcome: [file/API/state that proves done]
@@ -26,71 +26,71 @@ BEFORE:
 
 </step>
 
-<step name="IMPLEMENT — minimal, focused">
+<step name="IMPLEMENT - minimal, focused">
 
-- Implement ONLY what the task requires. No scope creep.
-- If you discover unplanned work: apply deviation rules (Rule 1-4), don't silently expand scope.
-- Track every file touched.
-
-</step>
-
-<step name="VERIFY — run the verification you defined in DEFINE">
-
-Run the exact command(s) you specified in DEFINE. No substitutions.
-
-- **Pass:** proceed to SELF-CHECK
-- **Fail:** debug and fix. Do NOT mark task done until verification passes.
-- **Cannot verify:** STOP. Surface to user as a checkpoint. Do not pretend.
+- 只实现当前任务真正要求的内容，不要膨胀范围
+- 如果发现计划外工作：应用 deviation rules（Rule 1-4），不要静默扩展范围
+- 记录你触碰过的每一个文件
 
 </step>
 
-<step name="SELF-CHECK — mandatory before commit">
+<step name="VERIFY - run the verification you defined in DEFINE">
 
-After verification passes, do a 30-second self-review:
+运行你在 DEFINE 阶段写下的**那条精确验证命令**，不要临时换一条。
+
+- **Pass：** 进入 SELF-CHECK
+- **Fail：** 调试并修复，不通过就不能标记完成
+- **Cannot verify：** 立刻停止，向用户暴露为 checkpoint，不要假装已完成
+
+</step>
+
+<step name="SELF-CHECK - mandatory before commit">
+
+验证通过后，再花 30 秒做一次自查：
 
 | Question | Check |
 |---|---|
-| Does the output match the plan's `done-criteria` exactly? | ✓ / ✗ |
-| Did I touch files not listed in the task? | ✓ explain / ✗ ok |
-| Would this break anything downstream? | ✓ investigate / ✗ ok |
-| Is the commit message honest (not aspirational)? | ✓ / ✗ |
+| 输出是否与 plan 的 `done-criteria` 完全一致？ | ✅ / ❌ |
+| 我是否改了任务列表外的文件？ | ✅ explain / ✅ ok |
+| 这会不会破坏下游内容？ | ✅ investigate / ✅ ok |
+| commit message 是否诚实，而不是理想化描述？ | ✅ / ❌ |
 
-**If any check is ✗:** fix before committing. Never commit a known gap.
+**如果有任何一项是问题态，先修再提交。** 不要把已知缺口带进 commit。
 
-Record the self-check result in the commit body or SUMMARY.md. If SUMMARY has `## Self-Check: FAILED`, the orchestrator will catch it.
+把 self-check 结果写进 commit body 或 `SUMMARY.md`。如果 `SUMMARY` 里出现 `## Self-Check: FAILED`，orchestrator 会抓到。
 
 </step>
 
 <tdd_code_plans>
 
-For `type: tdd` plans — full RED-GREEN-REFACTOR cycle applies in addition to the above:
+对于 `type: tdd` 的 plan，除了上面的纪律外，还要完整执行 `RED-GREEN-REFACTOR`：
 
-1. **RED:** Write failing test describing behavior → commit `test(...)` → MUST fail
-2. **GREEN:** Minimal implementation → commit `feat(...)` → MUST pass
-3. **REFACTOR:** Clean up if needed → commit `refactor(...)` → tests MUST still pass
+1. **RED：** 写一个描述行为的失败测试 -> 提交 `test(...)` -> **必须失败**
+2. **GREEN：** 用最小实现让它通过 -> 提交 `feat(...)` -> **必须通过**
+3. **REFACTOR：** 如有必要再清理 -> 提交 `refactor(...)` -> 测试**必须仍然通过**
 
-Reference: `@~/.claude/get-shit-done/references/tdd.md`
+参考：`@~/.claude/get-shit-done/references/tdd.md`
 
-This is on top of, not instead of, DEFINE → IMPLEMENT → VERIFY + SELF-CHECK.
+这套流程是在 `DEFINE -> IMPLEMENT -> VERIFY + SELF-CHECK` 之上的补充，不是替代。
 
 </tdd_code_plans>
 
 <when_to_apply>
 
-**Always (every task):** DEFINE → IMPLEMENT → VERIFY + SELF-CHECK
+**所有任务都适用：** `DEFINE -> IMPLEMENT -> VERIFY + SELF-CHECK`
 
-**Additionally for `type: tdd` tasks:** RED → GREEN → REFACTOR cycle (tdd.md)
+**额外适用于 `type: tdd` 任务：** `RED -> GREEN -> REFACTOR`（见 `tdd.md`）
 
-**Verification shortcut:** If a task's `<acceptance_criteria>` already lists exact verification commands, use those as your DEFINE output — you don't need to re-derive them. But you MUST still run them.
+**验证捷径：** 如果任务的 `<acceptance_criteria>` 已经明确列出了精确验证命令，那就直接把它拿来作为 DEFINE 的输出，不必重复推导。但你**仍然必须执行**这些命令。
 
 </when_to_apply>
 
 <anti_patterns>
 
-- **Implement then verify** — violates DEFINE. You're guessing, not engineering.
-- **"It should work"** — without running the verification command, this is wishful thinking.
-- **Silent scope expansion** — applying deviation rules means documenting, not ignoring.
-- **Aspirational commits** — commit messages describe what actually happened, not what was intended.
-- **Skipping self-check** — the 30 seconds save hours of debugging in later waves.
+- **先实现，再验证**：违反 DEFINE，本质是在猜，不是在工程化执行
+- **“应该能跑”**：没跑验证命令之前，这只是幻想
+- **静默扩张范围**：deviation rules 的意思是“记录并按规则处理”，不是“默默做掉”
+- **理想化提交**：commit message 要描述真实发生了什么，而不是原本打算做什么
+- **跳过 self-check**：这 30 秒通常能帮你省掉后面几小时的返工
 
 </anti_patterns>

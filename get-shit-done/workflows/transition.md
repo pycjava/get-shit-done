@@ -22,7 +22,7 @@
 
 <step name="load_project_state" priority="first">
 
-在 transition 开始前，先读取项目状态：
+在阶段切换开始前，先读取项目状态：
 
 ```bash
 cat .planning/STATE.md 2>/dev/null
@@ -84,7 +84,7 @@ cat .planning/config.json 2>/dev/null
 
 **如果还有未完成计划：**
 
-**安全护栏：这里始终算 destructive，必须确认。**
+**安全护栏：这里始终属于 destructive 操作，必须确认。**
 
 跳过未完成计划会导致阶段被强行推进，因此无论模式如何都必须询问用户。
 
@@ -229,7 +229,7 @@ cat .planning/phases/XX-current/*-SUMMARY.md
 - [ ] 已把新浮现需求加入 `Active`
 - [ ] 已补录新增关键决策
 - [ ] 若产品定义变化，已同步更新 “What This Is”
-- [ ] 页脚 `Last updated` 已反映本次 transition
+- [ ] 页脚 `Last updated` 已反映本次阶段切换
 
 </step>
 
@@ -511,7 +511,7 @@ Milestone {version} 已 100% 完成，全部 {N} 个阶段均已完成。
 
 <success_criteria>
 
-Transition 完成时，应满足：
+阶段切换完成时，应满足：
 
 - [ ] 当前阶段计划总结已核对（要么齐全，要么用户明确选择跳过）
 - [ ] 过期的 handoff 文件已清理

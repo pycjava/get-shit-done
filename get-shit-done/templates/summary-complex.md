@@ -23,7 +23,7 @@ duration: Xmin
 completed: YYYY-MM-DD
 ---
 
-# 阶段 [X]: [Name] 总结（复杂版）
+# 阶段 [X]：[Name] 总结（复杂版）
 
 **[用一句有信息量的话概括本次产出]**
 
@@ -41,7 +41,7 @@ completed: YYYY-MM-DD
 2. **任务 2：[任务名称]** - `hash`
 3. **任务 3：[任务名称]** - `hash`
 
-## 创建/修改的文件
+## 创建 / 修改的文件
 - `path/to/file.ts` - 文件作用
 - `path/to/another.ts` - 文件作用
 

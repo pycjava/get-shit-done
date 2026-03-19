@@ -1,119 +1,119 @@
-# Requirement Clarification Guide
+# 需求澄清指南
 
-Adapted from `skills/brainstorming/SKILL.md` and `references/questioning.md` — clarification phase only.
+改编自 `skills/brainstorming/SKILL.md` 与 `references/questioning.md`，仅用于澄清阶段。
 
-Help resolve ambiguous or vague requirements before planning begins. This is NOT a full brainstorming session — only the clarification step.
+它的用途是在规划开始前消解含糊或模糊的需求。这里**不是**完整的头脑风暴，只负责“把需求说清楚”这一步。
 
-## Goal
+## 目标
 
-Clarification exists to make the downstream planner's job executable. By the end, you need enough clarity that:
+澄清的存在，是为了让下游 planner 的工作真正可执行。到这一步结束时，你需要把问题说清楚到足以满足：
 
-- **plan-phase** can decompose into concrete tasks without guessing
-- **execute-phase** has clear success criteria to verify against
-- Resolved specifics are captured so they are never re-questioned
+- **plan-phase** 可以不靠猜测就拆成具体任务
+- **execute-phase** 有清晰的成功标准可供核验
+- 已明确的细节被记录下来，后面不会再被反复追问
 
-A vague handoff forces every downstream phase to assume. The cost compounds.
+如果交接依然模糊，后面的每个阶段都只能自行假设，而这个成本会层层累积。
 
-## When to Use
+## 何时使用
 
-Invoke this before decomposing requirements into tasks. If all requirements are already specific and unambiguous, skip this step.
+在把需求拆成任务之前先做这一步。如果需求本身已经足够具体、没有歧义，就可以跳过。
 
-## Philosophy
+## 方法观
 
-**You are a thinking partner, not an interviewer.**
+**你是共同思考的伙伴，不是审讯式采访者。**
 
-The user often has a fuzzy idea. Your job is to help them sharpen it. Ask questions that make them think "oh, I hadn't considered that" or "yes, that's exactly what I mean."
+用户通常只有一个模糊的想法。你的工作是帮他们把它磨尖、说实。要提出那种能让用户产生“哦，我还真没想到这个”或“对，这正是我想表达的”反应的问题。
 
-Don't interrogate. Collaborate. Don't follow a script. Follow the thread.
+不要盘问。要协作。不要照脚本走。要顺着对话线索走。
 
-## Anti-Pattern: "This Is Too Simple To Need Clarification"
+## 反模式：“这太简单了，不需要澄清”
 
-"Simple" projects are where unexamined assumptions cause the most wasted work. Even for a small phase, vague requirements force the planner to guess. The clarification can be brief — a few questions — but you MUST surface ambiguities before planning begins.
+越是“看起来简单”的项目，越容易因为未经检查的假设浪费时间。哪怕只是一个小 phase，只要需求含糊，planner 就不得不靠猜。澄清可以很短，只问几个关键问题，但**必须**在规划前把歧义暴露出来。
 
-## Anti-Patterns to Avoid
+## 要避免的反模式
 
-- **Checklist walking** — Going through domains regardless of what they said
-- **Canned questions** — "What's your core value?" "What's out of scope?" regardless of context
-- **Shallow acceptance** — Taking vague answers without probing ("good" means what? "simple" means how?)
-- **Interrogation** — Firing questions without building on answers
-- **Rushing** — Minimizing questions to get to "the work"
-- **Premature constraints** — Asking about tech stack before understanding the idea
-- **User skills** — Never ask about the user's technical experience
+- **按清单扫领域**：不管用户说了什么，都按固定板块逐项询问
+- **罐头问题**：不看上下文就问“核心价值是什么？”、“哪些不在范围内？”
+- **浅层接受**：用户说得模糊也不追问，比如“好”是什么意思？“简单”具体指什么？
+- **盘问式提问**：只丢问题，不基于答案往下走
+- **急着推进**：为了尽快进入“真正干活”而最小化提问
+- **过早约束**：在还没理解需求之前就开始问技术栈
+- **用户技能盘查**：不要问用户技术水平
 
-## Core Principles
+## 核心原则
 
-- **One question at a time** — don't overwhelm
-- **Multiple choice preferred** — easier for users to answer than open-ended
-- **Interpret, don't just ask** — "what do you want?" is weak; infer what they likely mean and confirm
-- **YAGNI** — ruthlessly remove unnecessary features
-- **Follow energy** — dig into what the user emphasized
-- **Propose approaches, not just questions** — when 2-3 valid options exist, present them with trade-offs and your recommendation
+- **一次只问一个问题**：别把用户压垮
+- **优先多选题**：比纯开放式问题更容易回答
+- **先解释再提问**：不要只问“你想要什么”；更好的方式是先推测他们可能的意思，再让他们确认
+- **YAGNI**：狠一点删掉不必要功能
+- **顺着用户的能量点追问**：他们强调什么，就往哪里深挖
+- **提出方案，不只是提出问题**：当存在 2-3 个合理方向时，给出方案、取舍和你的建议
 
-## Question Types
+## 问题类型
 
-Use these as inspiration, not a checklist:
+把这些当灵感，不要当固定清单：
 
-**Motivation — why this exists:**
-- "What prompted this?"
-- "What are you doing today that this replaces?"
-- "What would you do if this existed?"
+**动机：为什么要做这件事**
+- “是什么触发了这个想法？”
+- “你现在在做什么，而这个东西要替代它？”
+- “如果它已经存在，你会拿它来做什么？”
 
-**Concreteness — what it actually is:**
-- "Walk me through using this"
-- "You said X — what does that actually look like?"
-- "Give me an example"
+**具体化：它到底是什么**
+- “你从头到尾带我走一遍使用过程”
+- “你提到的 X，具体长什么样？”
+- “给我举个例子”
 
-**Clarification — what they mean:**
-- "When you say Z, do you mean A or B?"
-- "You mentioned X — tell me more about that"
+**澄清：你说的词到底指什么**
+- “你说 Z 的时候，指的是 A 还是 B？”
+- “你刚提到 X，再展开说说”
 
-**Success — how you'll know it's working:**
-- "How will you know this is working?"
-- "What does done look like?"
+**成功：怎样算它真的可用**
+- “你怎么判断它已经起作用了？”
+- “完成态长什么样？”
 
-**Scope — boundaries:**
-- "What's in scope vs out of scope?"
-- "What should this NOT do?"
+**范围：边界在哪**
+- “哪些在范围内，哪些不在？”
+- “它明确不该做什么？”
 
-## Using AskUserQuestion
+## 使用 AskUserQuestion
 
-Use `AskUserQuestion` to help users think by presenting concrete options.
+用 `AskUserQuestion` 帮用户思考时，应该给他们可以直接反应的具体选项。
 
-**Good options:**
-- Interpretations of what they might mean
-- Specific examples to confirm or deny
-- Concrete choices that reveal priorities
+**好的选项：**
+- 你对用户意图的几种合理解释
+- 可以被确认或否认的具体例子
+- 能暴露优先级的具体选择
 
-**Bad options:**
-- Generic categories ("Technical", "Business", "Other")
-- Leading options that presume an answer
-- Headers longer than 12 characters
+**差的选项：**
+- 泛泛的分类（如“技术”、“业务”、“其他”）
+- 带有强引导性的选项
+- 超过 12 个字符的 header
 
-**Example — vague answer:**
-User says "it should be fast"
+**示例：模糊回答**
+用户说：“它应该很快”
 
-- header: "Fast"
-- question: "Fast how?"
-- options: ["Sub-second response", "Handles large datasets", "Quick to build", "Let me explain"]
+- header: `Fast`
+- question: `Fast how?`
+- options: `["Sub-second response", "Handles large datasets", "Quick to build", "Let me explain"]`
 
-**Example — following a thread:**
-User mentions "frustrated with current tools"
+**示例：顺着线索追问**
+用户提到：“我对现有工具很沮丧”
 
-- header: "Frustration"
-- question: "What specifically frustrates you?"
-- options: ["Too many clicks", "Missing features", "Unreliable", "Let me explain"]
+- header: `Frustration`
+- question: `What specifically frustrates you?`
+- options: `["Too many clicks", "Missing features", "Unreliable", "Let me explain"]`
 
-## Freeform Rule
+## 自由表达规则
 
-If the user wants to explain freely, **stop using AskUserQuestion**:
+如果用户想自由解释，**就停止使用 AskUserQuestion**：
 
-1. Ask your follow-up as plain text — NOT via AskUserQuestion
-2. Wait for them to type at the normal prompt
-3. Resume AskUserQuestion only after processing their freeform response
+1. 用普通文本继续追问，而**不是**再发 AskUserQuestion
+2. 等用户在正常输入框里直接表达
+3. 处理完这段自由描述后，再决定是否回到 AskUserQuestion
 
-## Output: CLARIFICATION.md
+## 输出：CLARIFICATION.md
 
-After clarification, write `{phase}-CLARIFICATION.md` capturing:
+澄清完成后，写出 `{phase}-CLARIFICATION.md`，包含：
 
 ```markdown
 # Phase N Clarification
@@ -129,30 +129,30 @@ After clarification, write `{phase}-CLARIFICATION.md` capturing:
 - [items intentionally left open]
 ```
 
-This doc becomes **mandatory input** to the planner — all resolved specifics must not be re-questioned.
+这个文档会成为 planner 的**强制输入**。所有已经澄清的细节都不应再被重复追问。
 
-## Clarification Checklist
+## 澄清检查清单
 
-Use this as a background mental check. If gaps remain after questioning, weave in natural follow-ups:
+把它当作后台心智检查表。如果追问之后还有缺口，就自然地补问：
 
-- [ ] What they're building (concrete enough to explain to a stranger)
-- [ ] Why it needs to exist (the problem or desire driving it)
-- [ ] Who it's for (even if just themselves)
-- [ ] What "done" looks like (observable outcomes)
-- [ ] Which approaches are viable (and trade-offs between them)
+- [ ] 他们到底在做什么（要具体到能向陌生人解释）
+- [ ] 为什么它必须存在（驱动它的问题或欲望是什么）
+- [ ] 它是给谁用的（哪怕只是给自己）
+- [ ] “完成”长什么样（可观察的结果）
+- [ ] 哪些方案是真正可行的（以及它们之间的取舍）
 
-Four things. If they volunteer more, capture it.
+四件事就够了。用户如果主动说得更多，就把它记下来。
 
-## Decision Gate
+## 决策门
 
-When you have enough to write a clear CLARIFICATION.md that the planner can act on, offer to proceed:
+当你已经掌握足够信息，可以写出 planner 能执行的清晰 `CLARIFICATION.md` 时，就可以提出继续推进：
 
-- header: "Ready?"
-- question: "I think I understand what you're after. Ready to move to planning?"
+- header: `Ready?`
+- question: `I think I understand what you're after. Ready to move to planning?`
 - options:
-  - "Start planning" — Let's move forward
-  - "Keep exploring" — I want to share more / ask me more
+  - `Start planning` -> 继续推进
+  - `Keep exploring` -> 还想再补充 / 继续问
 
-If "Keep exploring" — ask what they want to add, or identify gaps and probe naturally.
+如果用户选了 `Keep exploring`，就问他们还想补什么，或者识别缺口后自然追问。
 
-Loop until "Start planning" selected.
+循环直到用户选择 `Start planning`。
