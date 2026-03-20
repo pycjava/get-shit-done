@@ -829,6 +829,277 @@ function cmdValidateHealth(cwd, options, raw) {
   }, raw);
 }
 
+// ─── Ops Doc Required Blocks Map ─────────────────────────────────────────────
+const OPS_DOC_REQUIRED_BLOCKS = {
+  'DEPLOYMENT.md': ['部署前检查清单', '回滚流程', '发布后验证'],
+  'RUNBOOK.md': ['SEV1', 'SEV2', 'SEV3', 'SEV4', '常见问题', '复盘'],
+  'MONITORING.md': ['黄金信号', '告警', 'SLO', 'SLI'],
+  'CAPACITY.md': ['基线', '扩容', '缩容'],
+  'BACKUP.md': ['RTO', 'RPO', '恢复', '演练'],
+  'SECURITY-OPS.md': ['漏洞扫描', '事故响应'],
+  'OPERATIONS.md': ['运维目标', '环境配置', '升级'],
+};
+
+function cmdVerifyOpsDoc(cwd, docName, raw) {
+  if (!docName) {
+    error('doc name required (e.g., DEPLOYMENT, RUNBOOK)');
+    return;
+  }
+
+  const docFile = docName.endsWith('.md') ? docName : `${docName}.md`;
+  const opsDir = path.join(cwd, '.planning', 'operations');
+  const docPath = path.join(opsDir, docFile);
+
+  if (!fs.existsSync(docPath)) {
+    output({ valid: false, doc: docFile, errors: [`Ops doc not found: ${docPath}`], checks: {} }, raw, 'invalid');
+    return;
+  }
+
+  const content = fs.readFileSync(docPath, 'utf-8');
+  const requiredBlocks = OPS_DOC_REQUIRED_BLOCKS[docFile] || [];
+  const checks = {};
+  const errors = [];
+  const warnings = [];
+
+  for (const block of requiredBlocks) {
+    const blockPattern = new RegExp(`##\\s*${block}|###\\s*${block}|####\\s*${block}`);
+    checks[block] = blockPattern.test(content);
+    if (!checks[block]) {
+      errors.push(`Missing required block: ${block}`);
+    }
+  }
+
+  const valid = errors.length === 0;
+  output({
+    valid,
+    doc: docFile,
+    checks,
+    errors,
+    warnings,
+  }, raw, valid ? 'valid' : 'invalid');
+}
+
+function cmdVerifyOpsDocRefs(cwd, docPath, raw) {
+  if (!docPath) {
+    error('doc path required');
+    return;
+  }
+
+  const fullPath = path.isAbsolute(docPath) ? docPath : path.join(cwd, docPath);
+  if (!fs.existsSync(fullPath)) {
+    output({ valid: false, doc: docPath, errors: ['Doc not found'], broken_refs: [], warnings: [] }, raw, 'invalid');
+    return;
+  }
+
+  const content = fs.readFileSync(fullPath, 'utf-8');
+  const docDir = path.dirname(fullPath);
+  const brokenRefs = [];
+  const warnings = [];
+  let totalRefs = 0;
+  let validRefs = 0;
+
+  // Extract markdown links: [text](./path.md) or [text](./path)
+  const linkPattern = /\[([^\]]+)\]\(\.\/([^)]+)\)/g;
+  let match;
+  while ((match = linkPattern.exec(content)) !== null) {
+    totalRefs++;
+    const linkTarget = match[2];
+    const lineNumber = content.slice(0, match.index).split('\n').length;
+
+    // Skip external URLs and anchors
+    if (linkTarget.startsWith('http') || linkTarget.startsWith('#')) {
+      validRefs++;
+      continue;
+    }
+
+    const resolved = path.resolve(docDir, linkTarget);
+    if (fs.existsSync(resolved)) {
+      validRefs++;
+    } else {
+      brokenRefs.push({
+        from: path.basename(fullPath),
+        to: `./${linkTarget}`,
+        line: lineNumber,
+      });
+    }
+  }
+
+  output({
+    valid: brokenRefs.length === 0,
+    total_refs: totalRefs,
+    valid_refs: validRefs,
+    broken_refs: brokenRefs,
+    warnings,
+  }, raw, brokenRefs.length === 0 ? 'valid' : 'invalid');
+}
+
+function cmdVerifyOpsDocAllRefs(cwd, raw) {
+  const opsDir = path.join(cwd, '.planning', 'operations');
+  if (!fs.existsSync(opsDir)) {
+    output({ valid: false, total_refs: 0, valid_refs: 0, broken_refs: [], errors: ['Operations directory not found'], warnings: [] }, raw, 'invalid');
+    return;
+  }
+
+  let files;
+  try {
+    files = fs.readdirSync(opsDir).filter(f => f.endsWith('.md'));
+  } catch {
+    output({ valid: false, total_refs: 0, valid_refs: 0, broken_refs: [], errors: ['Cannot read operations directory'], warnings: [] }, raw, 'invalid');
+    return;
+  }
+
+  const allBroken = [];
+  let totalRefs = 0;
+  let validRefs = 0;
+
+  for (const file of files) {
+    const fullPath = path.join(opsDir, file);
+    const content = fs.readFileSync(fullPath, 'utf-8');
+
+    const linkPattern = /\[([^\]]+)\]\(\.\/([^)]+)\)/g;
+    let match;
+    while ((match = linkPattern.exec(content)) !== null) {
+      totalRefs++;
+      const linkTarget = match[2];
+      const lineNumber = content.slice(0, match.index).split('\n').length;
+
+      if (linkTarget.startsWith('http') || linkTarget.startsWith('#')) {
+        validRefs++;
+        continue;
+      }
+
+      const resolved = path.resolve(opsDir, linkTarget);
+      if (fs.existsSync(resolved)) {
+        validRefs++;
+      } else {
+        allBroken.push({
+          from: file,
+          to: `./${linkTarget}`,
+          line: lineNumber,
+        });
+      }
+    }
+  }
+
+  output({
+    valid: allBroken.length === 0,
+    total_refs: totalRefs,
+    valid_refs: validRefs,
+    broken_refs: allBroken,
+    warnings: [],
+  }, raw, allBroken.length === 0 ? 'valid' : 'invalid');
+}
+
+function cmdVerifyOpsDocConsistency(cwd, raw) {
+  const checks = [];
+  const errors = [];
+  const warnings = [];
+
+  // 1. package.json version
+  const pkgPath = path.join(cwd, 'package.json');
+  let pkgVersion = null;
+  let pkgName = null;
+  if (fs.existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+      pkgVersion = pkg.version;
+      pkgName = pkg.name;
+      checks.push({ item: 'package.json version', doc_value: 'present', actual_value: pkgVersion, match: true });
+      checks.push({ item: 'npm package name', doc_value: pkgName, actual_value: pkgName, match: true });
+      if (pkg.engines && pkg.engines.node) {
+        checks.push({ item: 'Node version requirement', doc_value: pkg.engines.node, actual_value: pkg.engines.node, match: true });
+      }
+    } catch {
+      errors.push('package.json exists but is not valid JSON');
+    }
+  } else {
+    checks.push({ item: 'package.json', doc_value: 'expected', actual_value: 'not found', match: false });
+  }
+
+  // 2. CI platform (GitHub Actions)
+  const ciDir = path.join(cwd, '.github', 'workflows');
+  const hasCI = fs.existsSync(ciDir) && fs.readdirSync(ciDir).some(f => f.endsWith('.yml') || f.endsWith('.yaml'));
+  checks.push({ item: 'GitHub Actions CI', doc_value: hasCI ? 'configured' : 'not configured', actual_value: hasCI ? 'configured' : 'not configured', match: true });
+
+  // 3. Security tools mentioned in SECURITY-OPS.md vs package.json scripts
+  const secOpsPath = path.join(cwd, '.planning', 'operations', 'SECURITY-OPS.md');
+  if (fs.existsSync(secOpsPath)) {
+    const secContent = fs.readFileSync(secOpsPath, 'utf-8');
+
+    // Snyk
+    const hasSnykInDoc = secContent.toLowerCase().includes('snyk');
+    let hasSnykInCI = false;
+    if (hasCI) {
+      try {
+        const ciFiles = fs.readdirSync(ciDir).filter(f => f.endsWith('.yml') || f.endsWith('.yaml'));
+        for (const ciFile of ciFiles) {
+          const ciContent = fs.readFileSync(path.join(ciDir, ciFile), 'utf-8');
+          if (ciContent.toLowerCase().includes('snyk')) {
+            hasSnykInCI = true;
+            break;
+          }
+        }
+      } catch {}
+    }
+    checks.push({ item: 'Snyk integration', doc_value: hasSnykInDoc ? 'mentioned' : 'not mentioned', actual_value: hasSnykInCI ? 'configured in CI' : 'not in CI', match: hasSnykInDoc === hasSnykInCI });
+    if (hasSnykInDoc && !hasSnykInCI) {
+      warnings.push('Snyk mentioned in SECURITY-OPS.md but not found in CI configuration');
+    }
+
+    // npm audit
+    const hasAuditInDoc = secContent.toLowerCase().includes('npm audit');
+    let hasAuditInPkg = false;
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        hasAuditInPkg = pkg.scripts && (
+          (typeof pkg.scripts.audit === 'string' && pkg.scripts.audit.includes('audit')) ||
+          (typeof pkg.scripts['audit:full'] === 'string')
+        );
+      } catch {}
+    }
+    checks.push({ item: 'npm audit script', doc_value: hasAuditInDoc ? 'mentioned' : 'not mentioned', actual_value: hasAuditInPkg ? 'in package.json' : 'not in package.json', match: hasAuditInDoc === hasAuditInPkg });
+  }
+
+  // 4. MONITORING.md consistency with package.json scripts
+  const monPath = path.join(cwd, '.planning', 'operations', 'MONITORING.md');
+  if (fs.existsSync(monPath)) {
+    const monContent = fs.readFileSync(monPath, 'utf-8');
+    // Check if monitoring scripts exist
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        const hasMonitorScript = pkg.scripts && (
+          (typeof pkg.scripts.monitor === 'string') ||
+          (typeof pkg.scripts['healthcheck'] === 'string')
+        );
+        checks.push({ item: 'monitoring script', doc_value: monContent.includes('<script>') ? 'mentioned' : 'not explicitly required', actual_value: hasMonitorScript ? 'found in package.json' : 'not found', match: true });
+      } catch {}
+    }
+  }
+
+  // 5. DEPLOYMENT.md version consistency with package.json
+  const deployPath = path.join(cwd, '.planning', 'operations', 'DEPLOYMENT.md');
+  if (fs.existsSync(deployPath) && pkgVersion) {
+    const deployContent = fs.readFileSync(deployPath, 'utf-8');
+    const versionInDoc = deployContent.match(/v?(\d+\.\d+\.\d+)/);
+    checks.push({
+      item: 'version in DEPLOYMENT.md',
+      doc_value: versionInDoc ? `v${versionInDoc[1]}` : 'no version pattern found',
+      actual_value: `v${pkgVersion}`,
+      match: versionInDoc ? versionInDoc[1] === pkgVersion : false,
+    });
+  }
+
+  const valid = errors.length === 0;
+  output({
+    valid,
+    checks,
+    errors,
+    warnings,
+  }, raw, valid ? 'valid' : 'invalid');
+}
+
 module.exports = {
   cmdVerifySummary,
   cmdVerifyPlanStructure,
@@ -839,4 +1110,8 @@ module.exports = {
   cmdVerifyKeyLinks,
   cmdValidateConsistency,
   cmdValidateHealth,
+  cmdVerifyOpsDoc,
+  cmdVerifyOpsDocRefs,
+  cmdVerifyOpsDocAllRefs,
+  cmdVerifyOpsDocConsistency,
 };

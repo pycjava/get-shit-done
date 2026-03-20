@@ -350,8 +350,16 @@ async function main() {
         verify.cmdVerifyArtifacts(cwd, args[2], raw);
       } else if (subcommand === 'key-links') {
         verify.cmdVerifyKeyLinks(cwd, args[2], raw);
+      } else if (subcommand === 'ops-doc') {
+        verify.cmdVerifyOpsDoc(cwd, args[2], raw);
+      } else if (subcommand === 'ops-doc-refs') {
+        verify.cmdVerifyOpsDocRefs(cwd, args[2], raw);
+      } else if (subcommand === 'ops-doc-all-refs') {
+        verify.cmdVerifyOpsDocAllRefs(cwd, raw);
+      } else if (subcommand === 'ops-doc-consistency') {
+        verify.cmdVerifyOpsDocConsistency(cwd, raw);
       } else {
-        error('Unknown verify subcommand. Available: plan-structure, phase-completeness, references, commits, artifacts, key-links');
+        error('Unknown verify subcommand. Available: plan-structure, phase-completeness, references, commits, artifacts, key-links, ops-doc, ops-doc-refs, ops-doc-all-refs, ops-doc-consistency');
       }
       break;
     }
