@@ -1,20 +1,20 @@
 ---
 name: gsd:bootstrap
-description: 初始化项目 → 代码库映射 → 审计 → 规划 → 执行 → 验证，全链路一键启动
-argument-hint: "[--phase N] [--skip-audit] [--skip-map]"
+description: ops-only bootstrap with requirements analysis -> plan -> runbook
+argument-hint: "[all|deployment|monitoring|capacity|runbook|backup|security|operations] [--skip-audit]"
 allowed-tools:
   - Read
   - Bash
-  - Glob
-  - Write
+  - Task
   - Skill
-  - AskUserQuestion
 ---
 
 <objective>
-检测当前项目状态，缺什么初始化什么，然后按顺序执行完整链路：new-project → map-codebase → ops-audit → plan-phase → execute-phase → verify-work。
-
-"有就跳过，没有就初始化"——重复运行是安全的。
+Run an ops-only bootstrap route with explicit sequence:
+1) analyze operations requirements (`gsd-ops-researcher`)
+2) display plan (`plan-phase`)
+3) write operations docs (`ops-runbook`)
+Then optionally run `ops-audit`.
 </objective>
 
 <execution_context>
@@ -26,5 +26,5 @@ $ARGUMENTS
 </context>
 
 <process>
-端到端执行该 workflow。
+Execute the workflow end-to-end.
 </process>

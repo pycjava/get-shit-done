@@ -12,7 +12,7 @@ allowed-tools:
 ---
 
 <objective>
-Generate formal operations documentation in `.planning/operations/`. The analysis should still be done in ordered phases, but phase tracking remains in-memory only. The only repo outputs are the final operations documents such as `OPERATIONS.md`, `DEPLOYMENT.md`, `MONITORING.md`, `CAPACITY.md`, `RUNBOOK.md`, `BACKUP.md`, and `SECURITY-OPS.md`.
+Generate formal operations documentation in `.planning/operations/`. The analysis runs in ordered phases and explicitly invokes the `gsd-ops-researcher` agent for operations-method research. Phase tracking remains in-memory only. The only repo outputs are the final operations documents such as `OPERATIONS.md`, `DEPLOYMENT.md`, `MONITORING.md`, `CAPACITY.md`, `RUNBOOK.md`, `BACKUP.md`, and `SECURITY-OPS.md`.
 </objective>
 
 <execution_context>

@@ -23,6 +23,7 @@ Generate formal operations documentation in `.planning/operations/` after in-mem
 Run `init ops-runbook [selection]` and extract:
 - `analysis_mode`
 - `analysis_phases`
+- `ops_research_model`
 - `requested_docs`
 - `project_path`
 - `requirements_path`
@@ -33,7 +34,39 @@ Run `init ops-runbook [selection]` and extract:
 
 If `analysis_mode=true`, do not look for phase tracking files. Existing `.planning/operations/*.md` files are update targets only.
 
-## 2. Analyze in three phases
+## 2. Run operations research agent
+Invoke a dedicated ops research pass before writing any formal docs:
+
+```
+Task(
+  subagent_type="gsd-ops-researcher",
+  model="{ops_research_model}",
+  prompt="
+<objective>
+Research the project's operations method and return structured notes for runbook generation.
+</objective>
+
+<files_to_read>
+- {project_path} (if exists)
+- {requirements_path} (if exists)
+- {roadmap_path} (if exists)
+- {config_path} (if exists)
+- {ops_dir}/*.md (if exists)
+- deployment, CI, runtime, monitoring, backup, and security related files in the repo
+</files_to_read>
+
+<success_criteria>
+- Return structured notes with deployment, monitoring, capacity, incident response, backup, and security decisions
+- Mark assumptions explicitly when repo facts are missing
+</success_criteria>
+  "
+)
+```
+
+Capture the returned notes as the primary research context for downstream phases.
+If the subagent fails, continue with local analysis and clearly lower confidence in outputs.
+
+## 3. Analyze in three phases
 Keep the phase conclusions in working memory and in the user-facing reply only.
 
 ### Phase 1: Current State and Scope
@@ -50,9 +83,10 @@ Keep the phase conclusions in working memory and in the user-facing reply only.
 - prefer updating existing docs over inventing duplicate files
 - do not create phase summaries or analysis files
 
-## 3. Generate formal operations docs
+## 4. Generate formal operations docs
 For each selected output:
 - read the matching template
+- merge repository facts with `gsd-ops-researcher` conclusions
 - fill it with repository facts and clearly labeled assumptions
 - write the final file to `.planning/operations/`
 
@@ -65,7 +99,7 @@ Allowed formal outputs:
 - `.planning/operations/BACKUP.md`
 - `.planning/operations/SECURITY-OPS.md`
 
-## 4. Validate outputs
+## 5. Validate outputs
 Check that each generated file:
 - has no unreplaced placeholders
 - matches the repository context
@@ -73,12 +107,13 @@ Check that each generated file:
 - does not include raw secrets
 - links only to operations docs that exist
 
-## 5. Commit only operations outputs when appropriate
+## 6. Commit only operations outputs when appropriate
 If `commit_docs=true`, commit `.planning/operations/` using the standard docs commit flow.
 
 </process>
 
 <success_criteria>
+- [ ] `gsd-ops-researcher` was invoked and its conclusions were used
 - [ ] Analysis ran in ordered phases without writing phase tracking docs
 - [ ] `.planning/operations/` exists
 - [ ] At least `OPERATIONS.md` was created or updated

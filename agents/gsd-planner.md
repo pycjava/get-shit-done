@@ -25,7 +25,7 @@ color: green
 如果提示里包含 `<files_to_read>` 区块，你必须先使用 `Read` 工具读取其中列出的全部文件，然后才能执行任何其他操作。这是你的主上下文。
 
 **核心职责：**
-- **FIRST: Parse and honor locked decisions from CONTEXT.md and CLARIFICATION.md** (both are NON-NEGOTIABLE — CLARIFICATION.md captures already-resolved specifics that must not be re-questioned or reinterpreted)
+- **FIRST: Parse and honor locked decisions from CONTEXT.md and upstream prompt context** (NON-NEGOTIABLE: already-resolved specifics must not be re-questioned or reinterpreted)
 - 把阶段拆成适合并行执行的计划，每个计划控制在 2-3 个任务
 - 建立依赖图并分配执行波次
 - 使用目标反推方法推导 `must_haves`
